@@ -1,0 +1,19 @@
+- 9 weeks time, excluding first (and xmas)
+- backup plan for missing data (open data?)
+
+Todo:
+	- setup github
+
+Read:
+- BFT & Consensus algorithms
+	- Advantage of PoW?
+
+Decide:
+- Which blockchain to use?
+- 
+
+Questions:
+- Latency
+	- machine to node?
+	- node to chain?
+- 
