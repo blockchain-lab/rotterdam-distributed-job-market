@@ -1,0 +1,42 @@
+Two types of trucks:
+  Export trucks (trucks bringing containers into the port)
+  Import trucks (trucks leaving with containers)
+
+Export trucks deliver a container, during the delivery accrue some wait-time, would like to leave as soon as possible and preferrebly with a container (=money for them). Idea is to build a system that would result in more trucks being loaded on their way out (not necessary: truck being loaded on its way in). 
+
+Aljosja wants a very UBER like approach but with a marketplace & bidding. Containers are entered into the system (manually, prototype phase, nice to have: clearly defined interface for automated systems entering this into ours). The container information is presented in a generified way to truckers, the details are hidden, so present the following:
+	- general destination
+	- size
+	- ADR (dangerous goods) flag 
+	- container at max-weight flag (nice to have)
+	- slot (was actually never mentioned by Aljosja, lets assume that this is known in advance)
+
+Trucker sets where he is willing to go in the system, will only be shown containers that match his truck, license capabilities and preference. Truckers must bid on containers (blind?), container party will have an overview of bids from which it will/might pick one. Trucker must confirm the accepted offer (because this is a contractual agreement).
+
+Exceptions: 
+	Normally, always penalized.
+	Only under "Acts of god" can something else happen, but a complicated process between the parties involved. Can sometimes even result in court.
+
+	Penalties can be incurred by both parties and are governed by Dutch Transport Law.
+
+Including a monetary aspect (collateral, payment, etc) is a nice to have. We were already thinking of have a special token for this (so not ether itself), Alsjosja himself mentioned that a solution with a token would be awesome. From Aljosjas reaction to having the monetary aspect in this iteration of project, he would be quite happy. 
+
+Aljosja wanted to have this running fully encrypted (all data hidden) on a public blockchain. We made a strong case against permissionless blockchains, he agreed. However he hasn't thought about who would take part in the governance of the permissioned nodes (which parties should verify blocks). Post-call we (Algirdas & Philipe) had a short discussion which parties could be part of the permissioned network:
+   - Port Authority of R'dam (trivial)
+   - Big container shipping companies using the system
+      - Are counterweighted by trucking companies & truckers
+   - Big trucking companies
+      - Must be counterweighted by some party that is willing to represent individual truckers to prevent the big companies pushing out small players
+   - Trucker union / general union truckers are part of
+      - Possible counterbalance to big companies
+   - Dutch government
+      - All parties would probably agree this is a reasonable neutral party
+
+Aljosja also expressed that he wants the "data only to be visible to accepted parties". What he means by "accepted" is verified entities using the system. However our previously discussed approaches would alleviate this concern. Reminder of approaches:
+   - Only generic information on containers is publicly visible
+   - Truckers privacy guaranteed if we manage to separate trucker's identity on network from his interactions with network (wallet-used-once) approach per job, only the smart contract knows id (for traceability).
+   - Container & trucker details are to be exchanged/revealed securely once the job contract is formed and only within the scope of this contract, no backed or other entity will see this data.
+
+
+Other things:
+	Legality: during dispute resolution it should be possible to have a look into the contracts. A user-interface for this is definitely out of scope for this iteration. Assumption: we should build to accomodate for this.
