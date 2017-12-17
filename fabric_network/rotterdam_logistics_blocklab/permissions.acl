@@ -1,0 +1,71 @@
+rule NetworkAdminUser {
+    description: "Grant business network administrators full access to user resources"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: ALL
+    resource: "**"
+    action: ALLOW
+}
+
+rule NetworkAdminSystem {
+    description: "Grant business network administrators full access to system resources"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: ALL
+    resource: "org.hyperledger.composer.system.**"
+    action: ALLOW
+}
+
+rule ContainerGuyCanViewHisContainerDelivery {
+    description: "ContainerGuyCanViewHisContainerDelivery"
+    participant(r): "nl.tudelft.blockchain.logistics.ContainerGuy"
+  	operation: READ
+  	resource(c): "nl.tudelft.blockchain.logistics.ContainerDelivery"
+    condition: (r == c.containerInfo.owner)
+    action: ALLOW
+}
+
+rule TruckerCanBidOnContainerDelivery {
+    description: "TruckerCanBidOnContainerDelivery"
+    participant: "nl.tudelft.blockchain.logistics.Trucker"
+  	operation: UPDATE
+  	resource: "nl.tudelft.blockchain.logistics.ContainerDelivery"
+	  transaction: "nl.tudelft.blockchain.logistics.CancelContainerDelivery"
+  	action: ALLOW
+}
+
+rule ContainerGuyCancelHisContainerDelivery {
+    description: "ContainerGuyCancelHisContainerDelivery"
+    participant(r): "nl.tudelft.blockchain.logistics.ContainerGuy"
+  	operation: UPDATE
+    resource(c): "nl.tudelft.blockchain.logistics.ContainerDelivery"
+    transaction(tx): "nl.tudelft.blockchain.logistics.CancelContainerDelivery"
+ 	  condition: (r == c.containerInfo.owner)
+  	action: ALLOW
+}
+
+rule TruckerCancelHisContainerDelivery {
+    description: "TruckerCancelHisContainerDelivery"
+    participant(r): "nl.tudelft.blockchain.logistics.Trucker"
+  	operation: UPDATE
+  	resource(c): "nl.tudelft.blockchain.logistics.ContainerDelivery"
+	  transaction: "nl.tudelft.blockchain.logistics.CancelContainerDelivery"
+	  condition: (r == c.acceptedBid.bidder)
+  	action: ALLOW
+}
+
+rule ContainerGuyCanCreateContainerInfo {
+    description: "ContainerGuyCanCreateContainerInfo"
+    participant: "nl.tudelft.blockchain.logistics.ContainerGuy"
+  	operation: CREATE
+  	resource: "nl.tudelft.blockchain.logistics.ContainerInfo"
+	  transaction: "nl.tudelft.blockchain.logistics.CreateContainerInfo"
+  	action: ALLOW
+}
+
+rule ContainerGuyCanCreateContainerDelivery {
+    description: "ContainerGuyCanCreateContainerDelivery"
+    participant: "nl.tudelft.blockchain.logistics.ContainerGuy"
+  	operation: CREATE
+  	resource: "nl.tudelft.blockchain.logistics.ContainerDelivery"
+	  transaction: "nl.tudelft.blockchain.logistics.CreateContainerDelivery"
+  	action: ALLOW
+}

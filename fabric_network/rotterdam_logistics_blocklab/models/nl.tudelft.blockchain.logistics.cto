@@ -1,0 +1,64 @@
+namespace nl.tudelft.blockchain.logistics
+
+enum ContainerType {
+  o BasicContainer
+}
+
+asset ContainerBid identified by containerBidId {
+  	o String containerBidId
+  	o Double bid
+    --> Trucker bidder
+}
+
+asset ContainerInfo identified by containerInfoId {
+    o String containerInfoId
+    o ContainerType containerType
+    --> ContainerGuy owner
+}
+
+asset ContainerDelivery identified by containerDevlieryId {
+    o String containerDevlieryId
+    o DateTime containerArrivalTime
+    o ContainerBid[] containerBids
+    o ContainerBid acceptedContainerBid optional
+    o Boolean canceled default = false
+    --> ContainerInfo containerInfo
+}
+
+participant Trucker identified by truckerId {
+    o String truckerId
+    o String firstName
+    o String lastName
+}
+
+participant ContainerGuy identified by containerGuyId {
+    o String containerGuyId
+    o String firstName
+    o String lastName
+}
+
+transaction BidOnContainerDelivery {
+    --> ContainerDelivery containerDelivery
+    --> Trucker bidder
+    o Double bid
+}
+
+transaction AcceptBidOnContainerDelivery {
+    --> ContainerDelivery containerDelivery
+	--> ContainerBid acceptedContainerBid
+}
+  
+transaction CancelContainerDelivery {
+    --> ContainerDelivery containerDelivery
+}
+  
+transaction CreateContainerInfo {
+  	o String containerId
+    o ContainerType containerType
+  	--> ContainerGuy owner
+}
+  
+  transaction CreateContainerDelivery {
+    o DateTime containerArrivalTime
+  	--> ContainerInfo containerInfo
+}
