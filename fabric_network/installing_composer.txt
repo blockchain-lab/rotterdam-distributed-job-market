@@ -7,7 +7,7 @@ Installing Composer on Linux (proper):
 2. Upgrade/Install NPM with NVM 
 	run: nvm install node
 
-3. Install all the composer npm stuff
+3. Install all the composer npm stuff (note: some packages will start compiling C-code! Don't be scared by strange looking output, it's not running Fabric)
 	npm install -g composer-cli
 	npm install -g generator-hyperledger-composer
 	npm install -g composer-rest-server
