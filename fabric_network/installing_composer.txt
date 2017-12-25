@@ -1,0 +1,19 @@
+Installing Composer on Linux (proper):
+
+1. Install NVM (node version manager)
+	run: curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
+	This will git clone & install NVM in ~/.nvm dir, re-open terminal after install and verify installation with `command -v nvm`, should output `nvm`
+	(https://github.com/creationix/nvm/blob/master/README.md#installation)
+2. Upgrade/Install NPM with NVM 
+	run: nvm install node
+
+3. Install all the composer npm stuff
+	npm install -g composer-cli
+	npm install -g generator-hyperledger-composer
+	npm install -g composer-rest-server
+4. Install Yeoman, code generation tool
+	npm install -g yo
+
+(Optional): Composer Playground, this is basically a site that allows you to create Business Network Defitions from your browser and execute some simple low-level commands such as asset creation. Basically like a SQL Workbench. Don't need this, we already created initial BND stuff and extracted it in a nice directory to work on the files directly. Deployment to Fabric can be done with the composer cli tools. Just tell it to bundle the files and deploy the package (instructions will follow)
+
+	npm install -g composer-playground
