@@ -1,12 +1,20 @@
 namespace nl.tudelft.blockchain.logistics
 
 enum ContainerType {
-  o BasicContainer
+    o BasicContainer
 }
 
-asset ContainerBid identified by containerBidId {
-  	o String containerBidId
-  	o Double bid
+enum ContainerDeliveryJobStatus {
+    o NEW     /* just created */
+    o ONMARKET    /* offered on the marketplace */ 
+    o CONTRACTED  /* bid accepted & contract with trucker created */
+    o DELIVERED   /* delivered & accepted by the destination */
+    o EXCEPTION   /* "exception", cancelled, etc */
+}
+
+asset TruckerBidOnContainerJobOffer identified by truckerBidId {
+    o String truckerBidId
+    o Double bid
     --> Trucker bidder
 }
 
@@ -16,11 +24,11 @@ asset ContainerInfo identified by containerInfoId {
     --> ContainerGuy owner
 }
 
-asset ContainerDelivery identified by containerDevlieryId {
-    o String containerDevlieryId
+asset ContainerDeliveryJobOffer identified by containerDeliveryJobOfferId {
+    o String containerDeliveryJobOfferId
     o DateTime containerArrivalTime
-    o ContainerBid[] containerBids
-    o ContainerBid acceptedContainerBid optional
+    o TruckerBidOnContainerJobOffer[] containerBids
+    o TruckerBidOnContainerJobOffer acceptedBid optional
     o Boolean canceled default = false
     --> ContainerInfo containerInfo
 }
@@ -38,27 +46,27 @@ participant ContainerGuy identified by containerGuyId {
 }
 
 transaction BidOnContainerDelivery {
-    --> ContainerDelivery containerDelivery
+    --> ContainerDeliveryJobOffer containerDeliveryJobOffer
     --> Trucker bidder
     o Double bid
 }
 
-transaction AcceptBidOnContainerDelivery {
-    --> ContainerDelivery containerDelivery
-	--> ContainerBid acceptedContainerBid
+transaction AcceptBidOnContainerDeliveryJobOffer {
+    --> ContainerDeliveryJobOffer containerDeliveryJobOffer
+    --> TruckerBidOnContainerJobOffer acceptedBid
 }
   
-transaction CancelContainerDelivery {
-    --> ContainerDelivery containerDelivery
+transaction CancelContainerDeliveryJobOffer {
+    --> ContainerDeliveryJobOffer containerDeliveryJobOffer
 }
   
 transaction CreateContainerInfo {
-  	o String containerId
+    o String containerId
     o ContainerType containerType
-  	--> ContainerGuy owner
+    --> ContainerGuy owner
 }
   
-  transaction CreateContainerDelivery {
+transaction CreateContainerDeliveryJobOffer {
     o DateTime containerArrivalTime
-  	--> ContainerInfo containerInfo
+    --> ContainerInfo containerInfo
 }
