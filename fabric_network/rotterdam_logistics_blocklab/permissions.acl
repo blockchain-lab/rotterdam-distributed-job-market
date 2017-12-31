@@ -1,73 +1,73 @@
 rule NetworkAdminUser {
-    description: "Grant business network administrators full access to user resources"
-    participant: "org.hyperledger.composer.system.NetworkAdmin"
-    operation: ALL
-    resource: "**"
-    action: ALLOW
+	description: "Grant business network administrators full access to user resources"
+	participant: "org.hyperledger.composer.system.NetworkAdmin"
+	operation: ALL
+	resource: "**"
+	action: ALLOW
 }
 
 rule NetworkAdminSystem {
-    description: "Grant business network administrators full access to system resources"
-    participant: "org.hyperledger.composer.system.NetworkAdmin"
-    operation: ALL
-    resource: "org.hyperledger.composer.system.**"
-    action: ALLOW
+	description: "Grant business network administrators full access to system resources"
+	participant: "org.hyperledger.composer.system.NetworkAdmin"
+	operation: ALL
+	resource: "org.hyperledger.composer.system.**"
+	action: ALLOW
 }
 
 rule ContainerGuyCanViewHisDeliveryJobs {
-    description: "ContainerGuyCanViewHisContainerDeliveryJobs"
-    participant(r): "nl.tudelft.blockchain.logistics.ContainerGuy"
-    operation: READ
-    resource(c): "nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer"
-    condition: (r == c.containerInfo.owner)
-    action: ALLOW
+	description: "ContainerGuyCanViewHisContainerDeliveryJobs"
+	participant(r): "nl.tudelft.blockchain.logistics.ContainerGuy"
+	operation: READ
+	resource(c): "nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer"
+	condition: (r == c.containerInfo.owner)
+	action: ALLOW
 }
 
 rule TruckerCanBidOnContainerDeliveryJobOffers {
-    description: "TruckerCanBidOnContainerDeliveryJobOffers"
-    participant: "nl.tudelft.blockchain.logistics.Trucker"
-    operation: UPDATE
-    resource: "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer"
-    transaction: "nl.tudelft.blockchain.logistics.CancelContainerDeliveryJobOffer"
-    action: ALLOW
+	description: "TruckerCanBidOnContainerDeliveryJobOffers"
+	participant: "nl.tudelft.blockchain.logistics.Trucker"
+	operation: UPDATE
+	resource: "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer"
+	transaction: "nl.tudelft.blockchain.logistics.CancelContainerDeliveryJobOffer"
+	action: ALLOW
 }
 
 /* TODO: in which phases/status of the containerJobOffer?  */
 rule ContainerGuyCancelHisContainerDeliveryJob {
-    description: "ContainerGuyCancelHisContainerDeliveryJob"
-    participant(r): "nl.tudelft.blockchain.logistics.ContainerGuy"
-    operation: UPDATE
-    resource(c): "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer"
-    transaction(tx): "nl.tudelft.blockchain.logistics.CancelContainerDeliveryJobOffer"
-    condition: (r == c.containerInfo.owner)
-    action: ALLOW
+	description: "ContainerGuyCancelHisContainerDeliveryJob"
+	participant(r): "nl.tudelft.blockchain.logistics.ContainerGuy"
+	operation: UPDATE
+	resource(c): "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer"
+	transaction(tx): "nl.tudelft.blockchain.logistics.CancelContainerDeliveryJobOffer"
+	condition: (r == c.containerInfo.owner)
+	action: ALLOW
 }
 
 /* TODO: is this the jobs after accepting, or merely his bid before accept/reject? */
 rule TruckerCancelHisContainerDelivery {
-    description: "TruckerCancelHisContainerDelivery"
-    participant(r): "nl.tudelft.blockchain.logistics.Trucker"
-    operation: UPDATE
-    resource(c): "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer"
-    transaction: "nl.tudelft.blockchain.logistics.CancelContainerDeliveryJobOffer"
-    condition: (r == c.acceptedBid.bidder)
-    action: ALLOW
+	description: "TruckerCancelHisContainerDelivery"
+	participant(r): "nl.tudelft.blockchain.logistics.Trucker"
+	operation: UPDATE
+	resource(c): "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer"
+	transaction: "nl.tudelft.blockchain.logistics.CancelContainerDeliveryJobOffer"
+	condition: (r == c.acceptedBid.bidder)
+	action: ALLOW
 }
 
 rule ContainerGuyCanCreateContainerInfo {
-    description: "ContainerGuyCanCreateContainerInfo"
-    participant: "nl.tudelft.blockchain.logistics.ContainerGuy"
-    operation: CREATE
-    resource: "nl.tudelft.blockchain.logistics.ContainerInfo"
-    transaction: "nl.tudelft.blockchain.logistics.CreateContainerInfo"
-    action: ALLOW
+	description: "ContainerGuyCanCreateContainerInfo"
+	participant: "nl.tudelft.blockchain.logistics.ContainerGuy"
+	operation: CREATE
+	resource: "nl.tudelft.blockchain.logistics.ContainerInfo"
+	transaction: "nl.tudelft.blockchain.logistics.CreateContainerInfo"
+	action: ALLOW
 }
 
 rule ContainerGuyCanCreateContainerDeliveryJobOffer {
-    description: "ContainerGuyCanCreateContainerDelivery"
-    participant: "nl.tudelft.blockchain.logistics.ContainerGuy"
-    operation: CREATE
-    resource: "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer"
-    transaction: "nl.tudelft.blockchain.logistics.CreateContainerDeliveryJobOffer"
-    action: ALLOW
+	description: "ContainerGuyCanCreateContainerDelivery"
+	participant: "nl.tudelft.blockchain.logistics.ContainerGuy"
+	operation: CREATE
+	resource: "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer"
+	transaction: "nl.tudelft.blockchain.logistics.CreateContainerDeliveryJobOffer"
+	action: ALLOW
 }

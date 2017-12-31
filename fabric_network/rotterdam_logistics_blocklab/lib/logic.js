@@ -5,13 +5,16 @@
  * @param {nl.tudelft.blockchain.logistics.BidOnContainerDelivery} tx - transaction parameters
  * @transaction
  */
-function bidOnContainerDelivery(tx) {
-    if (tx.ContainerDeliveryJobOffer.canceled || tx.ContainerDeliveryJobOffer.hasOwnProperty('acceptedContainerBid')) {
+function bidOnContainerDelivery(tx)
+{
+    if (tx.ContainerDeliveryJobOffer.canceled || tx.ContainerDeliveryJobOffer.hasOwnProperty('acceptedContainerBid'))
+    {
         return;
     }
+  
     var factory = getFactory();
-    var newContainerBid = factory.newResource('nl.tudelft.blockchain.logistics', 'ContainerDeliveryJobOffer', tx.bid + tx.bidder.truckerId + tx.ContainerDeliveryJobOffer.containerDevlieryId);
-    newContainerBid.bid = tx.bid;
+    var newContainerBid = factory.newResource('nl.tudelft.blockchain.logistics', 'TruckerBidOnContainerJobOffer', tx.bidAmount + '_' + tx.bidder.truckerId + '_' + tx.ContainerDeliveryJobOffer.containerDeliveryId);
+    newContainerBid.bidAmount = tx.bidAmount;
     newContainerBid.bidder = tx.bidder;
     getAssetRegistry('nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer')
         .then(function (assetRegistry) {
@@ -29,7 +32,8 @@ function bidOnContainerDelivery(tx) {
 * @param {nl.tudelft.blockchain.logistics.AcceptBidOnContainerDeliveryJobOffer} tx - transaction parameters
 * @transaction
 */
-function acceptBidOnContainerDeliveryJobOffer(tx) {
+function acceptBidOnContainerDeliveryJobOffer(tx)
+{
     tx.ContainerDeliveryJobOffer.acceptedContainerBid = tx.acceptedContainerBid;
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {
@@ -42,7 +46,8 @@ function acceptBidOnContainerDeliveryJobOffer(tx) {
 * @param {nl.tudelft.blockchain.logistics.CancelContainerDeliveryJobOffer} tx - transaction parameters
 * @transaction
 */
-function cancelContainerDeliveryJobOffer(tx) {
+function cancelContainerDeliveryJobOffer(tx)
+{
     tx.ContainerDeliveryJobOffer.canceled = true;
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {
@@ -55,7 +60,8 @@ function cancelContainerDeliveryJobOffer(tx) {
 * @param {nl.tudelft.blockchain.logistics.CreateContainerInfo} tx - transaction parameters
 * @transaction
 */
-function createContainerInfo(tx) {
+function createContainerInfo(tx)
+{
     var factory = getFactory();
     var newContainerInfo = factory.newResource('nl.tudelft.blockchain.logistics', 'ContainerInfo', tx.containerId);
     newContainerInfo.containerType = tx.containerType;
@@ -67,16 +73,21 @@ function createContainerInfo(tx) {
 }
 
 /**
-* Create container delivery
+* Create container delivery job offer
 * @param {nl.tudelft.blockchain.logistics.CreateContainerDeliveryJobOffer} tx - transaction parameters
 * @transaction
 */
-function createContainerDeliveryJobOffer(tx) {
-    var factory = getFactory();
-    var newContainerDelivery = factory.newResource('nl.tudelft.blockchain.logistics', 'ContainerDeliveryJobOffer', tx.containerInfo.containerInfoId + 'd' + (+tx.containerArrivalTime).toString(36));
-    newContainerDelivery.containerArrivalTime = tx.containerArrivalTime;
-    newContainerDelivery.containerInfo = tx.containerInfo;
-    newContainerDelivery.containerBids = new Array();
+function createContainerDeliveryJobOffer(tx)
+{
+    var id = tx.containerInfo.containerInfoId + 'd' + (tx.toBeDeliveredByDateTime).toString(36);
+  
+    var newContainerDeliveryJobOffer = getFactory().newResource('nl.tudelft.blockchain.logistics', 'ContainerDeliveryJobOffer', id);
+    newContainerDeliveryJobOffer.toBeDeliveredByDateTime = tx.toBeDeliveredByDateTime;
+    newContainerDeliveryJobOffer.containerInfo = tx.containerInfo;
+    newContainerDelvieryJobOffer.destination = tx.destination;
+    newContainerDeliveryJobOffer.containerBids = [];
+    newContainerDeliveryJobOffer.status = ContainerDeliveryJobStatus.INMARKET;
+  
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {
             return assetRegistry.add(newContainerDelivery);

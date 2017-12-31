@@ -1,6 +1,6 @@
 query ShowAllBidsForContainerDelivery {
-  description: "ShowAllBidsForContainerDelivery"
-  statement:
-      SELECT nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer
-  		FROM nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer
+	description: "ShowAllBidsForContainerDelivery"
+	statement:
+		SELECT nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer
+		FROM nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer
 }

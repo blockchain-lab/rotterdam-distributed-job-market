@@ -1,72 +1,115 @@
 namespace nl.tudelft.blockchain.logistics
 
+/* Do we need this? */
 enum ContainerType {
-    o BasicContainer
+	o BasicContainer
+}
+
+enum TruckCapacityType {
+	o TWENTY
+	o TWENTY_TWENTY
+	o FOURTY
+}
+
+enum AdrTraining {
+	o YES
+	o NO
 }
 
 enum ContainerDeliveryJobStatus {
-    o NEW     /* just created */
-    o ONMARKET    /* offered on the marketplace */ 
-    o CONTRACTED  /* bid accepted & contract with trucker created */
-    o DELIVERED   /* delivered & accepted by the destination */
-    o EXCEPTION   /* "exception", cancelled, etc */
+	o NEW			/* just created */
+	o INMARKET		/* offered on the marketplace */ 
+	o CONTRACTED	/* bid accepted & contract with trucker created */
+	o DELIVERED		/* delivered & accepted by the destination */
+	o EXCEPTION		/* "exception", cancelled, etc */
 }
 
 asset TruckerBidOnContainerJobOffer identified by truckerBidId {
-    o String truckerBidId
-    o Double bid
-    --> Trucker bidder
+	o String truckerBidId
+	--> Trucker bidder
+	
+	/* Use integers for monetary values, we're not an exchange.
+	Can always work in "cents" if more precision is required.
+	Too bad can't define/use "Money"-like object in CTO */
+	o Integer bidAmount
 }
 
-asset ContainerInfo identified by containerInfoId {
-    o String containerInfoId
-    o ContainerType containerType
-    --> ContainerGuy owner
+/*	The container & it's contents.
+	In our prototype, it is limited to describe the general information of the
+	container with startpoint: Port of Rotterdam, 
+	endpoint: next destination (from R'dam)
+*/
+asset ContainerInfo identified by containerId {
+	/* NOTE: ContainerId is senstive info */
+	o String containerId
+	
+	/* Works for the prototype, but not in a start-to-end logistics scenario */
+	--> ContainerGuy owner
+	
+	o ContainerType containerType
 }
 
 asset ContainerDeliveryJobOffer identified by containerDeliveryJobOfferId {
-    o String containerDeliveryJobOfferId
-    o DateTime containerArrivalTime
-    o TruckerBidOnContainerJobOffer[] containerBids
-    o TruckerBidOnContainerJobOffer acceptedBid optional
-    o Boolean canceled default = false
-    --> ContainerInfo containerInfo
+	/* NOTE: can't use containerId as natural id, don't want to leak containerId */
+	o String containerDeliveryJobOfferId 
+
+	/* Container & Job info */
+	--> ContainerInfo containerInfo
+	o DateTime toBeDeliveredByDateTime
+
+	/* Bidding process */
+	o TruckerBidOnContainerJobOffer[] containerBids
+	o TruckerBidOnContainerJobOffer acceptedBid optional
+
+	/* Status */
+	o ContainerDeliveryJobStatus status
+	o Boolean canceled default = false
 }
 
+/* intially just a Trucker, legal logstics entities is not needed for prototype */
 participant Trucker identified by truckerId {
-    o String truckerId
-    o String firstName
-    o String lastName
+	o String truckerId /* natural id: could also use driver's license nr? */
+	o String firstName
+	o String lastName
+	
+	o AdrTraining adrTraining
+
+	/* Job-Search criteria: */
+	o TruckCapacityType truckCapacity
 }
 
 participant ContainerGuy identified by containerGuyId {
-    o String containerGuyId
-    o String firstName
-    o String lastName
+	o String containerGuyId
+	o String name
+	/* just a "name" suffices, a legal entity usually does not have First & Last name */
 }
 
+/* Creates a new TruckerBid asset and adds it to bids on a ContainerJobOffer */
 transaction BidOnContainerDelivery {
-    --> ContainerDeliveryJobOffer containerDeliveryJobOffer
-    --> Trucker bidder
-    o Double bid
+	o Integer bidAmount
+
+	--> ContainerDeliveryJobOffer containerDeliveryJobOffer
+	--> Trucker bidder
 }
 
 transaction AcceptBidOnContainerDeliveryJobOffer {
-    --> ContainerDeliveryJobOffer containerDeliveryJobOffer
-    --> TruckerBidOnContainerJobOffer acceptedBid
+	--> ContainerDeliveryJobOffer containerDeliveryJobOffer
+	--> TruckerBidOnContainerJobOffer acceptedBid
 }
-  
+
 transaction CancelContainerDeliveryJobOffer {
-    --> ContainerDeliveryJobOffer containerDeliveryJobOffer
+	--> ContainerDeliveryJobOffer containerDeliveryJobOffer
 }
-  
+
 transaction CreateContainerInfo {
-    o String containerId
-    o ContainerType containerType
-    --> ContainerGuy owner
+	o String containerId
+	o ContainerType containerType
+	--> ContainerGuy owner
 }
-  
+
 transaction CreateContainerDeliveryJobOffer {
-    o DateTime containerArrivalTime
-    --> ContainerInfo containerInfo
+	o DateTime containerArrivalTime
+	--> ContainerInfo containerInfo
+
+	o String destination
 }
