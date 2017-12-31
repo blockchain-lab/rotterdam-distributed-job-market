@@ -17,3 +17,29 @@ Installing Composer on Linux (proper):
 (Optional): Composer Playground, this is basically a site that allows you to create Business Network Defitions from your browser and execute some simple low-level commands such as asset creation. Basically like a SQL Workbench. Don't need this, we already created initial BND stuff and extracted it in a nice directory to work on the files directly. Deployment to Fabric can be done with the composer cli tools. Just tell it to bundle the files and deploy the package (instructions will follow)
 
 	npm install -g composer-playground
+
+
+Fabric-tools install:
+	mkdir ~/fabric-tools && cd ~/fabric-tools
+	curl -O https://raw.githubusercontent.com/hyperledger/composer-tools/master/packages/fabric-dev-servers/fabric-dev-servers.zip
+	unzip fabric-dev-servers.zip
+
+Fabric dev environment initial setup:
+	cd ~/fabric-tools
+	./downloadFabric.sh
+	./startFabric.sh
+	./createPeerAdminCard.sh
+
+Now you have a dev environment for the two test networks, Rotterdam Logistics manual will follow
+
+1. Install the composer runtime for our rotterdam_logistics_blocklab business network
+	composer runtime install --card PeerAdmin@hlfv1 --businessNetworkName rotterdam_logistics_blocklab
+
+2. Deploy the network from the business network archive
+	composer network start --card PeerAdmin@hlfv1 --networkAdmin admin --networkAdminEnrollSecret adminpw --archiveFile rotterdam_logistics_blocklab@0.0.1.bna --file networkadmin.card
+
+	This will also create a networkadmin.card file in your current directory. Please do not commit this file.
+
+3. Import the newly created Network Administrator card
+	composer card import --file networkadmin.card
+
