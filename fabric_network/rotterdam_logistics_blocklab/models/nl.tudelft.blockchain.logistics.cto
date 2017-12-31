@@ -76,7 +76,15 @@ participant Trucker identified by truckerId {
 
 	/* Job-Search criteria: */
 	o TruckCapacityType truckCapacity
+    o TruckerAvailability availability
 }
+
+/* Philipe: I think a free-form might be somewhat easier than sticking to Slots. The slots are basically implied by these values! */
+concept TruckerAvailability {
+    o DateTime from default = "1900-01-01"
+    o DateTime to default = "1900-01-01"
+}
+
 
 participant ContainerGuy identified by containerGuyId {
 	o String containerGuyId
