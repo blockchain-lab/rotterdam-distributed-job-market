@@ -58,8 +58,8 @@ asset ContainerDeliveryJobOffer identified by containerDeliveryJobOfferId {
 	o DateTime toBeDeliveredByDateTime
 
 	/* Bidding process */
-	o TruckerBidOnContainerJobOffer[] containerBids
-	o TruckerBidOnContainerJobOffer acceptedBid optional
+	--> TruckerBidOnContainerJobOffer[] containerBids
+	--> TruckerBidOnContainerJobOffer acceptedBid optional
 
 	/* Status */
 	o ContainerDeliveryJobStatus status
