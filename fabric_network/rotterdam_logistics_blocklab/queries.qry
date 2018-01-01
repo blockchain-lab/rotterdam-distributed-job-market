@@ -4,3 +4,25 @@ query ShowAllBidsForContainerDelivery {
 		SELECT nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer
 		FROM nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer
 }
+
+/**
+ 	Param: truckerParam
+ 	
+ 	TODO: Would it be easier result in better architecture, improve extendability and usability to have Truckers create
+ 	TruckerJobSearchNotice? This way truckers can have multiple days they're searching for work in advance.
+
+ 	NOTE: Tried to use _$truckerParam and just give the whole Trucker asset as parameter, Composer seems to not like
+ 	objects as parameters, or the linter anyway. Hence the mapping:
+
+ 	Trucker.allowedDestinations = allowedDestinations
+ 	Trucker.availability.from: availableFrom
+ 	Trucker.availability.to: availabilityTill
+ */
+query FindEligableJobOffersForTrucker {
+	description: "Returns Job Offers that the Trucker is eligable to bid on"
+  	statement:
+  		SELECT nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer
+  		WHERE ((_$allowedDestinations CONTAINS destination)
+  			AND (_$availableFrom <= availableForPickupDateTime AND availableForPickupDateTime <= _$availableTill))
+
+}
