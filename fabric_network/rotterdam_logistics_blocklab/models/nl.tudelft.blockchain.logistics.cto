@@ -55,7 +55,9 @@ asset ContainerDeliveryJobOffer identified by containerDeliveryJobOfferId {
 
 	/* Container & Job info */
 	--> ContainerInfo containerInfo
+    o DateTime availableForPickupDateTime /* TODO: either keep using DateTime or use SLOTS */
 	o DateTime toBeDeliveredByDateTime
+    o String destination /* prototype: just use "general" destination (city name) */
 
 	/* Bidding process */
 	--> TruckerBidOnContainerJobOffer[] containerBids
@@ -77,6 +79,7 @@ participant Trucker identified by truckerId {
 	/* Job-Search criteria: */
 	o TruckCapacityType truckCapacity
     o TruckerAvailability availability
+    o String[] allowedDestinations /* Ideally, an array of Destination's */
 }
 
 /* Philipe: I think a free-form might be somewhat easier than sticking to Slots. The slots are basically implied by these values! */
