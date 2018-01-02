@@ -7,23 +7,26 @@
  */
 function bidOnContainerDelivery(tx)
 {
-    if (tx.ContainerDeliveryJobOffer.canceled || tx.ContainerDeliveryJobOffer.hasOwnProperty('acceptedContainerBid'))
+    if (tx.containerDeliveryJobOffer.canceled || tx.containerDeliveryJobOffer.hasOwnProperty('acceptedContainerBid'))
     {
         return;
     }
   
     var factory = getFactory();
-    var newContainerBid = factory.newResource('nl.tudelft.blockchain.logistics', 'TruckerBidOnContainerJobOffer', tx.bidAmount + '_' + tx.bidder.truckerId + '_' + tx.ContainerDeliveryJobOffer.containerDeliveryId);
+    
+    var newContainerBid = factory.newResource('nl.tudelft.blockchain.logistics', 'TruckerBidOnContainerJobOffer', tx.bidAmount + '_' + tx.bidder.truckerId + '_' + tx.containerDeliveryJobOffer.containerDeliveryId);
     newContainerBid.bidAmount = tx.bidAmount;
     newContainerBid.bidder = tx.bidder;
+
     getAssetRegistry('nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer')
         .then(function (assetRegistry) {
             return assetRegistry.add(newContainerBid);
         });
+    
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {
-            tx.ContainerDeliveryJobOffer.containerBids.push(newContainerBid);
-            return assetRegistry.update(tx.ContainerDeliveryJobOffer);
+            tx.containerDeliveryJobOffer.containerBids.push(newContainerBid);
+            return assetRegistry.update(tx.containerDeliveryJobOffer);
         });
 }
 
@@ -34,10 +37,10 @@ function bidOnContainerDelivery(tx)
 */
 function acceptBidOnContainerDeliveryJobOffer(tx)
 {
-    tx.ContainerDeliveryJobOffer.acceptedContainerBid = tx.acceptedContainerBid;
+    tx.containerDeliveryJobOffer.acceptedContainerBid = tx.acceptedContainerBid;
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {
-            return assetRegistry.update(tx.ContainerDeliveryJobOffer);
+            return assetRegistry.update(tx.containerDeliveryJobOffer);
         });
 }
 
@@ -48,10 +51,10 @@ function acceptBidOnContainerDeliveryJobOffer(tx)
 */
 function cancelContainerDeliveryJobOffer(tx)
 {
-    tx.ContainerDeliveryJobOffer.canceled = true;
+    tx.containerDeliveryJobOffer.canceled = true;
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {
-            return assetRegistry.update(tx.ContainerDeliveryJobOffer);
+            return assetRegistry.update(tx.containerDeliveryJobOffer);
         });
 }
 
