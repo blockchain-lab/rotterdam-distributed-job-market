@@ -1,8 +1,28 @@
-query ShowAllBidsForContainerDelivery {
-	description: "ShowAllBidsForContainerDelivery"
+/**
+	HyperLedger composer named queries defintion file
+    
+    Query Language reference: 
+     - https://hyperledger.github.io/composer/reference/query-language.html
+     - https://hyperledger.github.io/composer/business-network/query.html
+     
+     Quick notes:
+     	- external parameters are prefixed by '_$', only primitive values are accepted
+        - SELECT keyword defines the asset type returned & on which the WHERE will act
+        - FROM keyword selects a different registry but the type contained therein must be of the type defined by SELECT
+        	(https://stackoverflow.com/questions/46174110/hyperledger-composer-from-query-language)
+        - example with references (https://stackoverflow.com/questions/46455673/composer-query-to-match-a-participant-reference)
+*/
+
+/**
+	Params:
+     - id (String) = ContainerDeliveryJobOffer.containerDeliverJobOfferId
+    
+*/
+query FindContainerDeliveryJobOfferById {
+	description: "Find a ContainerDeliveryJobOffer by its Id"
 	statement:
-		SELECT nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer
-		FROM nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer
+		SELECT nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer
+  		WHERE (_$id == containerDeliveryJobOfferId)
 }
 
 /** 	
