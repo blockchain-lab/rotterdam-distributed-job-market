@@ -1,22 +1,92 @@
 'use strict';
 
 /**
+ * @param {DateTime} availableForPickupDateTime
+ * @param {nl.tudelft.blockchain.logistics.TruckerAvailability} truckerAvailability
+ */
+function isContainerPickupDateTimeWithinTruckerAvailability(availableForPickupDateTime, truckerAvailability)
+{
+    return truckerAvailability.from <= availableForPickupDateTime && availableForPickupDateTime >= truckerAvailability.to;
+}
+
+/**
+ * @param {nl.tudelft.blockchain.logistics.AdrTraining} truckerAdrTraining
+ * @param {nl.tudelft.blockchain.logistics.AdrTraining} requiredAdrTraining
+ */
+function isTruckerAdrEligable(truckerAdrTraining, requiredAdrTraining)
+{
+    return requiredAdrTraining == "NONE" || requiredAdrTraining == truckerAdrTraining;
+}
+
+/**
+ * @param {nl.tudelft.blockchain.logistics.TruckCapacityType} availableForPickupDateTime
+ * @param {nl.tudelft.blockchain.logistics.ContainerSize} containerSize
+ */
+function isTruckCapacityEligableForContainerSize(truckCapacityType, containerSize)
+{
+    return (truckCapacityType == containerSize)
+            || (truckCapacityType == "TWENTY_TWENTY" && containerSize == "TWENTY");
+}
+
+/**
+ * @param {nl.tudelft.blockchain.logistics.Trucker} trucker
+ * @param {nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer} containerDeliveryJobOffer
+ */
+function isTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOffer)
+{
+    // should we check preferences as well?
+  
+    // currently: just sticking to legal things (ADR && truck capacity)
+    var adrEligable = isTruckerAdrEligable(trucker.adrTraining, containerDeliveryJobOffer.requiredAdrTraining);
+    var truckCapacityEligable = isTruckCapacityEligableForContainerSize(trucker.truckCapacity, containerDeliveryJobOffer.containerInfo.containerType);
+    var withinTruckerPickupAvailability = isContainerPickupDateTimeWithinTruckerAvailability(containerDeliveryJobOffer.availableForPickupDateTime, trucker.availability);
+
+    return adrEligable && truckCapacityEligable && withinTruckerPickupAvailability;
+}
+
+/**
+ * @param {nl.tudelft.blockchain.logistics.Trucker} trucker
+ * @param {nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer} containerDeliveryJobOffer
+ */
+function IsTruckerAllowedToAcceptJob(trucker, containerDeliveryJobOffer)
+{
+    var stillEligableForJobOffer = isTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOffer);
+    var noConflictingJobsAcceptedPreviously = true; /* TODO: this part */
+
+    /* Future optimization: short-ciruit this */
+    return stillEligableForJobOffer && noConflictingJobsAcceptedPreviously;
+}
+
+/**
  * Trucker bids on the container
- * @param {nl.tudelft.blockchain.logistics.BidOnContainerDelivery} tx - transaction parameters
+ * @param {nl.tudelft.blockchain.logistics.BidOnContainerDeliveryJobOffer} bidOnContainerDeliveryJobOffer
  * @transaction
  */
-function bidOnContainerDelivery(tx)
+function bidOnContainerDeliveryJobOffer(bidOnContainerDeliveryJobOffer)
 {
-    if (tx.containerDeliveryJobOffer.canceled || tx.containerDeliveryJobOffer.hasOwnProperty('acceptedContainerBid'))
+    var factory = getFactory();
+
+    // unpack argument
+    var biddingTrucker = bidOnContainerDeliveryJobOffer.bidder;
+    var containerDeliveryJobOffer = bidOnContainerDeliveryJobOffer.containerDeliveryJobOffer;
+
+    // Check if job offer is still valid
+    if (containerDeliveryJobOffer.canceled || containerDeliveryJobOffer.hasOwnProperty('acceptedContainerBid'))
     {
         return;
     }
-  
-    var factory = getFactory();
+
+    // Check if Trucker is eligable
+    // TODO: Would be nice to have this business-rule somewhere "central" for maintenance reasons
+    if (!isTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOffer))
+    {
+        // Trucker does not meet criteria
+        return;
+    }
     
-    var newContainerBid = factory.newResource('nl.tudelft.blockchain.logistics', 'TruckerBidOnContainerJobOffer', tx.bidAmount + '_' + tx.bidder.truckerId + '_' + tx.containerDeliveryJobOffer.containerDeliveryId);
-    newContainerBid.bidAmount = tx.bidAmount;
-    newContainerBid.bidder = tx.bidder;
+    var newContainerBid = factory.newResource('nl.tudelft.blockchain.logistics', 'TruckerBidOnContainerJobOffer', bidOnContainerDeliveryJobOffer.bidAmount + '_' + biddingTrucker.truckerId + '_' + containerDeliveryJobOffer.containerDeliveryId);
+    newContainerBid.bidAmount = bidOnContainerDeliveryJobOffer.bidAmount;
+    newContainerBid.bidder = biddingTrucker;
 
     getAssetRegistry('nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer')
         .then(function (assetRegistry) {
@@ -26,7 +96,7 @@ function bidOnContainerDelivery(tx)
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {
             tx.containerDeliveryJobOffer.containerBids.push(newContainerBid);
-            return assetRegistry.update(tx.containerDeliveryJobOffer);
+            return assetRegistry.update(containerDeliveryJobOffer);
         });
 }
 

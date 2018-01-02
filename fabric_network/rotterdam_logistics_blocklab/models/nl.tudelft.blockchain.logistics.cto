@@ -25,6 +25,11 @@ enum ContainerDeliveryJobStatus {
 	o EXCEPTION		/* "exception", cancelled, etc */
 }
 
+enum ContainerSize {
+	o TWENTY
+	o FOURTY
+}
+
 asset TruckerBidOnContainerJobOffer identified by truckerBidId {
 	o String truckerBidId
 	--> Trucker bidder
@@ -48,6 +53,7 @@ asset ContainerInfo identified by containerId {
 	--> ContainerGuy owner
 	
 	o ContainerType containerType
+	o ContainerSize containerSize
 }
 
 asset ContainerDeliveryJobOffer identified by containerDeliveryJobOfferId {
@@ -98,7 +104,7 @@ participant ContainerGuy identified by containerGuyId {
 }
 
 /* Creates a new TruckerBid asset and adds it to bids on a ContainerJobOffer */
-transaction BidOnContainerDelivery {
+transaction BidOnContainerDeliveryJobOffer {
 	o Integer bidAmount
 
 	--> ContainerDeliveryJobOffer containerDeliveryJobOffer
