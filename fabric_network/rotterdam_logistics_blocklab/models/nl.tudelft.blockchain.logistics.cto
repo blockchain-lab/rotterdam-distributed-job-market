@@ -11,9 +11,10 @@ enum TruckCapacityType {
 	o FOURTY
 }
 
+/* Could be more complex than a true/false flag (different levels of training etc) */
 enum AdrTraining {
 	o YES
-	o NO
+	o NONE
 }
 
 enum ContainerDeliveryJobStatus {
@@ -58,6 +59,7 @@ asset ContainerDeliveryJobOffer identified by containerDeliveryJobOfferId {
     o DateTime availableForPickupDateTime /* TODO: either keep using DateTime or use SLOTS */
 	o DateTime toBeDeliveredByDateTime
     o String destination /* prototype: just use "general" destination (city name) */
+    o AdrTraining requiredAdrTraining
 
 	/* Bidding process */
 	--> TruckerBidOnContainerJobOffer[] containerBids
