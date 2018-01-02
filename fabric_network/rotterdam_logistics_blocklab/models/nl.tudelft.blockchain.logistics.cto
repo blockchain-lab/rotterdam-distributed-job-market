@@ -64,7 +64,7 @@ asset ContainerDeliveryJobOffer identified by containerDeliveryJobOfferId {
 	--> TruckerBidOnContainerJobOffer acceptedBid optional
 
 	/* Status */
-	o ContainerDeliveryJobStatus status
+	o ContainerDeliveryJobStatus status default = "NEW"
 	o Boolean canceled default = false
 }
 
