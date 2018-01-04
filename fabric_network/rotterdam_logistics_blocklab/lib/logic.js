@@ -152,7 +152,9 @@ function createContainerInfo(tx)
 */
 function createContainerDeliveryJobOffer(tx)
 {
-    var id = tx.containerInfo.containerInfoId + 'd' + (tx.toBeDeliveredByDateTime).toString(36);
+    // containerId is _the_ container Id, we're leaking info here.
+    // TODO: obfuscate, maybe hash (with salt?)
+    var id = tx.containerInfo.containerId + 'd' + (tx.toBeDeliveredByDateTime).toString(36);
   
     var newContainerDeliveryJobOffer = getFactory().newResource('nl.tudelft.blockchain.logistics', 'ContainerDeliveryJobOffer', id);
     newContainerDeliveryJobOffer.toBeDeliveredByDateTime = tx.toBeDeliveredByDateTime;

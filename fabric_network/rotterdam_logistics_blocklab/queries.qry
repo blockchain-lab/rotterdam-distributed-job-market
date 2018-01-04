@@ -16,7 +16,6 @@
 /**
 	Params:
      - id (String) = ContainerDeliveryJobOffer.containerDeliverJobOfferId
-    
 */
 query FindContainerDeliveryJobOfferById {
 	description: "Find a ContainerDeliveryJobOffer by its Id"
