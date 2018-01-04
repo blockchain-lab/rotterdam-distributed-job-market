@@ -76,6 +76,23 @@ asset ContainerDeliveryJobOffer identified by containerDeliveryJobOfferId {
 	o Boolean canceled default = false
 }
 
+/** 
+ * Represents an active/accepted job. Idea is that this asset can be used for delivery
+ * (can put secret in here after contract-acception etc)
+ */
+asset ContainerDeliveryJob identified by containerDeliveryJobId {
+	o String containerDeliveryJobId
+
+	--> ContainerDeliveryJobOffer jobOffer
+	--> Trucker contractedTrucker
+
+	// Quick 'n' Dirty: some password the receiving party must enter
+	// Would be nice to stick this into an Asset only the shipper and/or delivery
+	// owns. <-- TODO
+	o String arrivalPassword
+	o DateTime arrivalDateTime optional
+}
+
 /* intially just a Trucker, legal logstics entities is not needed for prototype */
 participant Trucker identified by truckerId {
 	o String truckerId /* natural id: could also use driver's license nr? */

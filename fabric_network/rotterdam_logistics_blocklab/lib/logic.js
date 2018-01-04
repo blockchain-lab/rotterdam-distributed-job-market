@@ -113,9 +113,23 @@ function acceptBidOnContainerDeliveryJobOffer(tx)
     tx.containerDeliveryJobOffer.acceptedBid = tx.acceptedBid;
     tx.containerDeliveryJobOffer.status = "CONTRACTED";
 
+    var jobId = tx.containerDeliveryJobOffer.containerDeliveryJobOfferId + '_' + tx.acceptedBid.truckerBidId;
+    var containerDeliveryJob = getFactory().newResource('nl.tudelft.blockchain.logistics', 'ContainerDeliveryJob', jobId);
+    containerDeliveryJob.jobOffer = tx.containerDeliveryJobOffer;
+    containerDeliveryJob.contractedTrucker = tx.acceptedBid.bidder;
+
+    // TODO: some mechanism for negotating this. Maybe part of a DH-exchange (to also decrypt other data, also todo)
+    containerDeliveryJob.arrivalPassword = "CHANGE_ME";
+
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {
             return assetRegistry.update(tx.containerDeliveryJobOffer);
+        })
+        .then (function (result) {
+            return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJob');
+        })
+        .then (function (assetRegistry) {
+            return assetRegistry.add(containerDeliveryJob);
         });
 }
 
