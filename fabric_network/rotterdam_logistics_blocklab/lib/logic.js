@@ -41,10 +41,6 @@ function isTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOffer)
     var truckCapacityEligable = isTruckCapacityEligableForContainerSize(trucker.truckCapacity, containerDeliveryJobOffer.containerInfo.containerSize);
     var withinTruckerPickupAvailability = isContainerPickupDateTimeWithinTruckerAvailability(containerDeliveryJobOffer.availableForPickupDateTime, trucker.availability);
 
-    if (!adrEligable) throw new Error('Trucker not ADR eligable');
-    if (!truckCapacityEligable) throw new Error('Truck capacity not eligable');
-    if (!withinTruckerPickupAvailability) throw new Error('Trucker pickup availability not eligable');
-
     return adrEligable && truckCapacityEligable && withinTruckerPickupAvailability;
 }
 
