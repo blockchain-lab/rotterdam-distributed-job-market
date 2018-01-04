@@ -152,3 +152,10 @@ transaction CreateContainerDeliveryJobOffer {
 	o DateTime toBeDeliveredByDateTime
 	o AdrTraining requiredAdrTraining
 }
+
+transaction AcceptContainerDelivery {
+	--> ContainerDeliveryJob job
+
+	o String password
+	o DateTime arrivalDateTime
+}

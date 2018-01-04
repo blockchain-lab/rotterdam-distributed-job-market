@@ -191,3 +191,35 @@ function createContainerDeliveryJobOffer(tx)
             return assetRegistry.add(newContainerDeliveryJobOffer);
         });
 }
+
+/**
+ * Accept the delivery of container
+ * @param {nl.tudelft.blockchain.logistics.AcceptContainerDelivery} tx
+ * @transaction
+ */
+function acceptContainerDelivery(tx)
+{
+    //TODO: Raise event w.r.t. the delivery being made (to "ContainerGuy")
+
+    if (tx.job.arrivalPassword !== tx.password) {
+        throw new Error('Delivery password is incorrect, cannot accept delivery');
+    }
+
+    if (tx.job.jobOffer.status != "CONTRACTED") {
+        throw new Error('Cannot mark container delivered, job status is not "contracted"');
+    }
+
+    tx.job.arrivalDateTime = tx.arrivalDateTime;
+    tx.job.jobOffer.status = "DELIVERED"
+
+    return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJob')
+        .then(function(assetRegistry) {
+            return assetRegistry.update(tx.job);
+        })
+        .then(function(x) {
+            return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer');
+        })
+        .then(function(assetRegistry) {
+            return assetRegistry.update(tx.job.jobOffer);
+        });
+}
