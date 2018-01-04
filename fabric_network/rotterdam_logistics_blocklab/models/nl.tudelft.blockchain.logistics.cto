@@ -127,8 +127,11 @@ transaction CreateContainerInfo {
 }
 
 transaction CreateContainerDeliveryJobOffer {
-	o DateTime containerArrivalTime
 	--> ContainerInfo containerInfo
 
 	o String destination
+
+	o DateTime availableForPickupDateTime
+	o DateTime toBeDeliveredByDateTime
+	o AdrTraining requiredAdrTraining
 }

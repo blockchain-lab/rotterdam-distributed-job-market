@@ -6,7 +6,7 @@
  */
 function isContainerPickupDateTimeWithinTruckerAvailability(availableForPickupDateTime, truckerAvailability)
 {
-    return truckerAvailability.from <= availableForPickupDateTime && availableForPickupDateTime >= truckerAvailability.to;
+    return truckerAvailability.from <= availableForPickupDateTime && availableForPickupDateTime <= truckerAvailability.to;
 }
 
 /**
@@ -38,8 +38,12 @@ function isTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOffer)
   
     // currently: just sticking to legal things (ADR && truck capacity)
     var adrEligable = isTruckerAdrEligable(trucker.adrTraining, containerDeliveryJobOffer.requiredAdrTraining);
-    var truckCapacityEligable = isTruckCapacityEligableForContainerSize(trucker.truckCapacity, containerDeliveryJobOffer.containerInfo.containerType);
+    var truckCapacityEligable = isTruckCapacityEligableForContainerSize(trucker.truckCapacity, containerDeliveryJobOffer.containerInfo.containerSize);
     var withinTruckerPickupAvailability = isContainerPickupDateTimeWithinTruckerAvailability(containerDeliveryJobOffer.availableForPickupDateTime, trucker.availability);
+
+    if (!adrEligable) throw new Error('Trucker not ADR eligable');
+    if (!truckCapacityEligable) throw new Error('Truck capacity not eligable');
+    if (!withinTruckerPickupAvailability) throw new Error('Trucker pickup availability not eligable');
 
     return adrEligable && truckCapacityEligable && withinTruckerPickupAvailability;
 }
@@ -59,33 +63,34 @@ function IsTruckerAllowedToAcceptJob(trucker, containerDeliveryJobOffer)
 
 /**
  * Trucker bids on the container
- * @param {nl.tudelft.blockchain.logistics.BidOnContainerDeliveryJobOffer} bidOnContainerDeliveryJobOffer
+ * @param {nl.tudelft.blockchain.logistics.BidOnContainerDeliveryJobOffer} tx
  * @transaction
  */
-function bidOnContainerDeliveryJobOffer(bidOnContainerDeliveryJobOffer)
+function bidOnContainerDeliveryJobOffer(tx)
 {
     var factory = getFactory();
 
     // unpack argument
-    var biddingTrucker = bidOnContainerDeliveryJobOffer.bidder;
-    var containerDeliveryJobOffer = bidOnContainerDeliveryJobOffer.containerDeliveryJobOffer;
+    var biddingTrucker = tx.bidder;
+    var containerDeliveryJobOffer = tx.containerDeliveryJobOffer;
 
     // Check if job offer is still valid
     if (containerDeliveryJobOffer.canceled || containerDeliveryJobOffer.hasOwnProperty('acceptedContainerBid'))
     {
-        return;
+        throw new Error('Cannot bid on job, job offer is canceled or another trucker has been contracted');
     }
 
     // Check if Trucker is eligable
     // TODO: Would be nice to have this business-rule somewhere "central" for maintenance reasons
-    if (!isTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOffer))
+    if (!isTruckerEligableToBidOnJobOffer(biddingTrucker, containerDeliveryJobOffer))
     {
         // Trucker does not meet criteria
-        return;
+        throw new Error('Trucker is not eligable to bid on container delivery job offer');
     }
     
-    var newContainerBid = factory.newResource('nl.tudelft.blockchain.logistics', 'TruckerBidOnContainerJobOffer', bidOnContainerDeliveryJobOffer.bidAmount + '_' + biddingTrucker.truckerId + '_' + containerDeliveryJobOffer.containerDeliveryId);
-    newContainerBid.bidAmount = bidOnContainerDeliveryJobOffer.bidAmount;
+    var bidId =  biddingTrucker.truckerId + '_' + containerDeliveryJobOffer.containerDeliveryJobOfferId + '_' + tx.bidAmount;
+    var newContainerBid = factory.newResource('nl.tudelft.blockchain.logistics', 'TruckerBidOnContainerJobOffer', bidId);
+    newContainerBid.bidAmount = tx.bidAmount;
     newContainerBid.bidder = biddingTrucker;
 
     getAssetRegistry('nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer')
@@ -107,7 +112,9 @@ function bidOnContainerDeliveryJobOffer(bidOnContainerDeliveryJobOffer)
 */
 function acceptBidOnContainerDeliveryJobOffer(tx)
 {
-    tx.containerDeliveryJobOffer.acceptedContainerBid = tx.acceptedContainerBid;
+    tx.containerDeliveryJobOffer.acceptedBid = tx.acceptedBid;
+    tx.containerDeliveryJobOffer.status = "CONTRACTED";
+
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {
             return assetRegistry.update(tx.containerDeliveryJobOffer);
@@ -122,6 +129,7 @@ function acceptBidOnContainerDeliveryJobOffer(tx)
 function cancelContainerDeliveryJobOffer(tx)
 {
     tx.containerDeliveryJobOffer.canceled = true;
+    
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {
             return assetRegistry.update(tx.containerDeliveryJobOffer);
@@ -139,6 +147,7 @@ function createContainerInfo(tx)
     var newContainerInfo = factory.newResource('nl.tudelft.blockchain.logistics', 'ContainerInfo', tx.containerId);
     newContainerInfo.containerType = tx.containerType;
     newContainerInfo.owner = tx.owner;
+    
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerInfo')
         .then(function (assetRegistry) {
             return assetRegistry.add(newContainerInfo);
@@ -154,17 +163,19 @@ function createContainerDeliveryJobOffer(tx)
 {
     // containerId is _the_ container Id, we're leaking info here.
     // TODO: obfuscate, maybe hash (with salt?)
-    var id = tx.containerInfo.containerId + 'd' + (tx.toBeDeliveredByDateTime).toString(36);
+    var id = tx.containerInfo.containerId + 'ts' + tx.toBeDeliveredByDateTime.getTime();
   
     var newContainerDeliveryJobOffer = getFactory().newResource('nl.tudelft.blockchain.logistics', 'ContainerDeliveryJobOffer', id);
     newContainerDeliveryJobOffer.toBeDeliveredByDateTime = tx.toBeDeliveredByDateTime;
+    newContainerDeliveryJobOffer.availableForPickupDateTime = tx.availableForPickupDateTime;
+    newContainerDeliveryJobOffer.requiredAdrTraining = tx.requiredAdrTraining;
     newContainerDeliveryJobOffer.containerInfo = tx.containerInfo;
-    newContainerDelvieryJobOffer.destination = tx.destination;
+    newContainerDeliveryJobOffer.destination = tx.destination;
     newContainerDeliveryJobOffer.containerBids = [];
-    newContainerDeliveryJobOffer.status = ContainerDeliveryJobStatus.INMARKET;
+    newContainerDeliveryJobOffer.status = "INMARKET";
   
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {
-            return assetRegistry.add(newContainerDelivery);
+            return assetRegistry.add(newContainerDeliveryJobOffer);
         });
 }
