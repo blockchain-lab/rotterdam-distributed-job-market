@@ -93,16 +93,18 @@ function bidOnContainerDeliveryJobOffer(tx)
     newContainerBid.bidAmount = tx.bidAmount;
     newContainerBid.bidder = biddingTrucker;
 
-    getAssetRegistry('nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer')
+    var addNewBidPromise = getAssetRegistry('nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer')
         .then(function (assetRegistry) {
             return assetRegistry.add(newContainerBid);
         });
     
-    return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
+    var updateJobOfferPromise = getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {
             tx.containerDeliveryJobOffer.containerBids.push(newContainerBid);
             return assetRegistry.update(containerDeliveryJobOffer);
         });
+
+    return Promise.all([addNewBidPromise, updateJobOfferPromise]);
 }
 
 /**
