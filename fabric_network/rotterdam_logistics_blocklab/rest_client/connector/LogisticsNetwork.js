@@ -42,4 +42,4 @@ class LogisticsNetwork
 	}
 }
 
-module.exports = new LogisticsNetwork();
+module.exports = LogisticsNetwork;

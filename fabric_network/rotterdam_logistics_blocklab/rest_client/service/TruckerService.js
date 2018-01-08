@@ -1,30 +1,31 @@
+var config = require('config');
+var LogisticsNetwork = require('../connector/LogisticsNetwork');
+
 var TruckerPreferences = require('../domain/TruckerPreferences');
 
-var config = require('config');
-var logisticsNetwork = require('../connector/LogisticsNetwork');
+class TruckerService {
+	/**
+		@param {String} TruckerId
+		@return {Promise} of a Trucker
+	*/
+	getTrucker(truckerId) {
+		console.log("Got truckerId: " + truckerId);
 
-// var composerBaseURL = process.env.COMPOSER_BASE_URL || config.get('composerApiUrl');
+		return new LogisticsNetwork().getTruckerParticipantRegistry()
+			.then((truckerParticipantRegistry) => truckerParticipantRegistry.get(truckerId))
+			.catch((error) => {
+				throw error;
+			});
+	}
 
-/**
-	@return {Promise} of a trucker
-*/
-var getTrucker = (truckerId) => {
-	console.log("Got truckerId: " + truckerId);
-
-	return logisticsNetwork.getTruckerParticipantRegistry()
-		.then((truckerParticipantRegistry) => truckerParticipantRegistry.get(truckerId))
-		.catch((error) => {
-			throw error;
-		});
+	/**
+		@param {String} TruckerId
+		@return {Promise} of a TruckerPreferences
+	*/
+	getTruckerPreferences(truckerId) {
+		return this.getTrucker(truckerId)
+			.then((trucker) => new TruckerPreferences(trucker));
+	}
 }
 
-var getTruckerPreferences = (truckerId) => {
-
-	return getTrucker(truckerId)
-		.then((trucker) => new TruckerPreferences(trucker));
-}
-
-module.exports = {
-	getTruckerPreferences: getTruckerPreferences,
-	getTrucker: getTrucker
-}
+module.exports = TruckerService;
