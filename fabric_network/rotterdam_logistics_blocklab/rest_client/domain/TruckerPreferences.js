@@ -1,30 +1,36 @@
+'use strict';
+
+var TruckerAvailability = require('./TruckerAvailability');
+
 class TruckerPreferences
 {
 	constructor(trucker)
 	{
-		this.allowedDestinations = trucker.allowedDestinations;
-		this.adrTraining = trucker.adrTraining;
-		this.truckCapacity = trucker.truckCapacity;
-		this.availability = new TruckerAvailability(trucker.availability);
+		this._allowedDestinations = trucker.allowedDestinations;
+		this._adrTraining = trucker.adrTraining;
+		this._truckCapacity = trucker.truckCapacity;
+		this._availability = new TruckerAvailability(trucker.availability);
 	}
 
 	get allowedDestinations()
 	{
-		return this.allowedDestinations;
+		return _allowedDestinations;
 	}
 
 	get adrTraining()
 	{
-		return this.adrTraining;
+		return _adrTraining;
 	}
 
 	get truckCapacity()
 	{
-		return this.truckCapacity;
+		return _truckCapacity;
 	}
 
 	get availability()
 	{
-		return this.availability;
+		return _availability;
 	}
 }
+
+module.exports = TruckerPreferences;

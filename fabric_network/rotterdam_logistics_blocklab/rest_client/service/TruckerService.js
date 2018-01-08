@@ -1,4 +1,4 @@
-var truckerPreferences = require('../domain/TruckerPreferences');
+var TruckerPreferences = require('../domain/TruckerPreferences');
 
 var config = require('config');
 var logisticsNetwork = require('../connector/LogisticsNetwork');
@@ -9,10 +9,10 @@ var logisticsNetwork = require('../connector/LogisticsNetwork');
 	@return {Promise} of a trucker
 */
 var getTrucker = (truckerId) => {
-	var network = new LogisticsNetwork();
+	console.log("Got truckerId: " + truckerId);
 
-	return network.getTruckerAssetRegistry()
-		.then((truckerAssetRegistry) => truckerAssetRegistry.get(truckerId))
+	return logisticsNetwork.getTruckerParticipantRegistry()
+		.then((truckerParticipantRegistry) => truckerParticipantRegistry.get(truckerId))
 		.catch((error) => {
 			throw error;
 		});
@@ -22,4 +22,9 @@ var getTruckerPreferences = (truckerId) => {
 
 	return getTrucker(truckerId)
 		.then((trucker) => new TruckerPreferences(trucker));
+}
+
+module.exports = {
+	getTruckerPreferences: getTruckerPreferences,
+	getTrucker: getTrucker
 }

@@ -1,4 +1,4 @@
-const router = express.Router();
+const router = require('express').Router();
 
 var truckerService = require('../service/TruckerService');
 
@@ -8,3 +8,5 @@ router.get('/preferences/:truckerId', (req, res) => {
 			res.json(truckerPrefs);
 		});
 });
+
+module.exports = router;

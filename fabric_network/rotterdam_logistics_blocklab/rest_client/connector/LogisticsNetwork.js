@@ -10,9 +10,9 @@ const BusinessNetworkConnection = require('composer-client').BusinessNetworkConn
 let config = require('config').get('logistics-app');
 let cardname = config.get('cardname');
 
-let truckerAssetRegistryName = config.get('truckerAssetRegistryName');
+let truckerParticipantRegistryName = config.get('truckerParticipantRegistryName');
 
-class LogisiticsNetwork
+class LogisticsNetwork
 {
 	constructor()
 	{
@@ -23,7 +23,7 @@ class LogisiticsNetwork
 	{
 		if (this.connectPromise === undefined)
 		{
-			this.bizNetworkConnection.connect(cardname)
+			this.connectPromise = this.bizNetworkConnection.connect(cardname)
 				.then((result) => {
 					this.businessNetworkDefinition = result;
 				})
@@ -35,9 +35,11 @@ class LogisiticsNetwork
 		return this.connectPromise;
 	}
 
-	getTruckerAssetRegistry()
+	getTruckerParticipantRegistry()
 	{
-		return init()
-			.then(() => this.bizNetworkConnection.getAssetRegistry(truckerAssetRegistryName));
+		return this.init()
+			.then(() => this.bizNetworkConnection.getParticipantRegistry(truckerParticipantRegistryName));
 	}
 }
+
+module.exports = new LogisticsNetwork();
