@@ -60,6 +60,9 @@ asset ContainerDeliveryJobOffer identified by containerDeliveryJobOfferId {
 	/* NOTE: can't use containerId as natural id, don't want to leak containerId */
 	o String containerDeliveryJobOfferId 
 
+	/* makes querying easier */
+	o String containerGuyId
+
 	/* Container & Job info */
 	--> ContainerInfo containerInfo
     o DateTime availableForPickupDateTime /* TODO: either keep using DateTime or use SLOTS */

@@ -43,3 +43,16 @@ query FindEligableJobOffersForTrucker {
   			AND (_$requiredAdrTraining == requiredAdrTraining OR requiredAdrTraining == "NONE"))
 
 }
+
+/**
+ * Params:
+ *   - containerGuyId (String): Id of ContainerGuy who created the offer 
+ */
+query FindContainersByContainerGuyId {
+  description: "Returns all ContainerDeliveryJobOffers that the ContainerGuy has created"
+  statement:
+    SELECT nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer
+        WHERE (containerGuyId == _$containerGuyId)
+  
+  
+}

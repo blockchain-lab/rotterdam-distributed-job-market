@@ -7,10 +7,11 @@
 
 const BusinessNetworkConnection = require('composer-client').BusinessNetworkConnection;
 
-let config = require('config').get('logistics-app');
-let cardname = config.get('cardname');
+const config = require('config').get('logistics-app');
+const cardname = config.get('cardname');
 
-let truckerParticipantRegistryName = config.get('truckerParticipantRegistryName');
+const truckerParticipantRegistryName = config.get('truckerParticipantRegistryName');
+const containerDeliveryJobOfferAssetRegistryName = config.get('containerDeliveryJobOfferAssetRegistryName');
 
 class LogisticsNetwork
 {
@@ -39,6 +40,25 @@ class LogisticsNetwork
 	{
 		return this.init()
 			.then(() => this.bizNetworkConnection.getParticipantRegistry(truckerParticipantRegistryName));
+	}
+
+	getContainerDeliveryJobOfferAssetRegistry()
+	{
+		return this.init()
+			.then(() => this.bizNetworkConnection.getAssetRegistry(containerDeliveryJobOfferAssetRegistryName));
+	}
+
+	executeNamedQuery(queryName, queryParams)
+	{
+		return this.init()
+			.then(() => this.bizNetworkConnection.query(queryName, queryParams));
+	}
+
+	serialize(obj)
+	{
+		// quick and dirty
+		return this.init()
+			.then(() => this.businessNetworkDefinition.getSerializer().toJSON(obj));
 	}
 }
 

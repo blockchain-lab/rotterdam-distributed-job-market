@@ -185,6 +185,7 @@ function createContainerDeliveryJobOffer(tx)
     newContainerDeliveryJobOffer.destination = tx.destination;
     newContainerDeliveryJobOffer.containerBids = [];
     newContainerDeliveryJobOffer.status = "INMARKET";
+    newContainerDeliveryJobOffer.containerGuyId = tx.containerInfo.owner.containerGuyId;
   
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {
