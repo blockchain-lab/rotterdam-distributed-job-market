@@ -4,18 +4,18 @@ class TruckerAvailability
 {
 	constructor(truckerAvailability)
 	{
-		this._from = truckerAvailability.from;
-		this._to = truckerAvailability.to;
+		this.from = truckerAvailability.from;
+		this.to = truckerAvailability.to;
 	}
 
-	get from()
+	getFrom()
 	{
-		return _from;
+		return from;
 	}
 
-	get to()
+	getTo()
 	{
-		return _to;
+		return to;
 	}
 }
 

@@ -13,15 +13,14 @@ router.get('/allContainersOf/:containerGuyId', (req, res) => {
 	new TruckerService().fetchAllContainersByContainerGuyId(containerGuyId)
 		.then((assets) => {
 			console.log(assets);
+			res.json(assets);
 
-			const logisticsNetwork = new LogisticsNetwork();
 
 			
-			Promise.all(assets.map(x => logisticsNetwork.serialize(x)))
-				.then((assets) => {
-					console.log("serialized: " + assets);
-					res.json(assets);
-				});
+			// Promise.all(assets.map(x => logisticsNetwork.serialize(x)))
+			// 	.then((assets) => {
+			// 		console.log("serialized: " + assets);
+			// 	});
 
 			// var promises = [];
 

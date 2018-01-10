@@ -3,6 +3,8 @@
 const config = require('config');
 const LogisticsNetwork = require('../connector/LogisticsNetwork');
 
+const ContainerDeliveryJobOffer = require('../domain/ContainerDeliveryJobOffer');
+
 class ContainerGuyService {
 	/**
 		@param {String} ContainerGuyId
@@ -12,6 +14,7 @@ class ContainerGuyService {
 		console.log("[fetchAllContainersByContainerGuyId] for containerGuyId: " + containerGuyId);
 
 		return new LogisticsNetwork().executeNamedQuery('FindContainersByContainerGuyId', {containerGuyId: containerGuyId})
+			.then((assets) => assets.map(x => new ContainerDeliveryJobOffer(x)))
 			.catch((error) => {
 				throw error;
 			});

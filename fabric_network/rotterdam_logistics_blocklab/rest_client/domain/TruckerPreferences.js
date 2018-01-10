@@ -6,30 +6,30 @@ class TruckerPreferences
 {
 	constructor(trucker)
 	{
-		this._allowedDestinations = trucker.allowedDestinations;
-		this._adrTraining = trucker.adrTraining;
-		this._truckCapacity = trucker.truckCapacity;
-		this._availability = new TruckerAvailability(trucker.availability);
+		this.allowedDestinations = trucker.allowedDestinations;
+		this.adrTraining = trucker.adrTraining;
+		this.truckCapacity = trucker.truckCapacity;
+		this.availability = new TruckerAvailability(trucker.availability);
 	}
 
-	get allowedDestinations()
+	getAllowedDestinations()
 	{
-		return _allowedDestinations;
+		return allowedDestinations;
 	}
 
-	get adrTraining()
+	getAdrTraining()
 	{
-		return _adrTraining;
+		return adrTraining;
 	}
 
-	get truckCapacity()
+	getTruckCapacity()
 	{
-		return _truckCapacity;
+		return truckCapacity;
 	}
 
-	get availability()
+	getAvailability()
 	{
-		return _availability;
+		return availability;
 	}
 }
 
