@@ -5,12 +5,14 @@ const LogisticsNetwork = require('../connector/LogisticsNetwork');
 
 const ContainerDeliveryJobOffer = require('../domain/ContainerDeliveryJobOffer');
 
-class ContainerGuyService {
+class ContainerGuyService
+{
 	/**
 		@param {String} ContainerGuyId
 		@return {Promise} of a List of ContainersJobOffers 
 	*/
-	fetchAllContainersByContainerGuyId(containerGuyId) {
+	fetchAllContainersByContainerGuyId(containerGuyId)
+	{
 		console.log("[fetchAllContainersByContainerGuyId] for containerGuyId: " + containerGuyId);
 
 		return new LogisticsNetwork().executeNamedQuery('FindContainersByContainerGuyId', {containerGuyId: containerGuyId})
@@ -19,6 +21,27 @@ class ContainerGuyService {
 				throw error;
 			});
 	}
+
+	/**
+	 * @param {domain.tx.CreateContainerDeliveryJobOfferCommand}
+	 */
+	createContainerDeliveryJobOffer(createContainerDeliveryJobOfferCommand)
+	{
+		console.log("[createContainerDeliveryJobOffer] for containerInfoId: " + createContainerDeliveryJobOfferCommand.containerInfoId);
+
+		const namespace = "nl.tudelft.blockchain.logistics";
+		const txName = "CreateContainerDeliveryJobOffer";
+
+		const txExecutedPromise = new LogisticsNetwork().submitTransaction(
+			namespace,
+			txName,
+			(tx, factory) => createContainerDeliveryJobOfferCommand.hydrateTx(tx, factory)
+		);
+
+		return txExecutedPromise;
+	}
+
+
 }
 
 module.exports = ContainerGuyService;

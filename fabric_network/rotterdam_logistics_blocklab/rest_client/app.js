@@ -1,11 +1,11 @@
 var express = require('express'),
   	path = require('path'),
-  	// WebSocket = require('ws'),
-  	// http = require('http'),
+  	bodyParser = require('body-parser'),
   	url = require('url'),
 	config = require('config');
 
 var app = express();
+app.use(bodyParser.json());
 
 require('./routes')(app);
 

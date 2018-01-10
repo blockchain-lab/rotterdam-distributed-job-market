@@ -27,9 +27,6 @@ class LogisticsNetwork
 			this.connectPromise = this.bizNetworkConnection.connect(cardname)
 				.then((result) => {
 					this.businessNetworkDefinition = result;
-				})
-				.catch((error) => {
-					throw error;
 				});
 		}
 
@@ -54,11 +51,24 @@ class LogisticsNetwork
 			.then(() => this.bizNetworkConnection.query(queryName, queryParams));
 	}
 
-	serialize(obj)
+	/**
+	 * {String} namespace - the namespace of the tx object
+	 * {String} txName - the type/name of the Tx object
+	 * {Function} fn(tx, factory) - a function that accepts the new tx object and populates the fields before the tx is submitted
+	 * @return {Promise} of the submitted Tx object
+	 */
+	submitTransaction(namespace, txName, fn)
 	{
-		// quick and dirty
 		return this.init()
-			.then(() => this.businessNetworkDefinition.getSerializer().toJSON(obj));
+			.then(() => {
+				const factory = this.businessNetworkDefinition.getFactory();
+				const newTx = factory.newTransaction(namespace, txName);
+
+				return fn(newTx, factory);
+			})
+			.then((tx) =>
+				this.bizNetworkConnection.submitTransaction(tx)
+			);
 	}
 }
 

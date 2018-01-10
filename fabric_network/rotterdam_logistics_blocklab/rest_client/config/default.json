@@ -1,7 +1,9 @@
 {
 	"logistics-app": {
 		"cardname": "admin@rotterdam_logistics_blocklab",
+
 		"truckerParticipantRegistryName": "nl.tudelft.blockchain.logistics.Trucker",
+		
 		"containerDeliveryJobOfferAssetRegistryName": "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer"
 	}
 }
