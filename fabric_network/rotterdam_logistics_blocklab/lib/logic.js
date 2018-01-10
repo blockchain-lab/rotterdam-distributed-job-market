@@ -180,12 +180,16 @@ function createContainerDeliveryJobOffer(tx)
     var newContainerDeliveryJobOffer = getFactory().newResource('nl.tudelft.blockchain.logistics', 'ContainerDeliveryJobOffer', id);
     newContainerDeliveryJobOffer.toBeDeliveredByDateTime = tx.toBeDeliveredByDateTime;
     newContainerDeliveryJobOffer.availableForPickupDateTime = tx.availableForPickupDateTime;
+    newContainerDeliveryJobOffer.terminalContainerAvailableAt = tx.terminalContainerAvailableAt;
     newContainerDeliveryJobOffer.requiredAdrTraining = tx.requiredAdrTraining;
     newContainerDeliveryJobOffer.containerInfo = tx.containerInfo;
     newContainerDeliveryJobOffer.destination = tx.destination;
+
+    newContainerDeliveryJobOffer.containerGuyId = tx.containerInfo.owner.containerGuyId;
+    
+    // intialize to staring values
     newContainerDeliveryJobOffer.containerBids = [];
     newContainerDeliveryJobOffer.status = "INMARKET";
-    newContainerDeliveryJobOffer.containerGuyId = tx.containerInfo.owner.containerGuyId;
   
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {

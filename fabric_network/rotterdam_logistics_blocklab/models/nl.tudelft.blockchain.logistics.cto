@@ -63,12 +63,17 @@ asset ContainerDeliveryJobOffer identified by containerDeliveryJobOfferId {
 	/* makes querying easier */
 	o String containerGuyId
 
-	/* Container & Job info */
+	/* General container information */
 	--> ContainerInfo containerInfo
+
+	/* Job related info */
     o DateTime availableForPickupDateTime /* TODO: either keep using DateTime or use SLOTS */
 	o DateTime toBeDeliveredByDateTime
+
+	o String terminalContainerAvailableAt
     o String destination /* prototype: just use "general" destination (city name) */
-    o AdrTraining requiredAdrTraining
+
+    o AdrTraining requiredAdrTraining // stricly speaking, this is ContainerInfo level but placing here makes querying easier
 
 	/* Bidding process */
 	--> TruckerBidOnContainerJobOffer[] containerBids
@@ -149,10 +154,13 @@ transaction CreateContainerInfo {
 transaction CreateContainerDeliveryJobOffer {
 	--> ContainerInfo containerInfo
 
+	o String terminalContainerAvailableAt
 	o String destination
+
 
 	o DateTime availableForPickupDateTime
 	o DateTime toBeDeliveredByDateTime
+
 	o AdrTraining requiredAdrTraining
 }
 
