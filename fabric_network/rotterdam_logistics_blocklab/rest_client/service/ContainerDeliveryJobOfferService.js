@@ -30,14 +30,14 @@ class ContainerDeliveryJobOfferService
 	 * @param {String} containerDeliveryJobOfferId
 	 * @return {Promise} ContainerDeliveryJobOffer
 	 */
-	 retrieveById(containerDeliveryJobOfferId)
-	 {
-	 	console.log("[retrieve(ContainerDeliveryJobOffer)ById] for id: " + containerDeliveryJobOfferId);
+	retrieveById(containerDeliveryJobOfferId)
+	{
+		console.log("[retrieve(ContainerDeliveryJobOffer)ById] for id: " + containerDeliveryJobOfferId);
 
-	 	return new LogisticsNetwork().getContainerDeliveryJobOfferAssetRegistry()
-	 		.then((registry) => registry.resolve(containerDeliveryJobOfferId))
-	 		.then((rawResult) => new ContainerDeliveryJobOffer(rawResult));
-	 }
+		return new LogisticsNetwork().getContainerDeliveryJobOfferAssetRegistry()
+			.then((registry) => registry.resolve(containerDeliveryJobOfferId))
+			.then((rawResult) => new ContainerDeliveryJobOffer(rawResult));
+	}
 
 
 }
