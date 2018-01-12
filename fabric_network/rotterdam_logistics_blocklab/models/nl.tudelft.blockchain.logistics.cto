@@ -124,8 +124,10 @@ concept TruckerAvailability {
 
 participant ContainerGuy identified by containerGuyId {
 	o String containerGuyId
-	o String name
 	/* just a "name" suffices, a legal entity usually does not have First & Last name */
+	o String name
+
+	/* TODO:Contact information! */
 }
 
 /* Creates a new TruckerBid asset and adds it to bids on a ContainerJobOffer */

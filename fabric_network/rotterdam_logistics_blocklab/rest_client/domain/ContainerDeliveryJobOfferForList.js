@@ -1,7 +1,7 @@
 'use strict';
-const TruckerBidOnContainerDeliveryJobOffer = require('./TruckerBidOnContainerDeliveryJobOffer');
+const SimpleBidOnContainerDeliveryJobOffer = require('SimpleBidOnContainerDeliveryJobOffer');
 
-class ContainerDeliveryJobOffer
+class ContainerDeliveryJobOfferForList
 {
 	constructor(obj)
 	{
@@ -12,9 +12,9 @@ class ContainerDeliveryJobOffer
 		this.toBeDeliveredByDateTime = obj.toBeDeliveredByDateTime;
 		this.destination = obj.destination;
 		this.requiredAdrTraining = obj.requiredAdrTraining;
-		
+
 		this.containerBids = obj.containerBids.map(
-				(bid) => new TruckerBidOnContainerDeliveryJobOffer(bid)
+				(bid) => new SimpleBidOnContainerDeliveryJobOffer(bid)
 			);
 		
 		this.status = obj.status;
@@ -67,4 +67,4 @@ class ContainerDeliveryJobOffer
 	}
 }
 
-module.exports = ContainerDeliveryJobOffer;
+module.exports = ContainerDeliveryJobOfferForList;

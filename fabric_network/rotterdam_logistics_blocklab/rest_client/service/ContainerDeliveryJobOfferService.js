@@ -35,7 +35,7 @@ class ContainerDeliveryJobOfferService
 	 	console.log("[retrieve(ContainerDeliveryJobOffer)ById] for id: " + containerDeliveryJobOfferId);
 
 	 	return new LogisticsNetwork().getContainerDeliveryJobOfferAssetRegistry()
-	 		.then((registry) => registry.get(containerDeliveryJobOfferId))
+	 		.then((registry) => registry.resolve(containerDeliveryJobOfferId))
 	 		.then((rawResult) => new ContainerDeliveryJobOffer(rawResult));
 	 }
 

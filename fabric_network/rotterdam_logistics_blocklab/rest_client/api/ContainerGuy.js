@@ -10,7 +10,7 @@ router.get('/allContainersOf/:containerGuyId', (req, res) => {
 	
 	console.log("allContainersOf containerGuyId: " + containerGuyId);
 
-	new ContainerGuyService().fetchAllContainersByContainerGuyId(containerGuyId)
+	new ContainerGuyService().retrieveAllContainerDeliveryJobOffersByContainerGuyId(containerGuyId)
 		.then((assets) => res.json(assets));
 });
 
