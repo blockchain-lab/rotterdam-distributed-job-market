@@ -29,69 +29,132 @@ ui <- dashboardPage(skin = "green",
                     dashboardBody(
                       tabItems(
                         tabItem(tabName = "requestTruck",
-                                h3("Request truck"),
-                                box(width = 12, status = "info",
-                                    column(width = 4,
-                                           radioButtons("rt_exim", "", choices = list(
-                                             "Import" = "IMP",	
-                                             "Export" = "EXP"),
-                                             selected = "IMP")
-                                    ),
-                                    column(width = 4,
-                                           selectInput("rt_terminal", "Terminal", c(
-                                             "RWG",	
-                                             "ECT",
-                                             "APMII"
-                                           )),
-                                           textInput("rt_postcode", "Postcode", 
-                                                     value = "")
-                                    ),
-                                    column(width = 4,
-                                           dateInput("rt_date", 
-                                                     "Date", 
-                                                     value = "2018-01-30"),
-                                           selectInput("rt_slot", "Slot", c(
-                                             "00:00 - 06:00",
-                                             "06:00 - 12:00",
-                                             "12:00 - 18:00",
-                                             "18:00 - 00:00"
-                                           ))
-                                    )
-                                ),
-                                box(status = "info",width = 12,
-                                    column(width = 4,
-                                           
-                                           radioButtons("rt_cntnrType", "Container Type",
-                                                        choices = list("20GP", "22TD",
-                                                                       "42GP", "45GP"),selected = "20GP"),
-                                           checkboxInput("rt_loaded", "Loaded", value = TRUE),
-                                           checkboxInput("rt_adr", "ADR", value = FALSE)
-                                    ),
-                                    column(width = 4,
-                                           textInput("rt_cntnrNum", "Container Number", 
-                                                     value = "Enter text..."),
-                                           textInput("rt_cntnrAddr", "Delivery Notes", 
-                                                     value = "Enter text...")
-                                    ),
-                                    column(width = 4,
-                                           selectInput("rt_contract", "Contract Type", c(
-                                             "Type 1" = 1,	
-                                             "Type 2" = 2,	
-                                             "Type 3" = 3
-                                           )),
-                                           actionButton("rt_submit", "Submit Request!")
-                                    )
-                                ),
-                                h3("View requests"),
-                                dataTableOutput("rt_requestsTable")
+                                mainPanel(
+                                  tabsetPanel(type = "tabs",
+                                              tabPanel("Create Request", 
+                                                       fluidRow(width = 12, #status = "info",
+                                                                column(width = 4,
+                                                                       radioButtons("rt_exim", "", choices = list(
+                                                                         "Import" = "IMP",	
+                                                                         "Export" = "EXP"),
+                                                                         selected = "IMP")
+                                                                ),
+                                                                column(width = 4,
+                                                                       selectInput("rt_terminal", "Terminal", c(
+                                                                         "RWG",	
+                                                                         "ECT",
+                                                                         "APMII"
+                                                                       )),
+                                                                       textInput("rt_postcode", "Postcode", 
+                                                                                 value = "")
+                                                                ),
+                                                                column(width = 4,
+                                                                       dateInput("rt_date", 
+                                                                                 "Date", 
+                                                                                 value = "2018-01-30"),
+                                                                       selectInput("rt_slot", "Slot", c(
+                                                                         "00:00 - 06:00",
+                                                                         "06:00 - 12:00",
+                                                                         "12:00 - 18:00",
+                                                                         "18:00 - 00:00"
+                                                                       ))
+                                                                )
+                                                       ),
+                                                       fluidRow(width = 12, #status = "info",
+                                                                column(width = 4,
+                                                                       
+                                                                       radioButtons("rt_cntnrType", "Container Type",
+                                                                                    choices = list("20GP", "22TD",
+                                                                                                   "42GP", "45GP"),selected = "20GP"),
+                                                                       checkboxInput("rt_loaded", "Loaded", value = TRUE),
+                                                                       checkboxInput("rt_adr", "ADR", value = FALSE)
+                                                                ),
+                                                                column(width = 4,
+                                                                       textInput("rt_cntnrNum", "Container Number", 
+                                                                                 value = "Enter text..."),
+                                                                       textInput("rt_cntnrAddr", "Delivery Notes", 
+                                                                                 value = "Enter text...")
+                                                                ),
+                                                                column(width = 4,
+                                                                       selectInput("rt_contract", "Contract Type", c(
+                                                                         "Import" = "IMP",	
+                                                                         "Export" = "EXP"),
+                                                                         selected = "IMP"),
+                                                                       actionButton("rt_submit", "Submit Request!")
+                                                                )
+                                                       )
+                                              ),
+                                              tabPanel("Manage Requests", 
+                                                       br(),
+                                                       fluidRow(width = 12, status = "info",
+                                                                column(width = 4,
+                                                                       selectInput("rt_filter", "Request types:", choices = list(
+                                                                         "Open" = 0,	
+                                                                         "Cancelled" = 1,	
+                                                                         "Contracted" = 2,
+                                                                         "All" = 3),
+                                                                         selected = "Accept")
+                                                                ),
+                                                                column(width = 5,
+                                                                       verbatimTextOutput("rt_request_details")
+                                                                ),
+                                                                column(width = 3,
+                                                                       selectInput("rt_command", "", choices = list(
+                                                                         "None" = 0,	
+                                                                         "Cancel" = 1,	
+                                                                         "View Bids" = 2,
+                                                                         "View Contract" = 3),
+                                                                         selected = "Cancel"),
+                                                                       actionButton("rt_submit", "Submit")
+                                                                )
+                                                       ),
+                                                       dataTableOutput("rt_requestsTable")
+                                              )
+                                  )
+                                )
+                                
                         ),
                         
                         tabItem(tabName = "viewBids",
-                                uiOutput("vb_filters"),
+                                fluidRow(width = 12, status = "info",
+                                         column(width = 4,
+                                                uiOutput("vb_filters")
+                                         ),
+                                         column(width = 5,
+                                                verbatimTextOutput("vb_bid_details")
+                                         ),
+                                         column(width = 3,
+                                                selectInput("vb_command", "", choices = list(
+                                                  "Accept" = 1,	
+                                                  "Reject" = 2),
+                                                  selected = "Accept"),
+                                                actionButton("vb_submit", "Submit")
+                                         )
+                                ),
                                 dataTableOutput("vb_bidsTable")
                         ),
                         tabItem(tabName = "viewContracts",
-                                tableOutput("vc_contractsTable")
+                                fluidRow(width = 12, status = "info",
+                                         column(width = 4,
+                                                selectInput("vc_filter", "Contract types:", choices = list(
+                                                  "Under Process" = 0,
+                                                  "Settled" = 1,
+                                                  "Exception Raised" = 2),
+                                                  selected = "Under Process")
+                                         ),
+                                         column(width = 5,
+                                                verbatimTextOutput("vc_contract_details")
+                                         ),
+                                         column(width = 3,
+                                                selectInput("vc_command", "", choices = list(
+                                                  "Handover container" = 0,	
+                                                  "Acknowledge delivery" = 1,
+                                                  "Raise exception" = 2),
+                                                  selected = "Accept"),
+                                                actionButton("vc_submit", "Submit")
+                                         )
+                                ),
+                                dataTableOutput("vc_contractsTable")
                         ),
                         tabItem(tabName = "profile",
                                 p("I am a very good shipper.")
@@ -112,6 +175,8 @@ server <- function(input, output) {
   
   ##================================== Create and view requests ================================
   
+  ##-----------------Request------------
+  
   observeEvent(input$rt_submit, {
     isolate({
       new_req = c(nrow(datasets$requests) + 1, as.character(input$rt_date), input$rt_cntnrNum,
@@ -122,87 +187,82 @@ server <- function(input, output) {
     })
   })
   
-  output$rt_requestsTable <- DT::renderDataTable({
-    input$rt_submit
-    datasets$requests[,1:12]
+  ##-----------------Manage---------------
+  
+  output$rt_request_details = renderPrint({
+    s = input$rt_requestsTable_rows_selected
+    if (length(s)) {
+      cat('Request', s, 'has been selected.\n\n')
+      cat('Request details are as follows:\n')
+    }
   })
+  
+  output$rt_requestsTable <- DT::renderDataTable(server = TRUE,
+                                                 selection = 'single',
+                                                 extensions = "Buttons", 
+                                                 options = list(#paging = FALSE,
+                                                   stringsAsFactors = FALSE,
+                                                   dom = "Bfrtip", 
+                                                   buttons = list('copy', 'pdf', 'csv', 'excel', 'print')),
+                                                 {
+                                                   input$rt_submit
+                                                   datasets$requests[,1:12]
+                                                 }
+  )
   
   ##================================== View and accept Bids ====================================
   
-  # output$bids_kable <- function() {
-  #   
-  #   knitr::kable(bids[1:40, 1:6], "html") %>%
-  #     kable_styling("striped", full_width = T) %>%
-  #     group_rows("Request ID: 1", 1, 10) %>%
-  #     group_rows("Request ID: 2", 11, 20) %>%
-  #     group_rows("Request ID: 3", 21, 30) %>%
-  #     group_rows("Request ID: 4", 31, 40) 
-  # }
   
   output$vb_filters <- renderUI({
-    box(width = 12, status = "info",
-        selectInput("vb_cntnrID", "Select Request:", c(1, 2, 3, 4))
-    )
+    requestIDs <- unique(datasets$bids$Container_Id)
+    selectInput("vb_cntnrID", "Select Request ID:", requestIDs)
   })
   
-  shinyInput <- function(FUN, len, id, ...) {
-    inputs <- character(len)
-    for (i in seq_len(len)) {
-      inputs[i] <- as.character(FUN(paste0(id, i), ...))
+  output$vb_bid_details = renderPrint({
+    s = input$vb_bidsTable_rows_selected
+    if (length(s)) {
+      cat('Bid', s, 'has been selected.\n\n')
+      cat('Bid details are as follows:\n')
     }
-    inputs
-  }
-  
-  # df <- reactiveValues(
-  #   data = filter(isolate(datasets$bids), Container_Id == isolate(input$vb_cntnrID)) %>%
-  #     mutate(Action = shinyInput(actionButton,
-  #                                40,
-  #                                #nrow(filter(isolate(datasets$bids), Container_Id == isolate(input$vb_cntnrID))), 
-  #                                'button_', 
-  #                                label = "Sign Contract", 
-  #                                onclick = 'Shiny.onInputChange(\"select_button\",  this.id)' ))
-  #   # data = data.frame(
-  #   #   BidID = filter(datasets$bids, ContainerId == input$vb_cntnrID),
-  #   #   Rating = filter(datasets$bids, ContainerId == input$vb_cntnrID),
-  #   #   OrdersProcessed = filter(datasets$bids, ContainerId == input$vb_cntnrID),
-  #   #   AskPrice = filter(datasets$bids, ContainerId == input$vb_cntnrID),
-  #   #   Action = shinyInput(actionButton, 
-  #   #                       10, 
-  #   #                       'button_', label = "Sign Contract", 
-  #   #                       onclick = 'Shiny.onInputChange(\"select_button\",  this.id)' ),
-  #   #   stringsAsFactors = FALSE,
-  #   #   row.names = 1:10
-  #   # )
-  # )
-  
-  output$vb_bidsTable <- DT::renderDataTable({
-    input$vb_cntnrID
-    ndata = nrow(filter(isolate(datasets$bids), Container_Id == isolate(input$vb_cntnrID)))
-    data = filter(isolate(datasets$bids), Container_Id == isolate(input$vb_cntnrID))
-    mutate(data, Action = shinyInput(actionButton,
-                                 ndata,
-                                 'button_',
-                                 label = "Sign Contract",
-                                 onclick = 'Shiny.onInputChange(\"select_button\",  this.id)'
-                                 ))
   })
   
-  observeEvent(input$select_button, {
-    selectedRow <- as.numeric(strsplit(input$select_button, "_")[[1]][2])
-    df$data <- df$data[rownames(df$data) != selectedRow, ]
-  })
+  
+  output$vb_bidsTable <- DT::renderDataTable(server = TRUE,
+                                             selection = 'single',
+                                             extensions = "Buttons", 
+                                             options = list(#paging = FALSE,
+                                               stringsAsFactors = FALSE,
+                                               dom = "Bfrtip", 
+                                               buttons = list('copy', 'pdf', 'csv', 'excel', 'print')),
+                                             {
+                                               filter(isolate(datasets$bids), Container_Id == input$vb_cntnrID)
+                                             }
+  )
   
   ##=============================== Track and update contracts =============================
   
-  output$vc_contractsTable <- function() {
-    
-    kable(datasets$contract_updates[1:10, 2:4], "html") %>%
-      kable_styling("striped", full_width = T) %>%
-      group_rows("Contract ID: 1 | Request ID: a | Bid ID: x", 1, 4) %>%
-      group_rows("Contract ID: 2 | Request ID: b | Bid ID: y", 5, 7) %>%
-      group_rows("Contract ID: 3 | Request ID: c | Bid ID: z", 8, 9) %>%
-      group_rows("Contract ID: 4 | Request ID: d | Bid ID: w", 10, 10) 
-  }
+  
+  output$vc_contract_details = renderPrint({
+    s = input$vc_contractsTable_rows_selected
+    if (length(s)) {
+      cat('Contract', s, 'has been selected.\n\n')
+      cat('Contract details are as follows:\n')
+    }
+  })
+  
+  
+  output$vc_contractsTable <- DT::renderDataTable(server = TRUE,
+                                                  selection = 'single',
+                                                  extensions = "Buttons", 
+                                                  options = list( #paging = FALSE,
+                                                    stringsAsFactors = FALSE,
+                                                    dom = "Bfrtip", 
+                                                    buttons = list('copy', 'pdf', 'csv', 'excel', 'print')),
+                                                  {
+                                                    datasets$contracts
+                                                  }
+  )
+  
 }
 
 ##================================ Run the application =====================================

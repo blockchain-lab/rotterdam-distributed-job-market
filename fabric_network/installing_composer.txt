@@ -1,3 +1,8 @@
+Installing Fabric pre-requisites:
+1. curl -O https://hyperledger.github.io/composer/prereqs-ubuntu.sh
+2. chmod u+x prereqs-ubuntu.sh
+3. ./prereqs-ubuntu.sh
+
 Installing Composer on Linux (proper):
 
 1. Install NVM (node version manager)
@@ -46,3 +51,6 @@ Now you have a dev environment for the two test networks, Rotterdam Logistics ma
 3. Import the newly created Network Administrator card
 	composer card import --file networkadmin.card
 
+
+4. Check if network is running
+	composer network ping --card admin@rotterdam_logistics_blocklab
