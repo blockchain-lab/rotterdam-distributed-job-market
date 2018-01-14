@@ -46,3 +46,6 @@ Now you have a dev environment for the two test networks, Rotterdam Logistics ma
 3. Import the newly created Network Administrator card
 	composer card import --file networkadmin.card
 
+
+4. Check if network is running
+	composer network ping --card admin@rotterdam_logistics_blocklab
