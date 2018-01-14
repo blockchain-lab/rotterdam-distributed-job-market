@@ -14,12 +14,11 @@ router.get('/allContainersOf/:containerGuyId', (req, res) => {
 		.then((assets) => res.json(assets));
 });
 
+/* TODO: simplify name and move to ContainerDeliveryJobOffer */
 router.post('/createContainerDeliveryJobOffer', (req, res) => {
 
-	const command = new CreateContainerDeliveryJobOfferCommand(req.body);
-
 	new ContainerDeliveryJobOfferService()
-		.createContainerDeliveryJobOffer(command)
+		.createContainerDeliveryJobOffer(req.body)
 		.then((result) => res.json(result))
 		.catch(() => res.status(500).send("unsuccessful"));
 });
