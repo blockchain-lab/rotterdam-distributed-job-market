@@ -119,3 +119,16 @@ Job Offers / Transaction
  "transactionId": "e5835596-b2da-4fbc-9349-e793b094187d",
  "timestamp": "2018-01-14T22:11:52.925Z"
 }
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Bid / Transaction
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+{
+ "$class": "nl.tudelft.blockchain.logistics.BidOnContainerDeliveryJobOffer",
+ "bidAmount": 0,
+ "containerDeliveryJobOffer": "resource:nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer#0001ts1515967641900",
+ "bidder": "resource:nl.tudelft.blockchain.logistics.Trucker#T01",
+}
