@@ -1,3 +1,8 @@
+Installing Fabric pre-requisites:
+1. curl -O https://hyperledger.github.io/composer/prereqs-ubuntu.sh
+2. chmod u+x prereqs-ubuntu.sh
+3. ./prereqs-ubuntu.sh
+
 Installing Composer on Linux (proper):
 
 1. Install NVM (node version manager)
