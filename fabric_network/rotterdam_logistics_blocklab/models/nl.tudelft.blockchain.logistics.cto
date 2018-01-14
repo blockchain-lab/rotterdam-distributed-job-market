@@ -113,6 +113,7 @@ participant Trucker identified by truckerId {
 	o TruckCapacityType truckCapacity
     o TruckerAvailability availability
     o String[] allowedDestinations /* Ideally, an array of Destination's */
+	o TruckerBidOnContainerJobOffer[] truckerBids /* bids made by a trucker */
 }
 
 /* Philipe: I think a free-form might be somewhat easier than sticking to Slots. The slots are basically implied by these values! */

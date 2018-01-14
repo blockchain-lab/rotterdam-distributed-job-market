@@ -65,6 +65,16 @@ class ContainerDeliveryJobOfferService
 				}).hydrateTx(tx, factory);
 			});
 	}
+
+	/**
+	 * @param {String} containerDeliveryJobOfferId
+	 * @return {Promise} TruckerBidOnContainerJobOffer[]
+	 */
+	RetrieveTruckerBidsForContainer(containerDeliveryJobOfferId)
+	{
+		return retrieveById(containerDeliveryJobOfferId)
+			.then((assets) => assets.map(x => new ContainerDeliveryJobOffer(x).getContainerBids()));
+	}
 }
 
 module.exports = ContainerDeliveryJobOfferService;

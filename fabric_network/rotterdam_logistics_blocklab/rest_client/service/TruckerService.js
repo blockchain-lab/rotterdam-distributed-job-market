@@ -3,12 +3,14 @@ var LogisticsNetwork = require('../connector/LogisticsNetwork');
 
 var TruckerPreferences = require('../domain/TruckerPreferences');
 
-class TruckerService {
+class TruckerService 
+{
 	/**
 		@param {String} TruckerId
 		@return {Promise} of a Trucker
 	*/
-	getTrucker(truckerId) {
+	getTrucker(truckerId) 
+	{
 		console.log("Got truckerId: " + truckerId);
 
 		return new LogisticsNetwork().getTruckerParticipantRegistry()
@@ -22,9 +24,20 @@ class TruckerService {
 		@param {String} TruckerId
 		@return {Promise} of a TruckerPreferences
 	*/
-	getTruckerPreferences(truckerId) {
+	getTruckerPreferences(truckerId) 
+	{
 		return this.getTrucker(truckerId)
 			.then((trucker) => new TruckerPreferences(trucker));
+	}
+
+	/**
+		@param {String} TruckerId
+		@return {Promise} of TruckerBidOnContainerJobOffer[]
+	*/
+	getTruckerBids(truckerId)
+	{
+		return getTrucker(truckerId)
+			.then((trucker) => new Trucker(x).getTruckersBids());
 	}
 }
 
