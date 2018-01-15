@@ -1,7 +1,7 @@
 const router = require('express').Router();
 
 const ContainerGuyService = require('../service/ContainerGuyService');
-const ContainerDeliveryJobService = require('../service/ContainerDeliveryJobService')
+const ContainerDeliveryJobService = require('../service/ContainerDeliveryJobService');
 const ContainerDeliveryJobOfferService = require('../service/ContainerDeliveryJobOfferService');
 
 const CreateContainerDeliveryJobOfferCommand = require('../domain/tx/CreateContainerDeliveryJobOfferCommand');
