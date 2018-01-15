@@ -12,3 +12,5 @@ class SimpleBidOnContainerDeliveryJobOffer
 		return this.bidAmount;
 	}
 }
+
+module.exports = SimpleBidOnContainerDeliveryJobOffer;

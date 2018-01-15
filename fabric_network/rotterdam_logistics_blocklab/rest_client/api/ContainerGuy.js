@@ -37,7 +37,8 @@ router.post('/acceptDelivery/:containerDeliveryJobId', (req, res) => {
 
 	new ContainerDeliveryJobService()
 		.acceptDelivery(containerDeliveryJobId)
-		.then((result) => res.json(result));
+		.then(() => res.status(200).send("delivery accepted"))
+		.catch(() => res.status(501).send("error accepting delivery"));
 });
 
 module.exports = router;

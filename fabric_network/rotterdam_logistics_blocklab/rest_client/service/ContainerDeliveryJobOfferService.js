@@ -70,11 +70,14 @@ class ContainerDeliveryJobOfferService
 	 * @param {String} containerDeliveryJobOfferId
 	 * @return {Promise} TruckerBidOnContainerJobOffer[]
 	 */
-	RetrieveTruckerBidsForContainer(containerDeliveryJobOfferId)
+	retrieveTruckerBidsForContainer(containerDeliveryJobOfferId)
 	{
 		return retrieveById(containerDeliveryJobOfferId)
 			.then((assets) => assets.map(x => new ContainerDeliveryJobOffer(x).getContainerBids()));
 	}
+
+
+
 }
 
 module.exports = ContainerDeliveryJobOfferService;
