@@ -60,6 +60,8 @@ class TestService {
 
 		Promise.resolve(containerInfoDeliveryJobService.createContainerDeliveryJobOffer(JSON.parse(data)));
 
+		var containerInfoDeliveryJobService = new ContainerDeliveryJobOfferService();
+
 		return "object";
 	}
 
