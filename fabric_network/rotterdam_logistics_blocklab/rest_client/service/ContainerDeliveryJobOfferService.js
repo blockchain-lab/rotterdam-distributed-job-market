@@ -7,6 +7,7 @@ const ContainerDeliveryJobOffer = require('../domain/ContainerDeliveryJobOffer')
 const CreateContainerDeliveryJobOfferCommand = require('../domain/tx/CreateContainerDeliveryJobOfferCommand');
 const AcceptBidOnContainerDeliveryJobOfferCommand = require('../domain/tx/AcceptBidOnContainerDeliveryJobOfferCommand');
 const CancelBidCommand = require('../domain/tx/CancelBidCommand');
+const BidOnContainerDeliveryJobOfferCommand = require('../domain/tx/BidOnContainerDeliveryJobOfferCommand');
 
 class ContainerDeliveryJobOfferService
 {
@@ -83,7 +84,7 @@ class ContainerDeliveryJobOfferService
 	 */
 	cancelBid(containerDeliveryJobOfferId, truckerBidId)
 	{
-		console.log(`[cancelBid] cancels bid ${truckerBidId} on ${containerDeliveryJobOfferId}`);
+		console.log(`[cancelBid] cancel bid ${truckerBidId} on ${containerDeliveryJobOfferId}`);
 
 		const namespace = "nl.tudelft.blockchain.logistics";
 		const txName = "CancelBid";
@@ -95,6 +96,29 @@ class ContainerDeliveryJobOfferService
 				return new CancelBidCommand({
 					containerDeliveryJobOfferId: containerDeliveryJobOfferId, 
 					truckerBidId: truckerBidId
+				}).hydrateTx(tx, factory);
+			});
+	}
+
+	/**
+	 * @param {String} containerDeliveryJobOfferId
+	 * @return {Promise} TruckerBidOnContainerJobOffer[]
+	 */
+	submitBid(containerDeliveryJobOfferId, bidderId, bidAmount)
+	{
+		console.log(`[submitBid] bid of ${bidAmount} submitted by ${bidderId} on ${containerDeliveryJobOfferId}`);
+
+		const namespace = "nl.tudelft.blockchain.logistics";
+		const txName = "BidOnContainerDeliveryJobOffer";
+
+		return new LogisticsNetwork().submitTransaction(
+			namespace,
+			txName,
+			(tx, factory) => {
+				return new BidOnContainerDeliveryJobOfferCommand({
+					containerDeliveryJobOfferId: containerDeliveryJobOfferId, 
+					bidderId: bidderId,
+					bidAmount: parseInt(bidAmount)
 				}).hydrateTx(tx, factory);
 			});
 	}
