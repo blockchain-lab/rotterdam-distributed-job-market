@@ -4,18 +4,16 @@ class RaiseExceptionOnDeliveryJobCommand
 {
 	constructor(obj)
 	{
-		this.details = obj.details;
-		this.exceptionTime = Date.now();
+		this.exception = obj.exception;
 		this.containerDeliveryJobId = obj.containerDeliveryJobId;
 	}
 
 	hydrateTx(tx, factory)
-	{
-		tx.details = this.details;
-		tx.exceptionTime = this.exceptionTime;
-
-		tx.job = factory.newRelationship("nl.tudelft.logistics", "ContainerDeliveryJob", this.containerDeliveryJobId);
-
+	{		
+		tx.exception = factory.newConcept("nl.tudelft.blockchain.logistics", "Exception");
+		tx.exception.details = this.exception.details;
+		tx.exception.time = new Date();
+		tx.containerDeliveryJob = factory.newRelationship("nl.tudelft.blockchain.logistics", "ContainerDeliveryJob", this.containerDeliveryJobId);
 		return tx;
 	}
 }

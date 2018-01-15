@@ -157,8 +157,7 @@ transaction CancelContainerDeliveryJobOffer {
 
 transaction RaiseExceptionOnDeliveryJob {
 	--> ContainerDeliveryJob containerDeliveryJob
-	o String details
-	o DateTime exceptionTime
+	o Exception exception
 }
 
 transaction CreateContainerInfo {

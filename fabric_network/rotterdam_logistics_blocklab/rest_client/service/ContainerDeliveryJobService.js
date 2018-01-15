@@ -55,15 +55,17 @@ class ContainerDeliveryJobService
 	raiseException(containerDeliveryJobId, details)
 	{
 		console.log(`[raiseException] for ContainerDeliveryJobId: ${containerDeliveryJobId}`);
-
+		var exc = {"details":details};
 		return this.logisticsNetwork.submitTransaction(
-			"nl.tudelft.blockchain.logistics", "RaiseExceptionOnDeliveryJob",
+			"nl.tudelft.blockchain.logistics", 
+			"RaiseExceptionOnDeliveryJob",
 			(tx, factory) => {
 				return new RaiseExceptionOnDeliveryJobCommand({
 					containerDeliveryJobId: containerDeliveryJobId,
-					details: details
-				})
+					exception: exc
+					}).hydrateTx(tx, factory);
 			});
+			
 	}
 
 }
