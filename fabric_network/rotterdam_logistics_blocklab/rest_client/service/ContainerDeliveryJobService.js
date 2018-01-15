@@ -50,7 +50,6 @@ class ContainerDeliveryJobService
 				})
 			});
 	}
-
 }
 
 module.exports = ContainerDeliveryJobService;

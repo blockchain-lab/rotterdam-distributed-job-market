@@ -4,10 +4,13 @@ const config = require('config');
 const LogisticsNetwork = require('../connector/LogisticsNetwork');
 
 const ContainerDeliveryJobOffer = require('../domain/ContainerDeliveryJobOffer');
+const ContainerDeliveryJobOfferForList = require('../domain/ContainerDeliveryJobOfferForList');
 const CreateContainerDeliveryJobOfferCommand = require('../domain/tx/CreateContainerDeliveryJobOfferCommand');
 const AcceptBidOnContainerDeliveryJobOfferCommand = require('../domain/tx/AcceptBidOnContainerDeliveryJobOfferCommand');
 const CancelBidCommand = require('../domain/tx/CancelBidCommand');
 const BidOnContainerDeliveryJobOfferCommand = require('../domain/tx/BidOnContainerDeliveryJobOfferCommand');
+const TruckerService = require('./TruckerService')
+
 
 class ContainerDeliveryJobOfferService
 {
@@ -121,6 +124,58 @@ class ContainerDeliveryJobOfferService
 					bidAmount: parseInt(bidAmount)
 				}).hydrateTx(tx, factory);
 			});
+	}
+
+	/**
+	 * @param {String} truckerId
+	 * @return {Promise} ContainerDeliveryJobOffer[]
+	 */
+	getContainerDeliveryJobOffersAvailableForTrucker(truckerId)
+	{
+		// TO-DO: filter according to trucker preferences
+		 console.log("[getContainerDeliveryJobOffersAvailableForTrucker] for trucker: " + truckerId);
+		 return new LogisticsNetwork().getContainerDeliveryJobOfferAssetRegistry()
+		 	 .then((registry) => registry.getAll())
+			 .then((rawJobs) => rawJobs.reduce(function(result, rawJob)
+			 {
+				 let job = new ContainerDeliveryJobOfferForList(rawJob);
+				 if(job.status != "INMARKET" || job.canceled)
+				 {
+					console.log(`Skipping ${job.getContainerDeliveryJobOfferId()}`)
+				 }
+				 else
+				 {
+					console.log(`Adding ${job.getContainerDeliveryJobOfferId()}`)
+					result.push(job);
+				 }
+				 return result;
+			 }, []));
+		
+		// let truckerPreferencesPromise = new TruckerService().getTruckerPreferences(truckerId);
+		// let registryPromise = new LogisticsNetwork().getContainerDeliveryJobOfferAssetRegistry();
+		// return Promise.all([truckerPreferencesPromise, registryPromise])
+		// 	.then((values) => 
+		// 	{
+		// 		return Promise.all([values[0], values[1].getAll()]);
+		// 	})
+		// 	.then((values) => 
+		// 	{
+		// 		return values[1].reduce(function(result, rawJob)
+		// 		{
+		// 			let containerJobOffer = new ContainerDeliveryJobOffer(rawJob);
+		// 			if(containerJobOffer.getAvailableForPickupDateTime() >= values[0].availability.from &&
+		// 			containerJobOffer.getAvailableForPickupDateTime() <= values[0].availability.to &&
+		// 			values[0].getAllowedDestinations().includes(containerJobOffer.getDestination()))
+		// 			{
+		// 				console.log(`Skipping ${containerJobOffer.getContainerDeliveryJobOfferId()}`)
+		// 			}
+		// 			else
+		// 			{
+		// 				console.log(`Adding ${containerJobOffer.getContainerDeliveryJobOfferId()}`)
+		// 				result.push(containerJobOffer);
+		// 			}
+		// 		}, [])
+		// 	});
 	}
 }
 

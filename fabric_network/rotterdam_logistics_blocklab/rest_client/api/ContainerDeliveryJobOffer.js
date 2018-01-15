@@ -38,4 +38,12 @@ router.post("/:containerDeliveryJobOfferId/acceptBid/:truckerBidId", (req, res) 
 		.then((result) => { res.status(200).send("tx submitted successfully"); } ); // TODO: proper status, maybe return the DeliveryJob
 });
 
+router.get('/containerDeliveryJobOffersForTrucker/:truckerId', (req, res) => {
+	const truckerId = req.params.truckerId;
+
+	new ContainerDeliveryJobOfferService()
+		.getContainerDeliveryJobOffersAvailableForTrucker(truckerId)
+		.then((result) => res.json(result));
+});
+
 module.exports = router;
