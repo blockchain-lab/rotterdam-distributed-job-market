@@ -3,7 +3,7 @@
 const Trucker = require('../domain/Trucker');
 const ContainerDeliveryJobOffer = require('../domain/ContainerDeliveryJobOffer');
 
-class ContainerDeliveryJob
+class ContainerDeliveryJobWithPassword
 {
 	constructor(obj)
 	{
@@ -42,4 +42,4 @@ class ContainerDeliveryJob
 	}
 }
 
-module.exports = ContainerDeliveryJob;
+module.exports = ContainerDeliveryJobWithPassword;

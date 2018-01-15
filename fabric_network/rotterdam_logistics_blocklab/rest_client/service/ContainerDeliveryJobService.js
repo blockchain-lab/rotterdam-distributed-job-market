@@ -3,7 +3,7 @@
 const config = require('config');
 const LogisticsNetwork = require('../connector/LogisticsNetwork');
 
-const ContainerDeliveryJob = require('../domain/ContainerDeliveryJob');
+const ContainerDeliveryJobWithPassword = require('../domain/ContainerDeliveryJobWithPassword');
 
 const AcceptContainerDeliveryCommand = require('../domain/tx/AcceptContainerDeliveryCommand');
 const CreateContainerDeliveryJobOfferCommand = require('../domain/tx/CreateContainerDeliveryJobOfferCommand');
@@ -18,15 +18,15 @@ class ContainerDeliveryJobService
 
 	/**
 	 * @param {String} containerDeliveryJobId
-	 * @return {Promise} ContainerDeliveryJob
+	 * @return {Promise} ContainerDeliveryJobWithPassword
 	 */
 	retrieveById(containerDeliveryJobId)
 	{
-		console.log("[retrieve(ContainerDeliveryJob)ById] for id: " + containerDeliveryJobId);
+		console.log("[retrieve(ContainerDeliveryJobWithPassword)ById] for id: " + containerDeliveryJobId);
 
 		return this.logisticsNetwork.getContainerDeliveryJobAssetRegistry()
 			.then((registry) => registry.resolve(containerDeliveryJobId))
-			.then((rawResult) => new ContainerDeliveryJob(rawResult));
+			.then((rawResult) => new ContainerDeliveryJobWithPassword(rawResult));
 	}
 
 	acceptDelivery(containerDeliveryJobId, arrivalPassword)

@@ -13,9 +13,6 @@ class Trucker
 		this.adrTraining = obj.adrTraining;
 		this.truckCapacity = obj.truckCapacity;
 		this.allowedDestinations = obj.allowedDestinations;
-		this.truckerBids = obj.truckerBids.map(
-			(bid) => new TruckerBidOnContainerDeliveryJobOffer(bid)
-		);
 		
 		this.availability = {
 			from: obj.availability.from,
@@ -56,11 +53,6 @@ class Trucker
 	getAvailability()
 	{
 		return this.availability;
-	}
-
-	getTruckerBids()
-	{
-		return this.truckerBids;
 	}
 }
 
