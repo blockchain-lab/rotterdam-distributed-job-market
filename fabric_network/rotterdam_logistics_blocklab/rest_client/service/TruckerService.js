@@ -38,7 +38,7 @@ class TruckerService
 		@param {DateTime} availableFrom
 		@param {DateTime} availableTo
 		@param {String[]} allowedDestinations
-	*/
+		*/
 	updateTruckerPreferences(truckerId, truckCapacity, availableFrom, availableTo, allowedDestinations) 
 	{
 		console.log(`[updateTruckerPreferences] updating trucker preferences for ${truckerId} to: ${truckCapacity}

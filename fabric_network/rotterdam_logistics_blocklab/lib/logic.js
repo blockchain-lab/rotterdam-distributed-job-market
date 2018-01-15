@@ -246,3 +246,31 @@ function updateTruckerPreferences(tx)
             return assetRegistry.update(tx.trucker);
         });
 }
+
+/**
+ * Cancels truckers bid
+ * @param {nl.tudelft.blockchain.logistics.CancelBid} tx
+ * @transaction
+ */
+function cancelBid(tx)
+{
+    var index = tx.containerDeliveryJobOffer.containerBids.indexOf(tx.truckerBid);
+    if(index > -1)
+    {
+        tx.containerDeliveryJobOffer.containerBids.splice(index, 1);
+    }
+
+    return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
+        .then(function(assetRegistry) 
+        {
+            return assetRegistry.update(tx.containerDeliveryJobOffer);
+        })
+        .then(function(x) 
+        {
+            return getAssetRegistry('nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer');
+        })
+        .then(function(assetRegistry) 
+        {
+            return assetRegistry.remove(tx.truckerBid);
+        });
+}
