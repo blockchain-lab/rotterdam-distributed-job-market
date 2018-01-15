@@ -3,7 +3,7 @@
 const config = require('config');
 const LogisticsNetwork = require('../connector/LogisticsNetwork');
 
-const ContainerDeliveryJobOffer = require('../domain/ContainerDeliveryJobOffer');
+const ContainerDeliveryJobOfferForList = require('../domain/ContainerDeliveryJobOfferForList');
 
 class ContainerGuyService
 {

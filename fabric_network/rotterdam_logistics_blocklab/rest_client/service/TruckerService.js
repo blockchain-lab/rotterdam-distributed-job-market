@@ -3,6 +3,7 @@ var LogisticsNetwork = require('../connector/LogisticsNetwork');
 
 var TruckerPreferences = require('../domain/TruckerPreferences');
 var UpdateTruckerPreferencesCommand = require('../domain/tx/UpdateTruckerPreferencesCommand');
+var TruckerBidOnContainerDeliveryJobOfferForList = require('../domain/TruckerBidOnContainerDeliveryJobOfferForList');
 
 class TruckerService 
 {
@@ -37,7 +38,6 @@ class TruckerService
 		@param {DateTime} availableFrom
 		@param {DateTime} availableTo
 		@param {String[]} allowedDestinations
-		
 	*/
 	updateTruckerPreferences(truckerId, truckCapacity, availableFrom, availableTo, allowedDestinations) 
 	{
@@ -69,8 +69,14 @@ class TruckerService
 	*/
 	getTruckerBids(truckerId)
 	{
-		return getTrucker(truckerId)
-			.then((trucker) => new Trucker(x).getTruckersBids());
+		let truckerReference = "resource:nl.tudelft.blockchain.logistics.Trucker#" + truckerId;
+		console.log("[getTruckerBids] for trucker: " + truckerId);
+
+		return new LogisticsNetwork().executeNamedQuery('FindAllTruckerBidOnContainerJobOffer', {truckerId: truckerReference})
+			.then((assets) => assets.map(x => new TruckerBidOnContainerDeliveryJobOfferForList(x)))
+			.catch((error) => {
+				throw error;
+			});
 	}
 }
 

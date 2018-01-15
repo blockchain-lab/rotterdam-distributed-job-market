@@ -1,5 +1,5 @@
 'use strict';
-const SimpleBidOnContainerDeliveryJobOffer = require('SimpleBidOnContainerDeliveryJobOffer');
+const SimpleBidOnContainerDeliveryJobOffer = require('./SimpleBidOnContainerDeliveryJobOffer');
 
 class ContainerDeliveryJobOfferForList
 {

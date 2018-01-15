@@ -75,6 +75,9 @@ class ContainerDeliveryJobOfferService
 		return retrieveById(containerDeliveryJobOfferId)
 			.then((assets) => assets.map(x => new ContainerDeliveryJobOffer(x).getContainerBids()));
 	}
+
+
+
 }
 
 module.exports = ContainerDeliveryJobOfferService;
