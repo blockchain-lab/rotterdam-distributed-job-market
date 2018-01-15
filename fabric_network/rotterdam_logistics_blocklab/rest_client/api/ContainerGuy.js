@@ -24,6 +24,14 @@ router.post('/createContainerDeliveryJobOffer', (req, res) => {
 		.catch(() => res.status(500).send("unsuccessful"));
 });
 
+router.post('/createContainerInfo', (req, res) => {
+
+	new ContainerDeliveryJobOfferService()
+		.createContainerDeliveryJobOffer(req.body)
+		.then((result) => res.json(result))
+		.catch(() => res.status(500).send("unsuccessful"));
+});
+
 router.post('/acceptDelivery/:containerDeliveryJobId', (req, res) => {
 	const containerDeliveryJobId = req.params.containerDeliveryJobId;
 
