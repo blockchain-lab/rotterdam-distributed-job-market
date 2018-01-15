@@ -159,6 +159,7 @@ function createContainerInfo(tx)
     var newContainerInfo = factory.newResource('nl.tudelft.blockchain.logistics', 'ContainerInfo', tx.containerId);
     newContainerInfo.containerType = tx.containerType;
     newContainerInfo.owner = tx.owner;
+    newContainerInfo.containerSize = tx.containerSize;
     
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerInfo')
         .then(function (assetRegistry) {

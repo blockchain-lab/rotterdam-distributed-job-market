@@ -4,8 +4,9 @@ class AcceptContainerDeliveryCommand
 {
 	constructor(obj)
 	{
-		this.password = obj.password;
 		this.arrivalTime = Date.now();
+		
+		this.password = obj.password;
 		this.containerDeliveryJobId = obj.containerDeliveryJobId;
 	}
 

@@ -1,6 +1,7 @@
 const router = require('express').Router();
 
 const TruckerService = require('../service/TruckerService');
+const ContainerDeliveryJobService = require('../service/ContainerDeliveryJobService');
 
 router.get('/preferences/:truckerId', (req, res) =>
 {
@@ -32,6 +33,15 @@ router.post('/updateTruckerPreferences', (req, res) =>
 		.updateTruckerPreferences(truckerId, truckCapacity, availableFrom, availableTo, allowedDestinations)
 		.then((result) => res.json(result))
 		.catch(() => res.status(500).send("unsuccessful"));
+
+router.post('/acceptDelivery/:containerDeliveryJobId/:password', (req, res) => {
+	const containerDeliveryJobId = req.params.containerDeliveryJobId;
+	const arrivalPassword = req.params.password;
+
+	new ContainerDeliveryJobService()
+		.acceptDelivery(containerDeliveryJobId, arrivalPassword)
+		.then(() => res.status(200).send("delivery accepted"))
+		.catch(() => res.status(501).send("error accepting delivery"));
 });
 
 module.exports = router;

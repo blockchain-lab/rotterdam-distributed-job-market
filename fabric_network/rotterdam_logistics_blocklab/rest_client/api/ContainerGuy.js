@@ -1,7 +1,7 @@
 const router = require('express').Router();
 
 const ContainerGuyService = require('../service/ContainerGuyService');
-const ContainerDeliveryJobService = require('../service/ContainerDeliveryJobService')
+const ContainerDeliveryJobService = require('../service/ContainerDeliveryJobService');
 const ContainerDeliveryJobOfferService = require('../service/ContainerDeliveryJobOfferService');
 
 const CreateContainerDeliveryJobOfferCommand = require('../domain/tx/CreateContainerDeliveryJobOfferCommand');
@@ -17,6 +17,14 @@ router.get('/allContainersOf/:containerGuyId', (req, res) => {
 
 /* TODO: simplify name and move to ContainerDeliveryJobOffer */
 router.post('/createContainerDeliveryJobOffer', (req, res) => {
+
+	new ContainerDeliveryJobOfferService()
+		.createContainerDeliveryJobOffer(req.body)
+		.then((result) => res.json(result))
+		.catch(() => res.status(500).send("unsuccessful"));
+});
+
+router.post('/createContainerInfo', (req, res) => {
 
 	new ContainerDeliveryJobOfferService()
 		.createContainerDeliveryJobOffer(req.body)

@@ -29,18 +29,19 @@ class ContainerDeliveryJobService
 			.then((rawResult) => new ContainerDeliveryJob(rawResult));
 	}
 
-	acceptDelivery(containerDeliveryJobId)
+	acceptDelivery(containerDeliveryJobId, arrivalPassword)
 	{
 		console.log(`[acceptDelivery] for ContainerDeliveryJobId: ${containerDeliveryJobId}`);
 
-		let password = null;
-		let passwordPromise = this.retrieveById(containerDeliveryJobId)
-			.then((containerDeliveryJob) => containerDeliveryJob.getPassword());
-
+		let password = arrivalPassword; // will be overwritten by the promise if the argument was not passed in
+		let passwordPromise = arrivalPassword === undefined 
+			? this.retrieveById(containerDeliveryJobId).then((containerDeliveryJob) => {password = containerDeliveryJob.getPassword();})
+			: Promise.resolve(arrivalPassword); // wrap the provided password argument into a promise
 
 		return this.logisticsNetwork.submitTransaction(
 			"nl.tudelft.blockchain.logistics", "AcceptContainerDelivery",
 			(tx, factory) => {
+				// Make sure the passwordPromise is resolved before continueing
 				Promise.resolve(passwordPromise);
 
 				return new AcceptContainerDeliveryCommand({
@@ -49,6 +50,7 @@ class ContainerDeliveryJobService
 				})
 			});
 	}
+
 }
 
 module.exports = ContainerDeliveryJobService;

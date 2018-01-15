@@ -1,6 +1,8 @@
 var config = require('config');
 var LogisticsNetwork = require('../connector/LogisticsNetwork');
 var TestMethods = require('./TestMethods');
+var ContainerDeliveryJobOfferService = require('../service/ContainerDeliveryJobOfferService');
+var ContainerInfoService = require('../service/ContainerInfoService');
 
 class TestService {
 	/**
@@ -8,27 +10,61 @@ class TestService {
 		@return {Promise} of a Trucker
 	*/
 	runTest() {
-		console.log("Starting test...");
-
-		const namespace = "nl.tudelft.blockchain.logistics";
-		const temp = new LogisticsNetwork().createParticipant(
-			namespace, 
-			"Trucker", 
-			"1", 
-			(res, factory) => this.testTrucker(res, factory)
-		);
-		return temp;
+		return "success";
 	}
 
 	initNetwork(){		
-		var methods = new TestMethods();
-		methods.CreateTrucker('1');
-		methods.CreateTrucker('2');
+		//var methods = new TestMethods();
+		//methods.CreateTrucker('1');
+		//methods.CreateTrucker('2');
 
-		methods.CreateContainerGuy("1");
-		methods.CreateContainerGuy("2");
+		//methods.CreateContainerGuy("1");
+		//methods.CreateContainerGuy("2");
+
+		var containerInfoService = new ContainerInfoService();
+
+		var cont = `{
+		  "$class": "nl.tudelft.blockchain.logistics.ContainerInfo",
+		  "containerId": "5011",
+		  "ownerId": "1",
+		  "containerType": "BasicContainer",
+		  "containerSize": "TWENTY"
+		}`;
+		Promise.resolve(containerInfoService.CreateContainerInfo(JSON.parse(cont)));
+
+		var cont = `{
+		  "$class": "nl.tudelft.blockchain.logistics.ContainerInfo",
+		  "containerId": "2",
+		  "ownerId": "1",
+		  "containerType": "BasicContainer",
+		  "containerSize": "TWENTY"
+		}`;
+		Promise.resolve(containerInfoService.CreateContainerInfo(JSON.parse(cont)));
+
+		var containerInfoDeliveryJobService = new ContainerDeliveryJobOfferService();
+
+		var data = `{
+		  "$class": "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer",
+		  "containerDeliveryJobOfferId": "1249",
+		  "containerGuyId": "1",
+		  "containerInfoId": "2",
+		  "availableForPickupDateTime": "2018-01-15T15:30:21.024Z",
+		  "toBeDeliveredByDateTime": "2018-01-15T15:30:21.024Z",
+		  "terminalContainerAvailableAt": "",
+		  "destination": "",
+		  "requiredAdrTraining": "YES",
+		  "containerBids": [],
+		  "status": "NEW",
+		  "canceled": false
+		}`;
+
+		Promise.resolve(containerInfoDeliveryJobService.createContainerDeliveryJobOffer(JSON.parse(data)));
 
 		return "object";
+	}
+
+	createOffers(){
+		var offerService = new ContainerDeliveryJobOfferService();
 	}
 
 

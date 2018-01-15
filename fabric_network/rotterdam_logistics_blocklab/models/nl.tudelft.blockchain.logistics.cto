@@ -96,7 +96,7 @@ asset ContainerDeliveryJob identified by containerDeliveryJobId {
 
 	// Quick 'n' Dirty: some password the receiving party must enter
 	// Would be nice to stick this into an Asset only the shipper and/or delivery
-	// owns. <-- TODO
+	// owns. <-- TODO (or ensure this value is hashed & salted)
 	o String arrivalPassword
 	o DateTime arrivalDateTime optional
 }
@@ -150,6 +150,7 @@ transaction CancelContainerDeliveryJobOffer {
 transaction CreateContainerInfo {
 	o String containerId
 	o ContainerType containerType
+	o ContainerSize containerSize
 	--> ContainerGuy owner
 }
 
