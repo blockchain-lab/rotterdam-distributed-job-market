@@ -53,6 +53,4 @@ query FindContainersByContainerGuyId {
   statement:
     SELECT nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer
         WHERE (containerGuyId == _$containerGuyId)
-  
-  
 }

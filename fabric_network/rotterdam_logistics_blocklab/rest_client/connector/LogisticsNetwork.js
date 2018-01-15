@@ -77,6 +77,26 @@ class LogisticsNetwork
 				this.bizNetworkConnection.submitTransaction(tx)
 			);
 	}
+
+	createParticipant(namespace, type, id, fn)
+	{
+		return this.init()
+			.then(() => {
+				const factory = this.businessNetworkDefinition.getFactory();
+				const resource = factory.newResource(namespace, type, id);
+
+				return fn(resource, factory);
+			})
+			.then((res) => 
+				this.bizNetworkConnection.getParticipantRegistry(namespace + "." + type)
+					.then((reg) => reg.add(res)
+						.then()
+						.catch((error) => {
+							throw error;
+						})
+				)
+			);
+	}
 }
 
 module.exports = LogisticsNetwork;

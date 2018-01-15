@@ -1,0 +1,134 @@
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Container Guy
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+{
+  "$class": "nl.tudelft.blockchain.logistics.ContainerGuy",
+  "containerGuyId": "CTG01",
+  "name": "ECT Euromax"
+}
+
+{
+  "$class": "nl.tudelft.blockchain.logistics.ContainerGuy",
+  "containerGuyId": "CTG02",
+  "name": "Rotterdam World Gateway Logistics"
+}
+
+{
+  "$class": "nl.tudelft.blockchain.logistics.ContainerGuy",
+  "containerGuyId": "CTG03",
+  "name": "ECT Delta"
+}
+
+{
+  "$class": "nl.tudelft.blockchain.logistics.ContainerGuy",
+  "containerGuyId": "CTG04",
+  "name": "LogisticsInteractive"
+}
+
+{
+  "$class": "nl.tudelft.blockchain.logistics.ContainerGuy",
+  "containerGuyId": "CTG05",
+  "name": "ArcelorMittal"
+}
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Trucker
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+{
+  "$class": "nl.tudelft.blockchain.logistics.Trucker",
+  "truckerId": "T01",
+  "firstName": "Dick",
+  "lastName": "van der Zee",
+  "adrTraining": "YES",
+  "truckCapacity": "TWENTY",
+  "availability": {
+    "$class": "nl.tudelft.blockchain.logistics.TruckerAvailability",
+    "from": "2018-01-01T00:00:00.000Z",
+    "to": "2019-01-01T00:00:00.000Z"
+  },
+  "allowedDestinations": [
+    "Berlin",
+    "Warsaw"
+  ]
+}
+
+
+{
+  "$class": "nl.tudelft.blockchain.logistics.Trucker",
+  "truckerId": "T02",
+  "firstName": "Izak",
+  "lastName": "Lamme",
+  "adrTraining": "YES",
+  "truckCapacity": "FOURTY",
+  "availability": {
+    "$class": "nl.tudelft.blockchain.logistics.TruckerAvailability",
+    "from": "2000-01-01T00:00:00.000Z",
+    "to": "2020-01-01T00:00:00.000Z"
+  },
+  "allowedDestinations": [
+    "Berlin"
+  ]
+}
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Job Offers / Transaction
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+{
+ "$class": "nl.tudelft.blockchain.logistics.CreateContainerDeliveryJobOffer",
+ "containerInfo": "resource:nl.tudelft.blockchain.logistics.ContainerInfo#0001",
+ "terminalContainerAvailableAt": "",
+ "destination": "Berlin",
+ "availableForPickupDateTime": "2018-02-14T00:07:21.900Z",
+ "toBeDeliveredByDateTime": "2018-03-14T22:07:21.900Z",
+ "requiredAdrTraining": "YES",
+ "transactionId": "aeb3edcf-4d98-4534-a414-bb7ee40e4142",
+ "timestamp": "2018-01-14T22:07:46.151Z"
+}
+
+{
+ "$class": "nl.tudelft.blockchain.logistics.CreateContainerDeliveryJobOffer",
+ "containerInfo": "resource:nl.tudelft.blockchain.logistics.ContainerInfo#0002",
+ "terminalContainerAvailableAt": "",
+ "destination": "Warsaw",
+ "availableForPickupDateTime": "2018-02-14T23:09:58.182Z",
+ "toBeDeliveredByDateTime": "2018-03-14T22:09:58.182Z",
+ "requiredAdrTraining": "YES",
+ "transactionId": "e680cf3d-ccd5-4a3c-8490-b4e36c54bf6f",
+ "timestamp": "2018-01-14T22:10:43.588Z"
+}
+
+{
+ "$class": "nl.tudelft.blockchain.logistics.CreateContainerDeliveryJobOffer",
+ "containerInfo": "resource:nl.tudelft.blockchain.logistics.ContainerInfo#0003",
+ "terminalContainerAvailableAt": "",
+ "destination": "Delft",
+ "availableForPickupDateTime": "2018-02-14T00:11:24.206Z",
+ "toBeDeliveredByDateTime": "2018-02-14T22:11:24.206Z",
+ "requiredAdrTraining": "YES",
+ "transactionId": "e5835596-b2da-4fbc-9349-e793b094187d",
+ "timestamp": "2018-01-14T22:11:52.925Z"
+}
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Bid / Transaction
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+{
+ "$class": "nl.tudelft.blockchain.logistics.BidOnContainerDeliveryJobOffer",
+ "bidAmount": 0,
+ "containerDeliveryJobOffer": "resource:nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer#0001ts1515967641900",
+ "bidder": "resource:nl.tudelft.blockchain.logistics.Trucker#T01",
+}
