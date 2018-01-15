@@ -4,6 +4,7 @@
 
 		"truckerParticipantRegistryName": "nl.tudelft.blockchain.logistics.Trucker",
 		
+		"containerDeliveryJobAssetRegistryName": "nl.tudelft.blockchain.logistics.ContainerDeliveryJob",
 		"containerDeliveryJobOfferAssetRegistryName": "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer"
 	}
 }

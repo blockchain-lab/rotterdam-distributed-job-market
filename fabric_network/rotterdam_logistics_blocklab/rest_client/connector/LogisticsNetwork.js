@@ -12,6 +12,7 @@ const cardname = config.get('cardname');
 
 const truckerParticipantRegistryName = config.get('truckerParticipantRegistryName');
 const containerDeliveryJobOfferAssetRegistryName = config.get('containerDeliveryJobOfferAssetRegistryName');
+const containerDeliveryJobAssetRegistryName = config.get('containerDeliveryJobAssetRegistryName');
 
 class LogisticsNetwork
 {
@@ -43,6 +44,12 @@ class LogisticsNetwork
 	{
 		return this.init()
 			.then(() => this.bizNetworkConnection.getAssetRegistry(containerDeliveryJobOfferAssetRegistryName));
+	}
+
+	getContainerDeliveryJobAssetRegistry()
+	{
+		return this.init()
+			.then(() => this.bizNetworkConnection.getAssetRegistry(containerDeliveryJobAssetRegistryName));
 	}
 
 	executeNamedQuery(queryName, queryParams)
