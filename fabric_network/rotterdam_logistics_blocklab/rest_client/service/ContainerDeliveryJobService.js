@@ -8,6 +8,7 @@ const ContainerDeliveryJobWithPassword = require('../domain/ContainerDeliveryJob
 const AcceptContainerDeliveryCommand = require('../domain/tx/AcceptContainerDeliveryCommand');
 const CreateContainerDeliveryJobOfferCommand = require('../domain/tx/CreateContainerDeliveryJobOfferCommand');
 const AcceptBidOnContainerDeliveryJobOfferCommand = require('../domain/tx/AcceptBidOnContainerDeliveryJobOfferCommand');
+const RaiseExceptionOnDeliveryJobCommand = require('../domain/tx/RaiseExceptionOnDeliveryJobCommand');
 
 class ContainerDeliveryJobService
 {
@@ -48,6 +49,21 @@ class ContainerDeliveryJobService
 					password: password,
 					containerDeliveryJobId: containerDeliveryJobId
 				})
+			});
+	}
+
+	raiseException(containerDeliveryJobId, details)
+	{
+		console.log(`[raiseException] for ContainerDeliveryJobId: ${containerDeliveryJobId}`);
+		var exc = {"details":details};
+		return this.logisticsNetwork.submitTransaction(
+			"nl.tudelft.blockchain.logistics", 
+			"RaiseExceptionOnDeliveryJob",
+			(tx, factory) => {
+				return new RaiseExceptionOnDeliveryJobCommand({
+					containerDeliveryJobId: containerDeliveryJobId,
+					exception: exc
+					}).hydrateTx(tx, factory);
 			});
 	}
 }

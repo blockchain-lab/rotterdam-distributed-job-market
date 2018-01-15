@@ -16,4 +16,12 @@ router.get('/:containerDeliveryJobId', (req, res) => {
 		.then((result) => res.json(result));
 });
 
+router.post('/:containerDeliveryJobId/raiseException/:details', (req, res) => {
+	const containerDeliveryJobId = req.params.containerDeliveryJobId;
+	const details = req.params.details;
+	new ContainerDeliveryJobService()
+		.raiseException(containerDeliveryJobId, details)
+		.then((result) => res.json(result));
+});
+
 module.exports = router;

@@ -120,6 +120,7 @@ function acceptBidOnContainerDeliveryJobOffer(tx)
 
     // TODO: some mechanism for negotating this. Maybe part of a DH-exchange (to also decrypt other data, also todo)
     containerDeliveryJob.arrivalPassword = "CHANGE_ME";
+    containerDeliveryJob.status = "CONTRACTED";
 
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {
@@ -131,6 +132,22 @@ function acceptBidOnContainerDeliveryJobOffer(tx)
         .then (function (assetRegistry) {
             return assetRegistry.add(containerDeliveryJob);
         });
+}
+
+/**
+* Trucker Raises Exception
+* @param {nl.tudelft.blockchain.logistics.RaiseExceptionOnDeliveryJob} tx - transaction parameters
+* @transaction
+*/
+function RaiseExceptionOnDeliveryJob(tx)
+{
+    tx.containerDeliveryJob.exception = tx.exception;
+    tx.containerDeliveryJob.status = "EXCEPTION";
+
+    return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJob')
+        .then(function (assetRegistry) {
+            return assetRegistry.update(tx.containerDeliveryJob);
+    });
 }
 
 /**

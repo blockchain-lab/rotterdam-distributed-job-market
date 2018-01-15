@@ -94,6 +94,9 @@ asset ContainerDeliveryJob identified by containerDeliveryJobId {
 	--> ContainerDeliveryJobOffer jobOffer
 	--> Trucker contractedTrucker
 
+	o Exception exception optional
+	o ContainerDeliveryJobStatus status
+
 	// Quick 'n' Dirty: some password the receiving party must enter
 	// Would be nice to stick this into an Asset only the shipper and/or delivery
 	// owns. <-- TODO (or ensure this value is hashed & salted)
@@ -121,6 +124,11 @@ concept TruckerAvailability {
     o DateTime to default = "1900-01-01"
 }
 
+concept Exception {
+    o String details
+    o DateTime time
+}
+
 
 participant ContainerGuy identified by containerGuyId {
 	o String containerGuyId
@@ -145,6 +153,11 @@ transaction AcceptBidOnContainerDeliveryJobOffer {
 
 transaction CancelContainerDeliveryJobOffer {
 	--> ContainerDeliveryJobOffer containerDeliveryJobOffer
+}
+
+transaction RaiseExceptionOnDeliveryJob {
+	--> ContainerDeliveryJob containerDeliveryJob
+	o Exception exception
 }
 
 transaction CreateContainerInfo {
