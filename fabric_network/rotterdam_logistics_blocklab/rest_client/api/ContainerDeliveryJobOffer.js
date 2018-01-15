@@ -4,6 +4,14 @@ const router = require('express').Router();
 
 const ContainerDeliveryJobOfferService = require('../service/ContainerDeliveryJobOfferService');
 
+router.get('/:containerDeliveryJobOfferId/getTruckerBids', (req, res) => {
+	const containerDeliveryJobOfferId = req.params.containerDeliveryJobOfferId;
+
+	new ContainerDeliveryJobOfferService()
+		.retrieveTruckerBidsForContainer(containerDeliveryJobOfferId)
+		.then((result) => res.json(result));
+});
+
 router.get('/byId/:id', (req, res) => {
 	const id = req.params.id;
 

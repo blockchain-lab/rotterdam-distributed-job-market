@@ -48,7 +48,7 @@ function isTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOffer)
  * @param {nl.tudelft.blockchain.logistics.Trucker} trucker
  * @param {nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer} containerDeliveryJobOffer
  */
-function IsTruckerAllowedToAcceptJob(trucker, containerDeliveryJobOffer)
+function isTruckerAllowedToAcceptJob(trucker, containerDeliveryJobOffer)
 {
     var stillEligableForJobOffer = isTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOffer);
     var noConflictingJobsAcceptedPreviously = true; /* TODO: this part */
@@ -226,5 +226,23 @@ function acceptContainerDelivery(tx)
         })
         .then(function(assetRegistry) {
             return assetRegistry.update(tx.job.jobOffer);
+        });
+}
+
+/**
+ * Udates trucker preferences
+ * @param {nl.tudelft.blockchain.logistics.UpdateTruckerPreferences} tx
+ * @transaction
+ */
+function updateTruckerPreferences(tx)
+{
+    tx.trucker.truckCapacity = tx.truckCapacity;
+    tx.trucker.availability.from = tx.availableFrom;
+    tx.trucker.availability.to = tx.availableTo;
+    tx.trucker.allowedDestinations = tx.allowedDestinations;
+
+    return getParticipantRegistry('nl.tudelft.blockchain.logistics.Trucker')
+        .then(function(assetRegistry) {
+            return assetRegistry.update(tx.trucker);
         });
 }

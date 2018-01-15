@@ -113,6 +113,7 @@ participant Trucker identified by truckerId {
 	o TruckCapacityType truckCapacity
     o TruckerAvailability availability
     o String[] allowedDestinations /* Ideally, an array of Destination's */
+
 	o TruckerBidOnContainerJobOffer[] truckerBids /* bids made by a trucker */
 }
 
@@ -172,4 +173,13 @@ transaction AcceptContainerDelivery {
 
 	o String password
 	o DateTime arrivalDateTime
+}
+
+transaction UpdateTruckerPreferences {
+	--> Trucker trucker
+
+	o TruckCapacityType truckCapacity
+	o DateTime availableFrom
+	o DateTime availableTo
+    o String[] allowedDestinations 
 }
