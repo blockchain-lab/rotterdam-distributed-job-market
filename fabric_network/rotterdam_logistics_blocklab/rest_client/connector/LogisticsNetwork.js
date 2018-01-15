@@ -12,6 +12,7 @@ const cardname = config.get('cardname');
 
 const truckerParticipantRegistryName = config.get('truckerParticipantRegistryName');
 const containerDeliveryJobOfferAssetRegistryName = config.get('containerDeliveryJobOfferAssetRegistryName');
+const containerDeliveryJobAssetRegistryName = config.get('containerDeliveryJobAssetRegistryName');
 
 class LogisticsNetwork
 {
@@ -45,6 +46,12 @@ class LogisticsNetwork
 			.then(() => this.bizNetworkConnection.getAssetRegistry(containerDeliveryJobOfferAssetRegistryName));
 	}
 
+	getContainerDeliveryJobAssetRegistry()
+	{
+		return this.init()
+			.then(() => this.bizNetworkConnection.getAssetRegistry(containerDeliveryJobAssetRegistryName));
+	}
+
 	executeNamedQuery(queryName, queryParams)
 	{
 		return this.init()
@@ -68,6 +75,26 @@ class LogisticsNetwork
 			})
 			.then((tx) =>
 				this.bizNetworkConnection.submitTransaction(tx)
+			);
+	}
+
+	createParticipant(namespace, type, id, fn)
+	{
+		return this.init()
+			.then(() => {
+				const factory = this.businessNetworkDefinition.getFactory();
+				const resource = factory.newResource(namespace, type, id);
+
+				return fn(resource, factory);
+			})
+			.then((res) => 
+				this.bizNetworkConnection.getParticipantRegistry(namespace + "." + type)
+					.then((reg) => reg.add(res)
+						.then()
+						.catch((error) => {
+							throw error;
+						})
+				)
 			);
 	}
 }

@@ -1,6 +1,7 @@
 const router = require('express').Router();
 
 const ContainerGuyService = require('../service/ContainerGuyService');
+const ContainerDeliveryJobService = require('../service/ContainerDeliveryJobService')
 const ContainerDeliveryJobOfferService = require('../service/ContainerDeliveryJobOfferService');
 
 const CreateContainerDeliveryJobOfferCommand = require('../domain/tx/CreateContainerDeliveryJobOfferCommand');
@@ -21,6 +22,15 @@ router.post('/createContainerDeliveryJobOffer', (req, res) => {
 		.createContainerDeliveryJobOffer(req.body)
 		.then((result) => res.json(result))
 		.catch(() => res.status(500).send("unsuccessful"));
+});
+
+router.post('/acceptDelivery/:containerDeliveryJobId', (req, res) => {
+	const containerDeliveryJobId = req.params.containerDeliveryJobId;
+
+	new ContainerDeliveryJobService()
+		.acceptDelivery(containerDeliveryJobId)
+		.then(() => res.status(200).send("delivery accepted"))
+		.catch(() => res.status(501).send("error accepting delivery"));
 });
 
 module.exports = router;
