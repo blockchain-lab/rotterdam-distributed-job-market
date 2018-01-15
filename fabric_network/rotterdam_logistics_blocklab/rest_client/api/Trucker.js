@@ -33,6 +33,7 @@ router.post('/updateTruckerPreferences', (req, res) =>
 		.updateTruckerPreferences(truckerId, truckCapacity, availableFrom, availableTo, allowedDestinations)
 		.then((result) => res.json(result))
 		.catch(() => res.status(500).send("unsuccessful"));
+});
 
 router.post('/acceptDelivery/:containerDeliveryJobId/:password', (req, res) => {
 	const containerDeliveryJobId = req.params.containerDeliveryJobId;
