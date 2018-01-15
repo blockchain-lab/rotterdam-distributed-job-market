@@ -99,7 +99,7 @@ asset ContainerDeliveryJob identified by containerDeliveryJobId {
 
 	// Quick 'n' Dirty: some password the receiving party must enter
 	// Would be nice to stick this into an Asset only the shipper and/or delivery
-	// owns. <-- TODO
+	// owns. <-- TODO (or ensure this value is hashed & salted)
 	o String arrivalPassword
 	o DateTime arrivalDateTime optional
 }
@@ -116,7 +116,6 @@ participant Trucker identified by truckerId {
 	o TruckCapacityType truckCapacity
     o TruckerAvailability availability
     o String[] allowedDestinations /* Ideally, an array of Destination's */
-
 }
 
 /* Philipe: I think a free-form might be somewhat easier than sticking to Slots. The slots are basically implied by these values! */
@@ -196,4 +195,9 @@ transaction UpdateTruckerPreferences {
 	o DateTime availableFrom
 	o DateTime availableTo
     o String[] allowedDestinations 
+}
+
+transaction CancelBid {
+	--> ContainerDeliveryJobOffer containerDeliveryJobOffer
+	--> TruckerBidOnContainerJobOffer truckerBid
 }

@@ -4,8 +4,9 @@ class AcceptContainerDeliveryCommand
 {
 	constructor(obj)
 	{
-		this.password = obj.password;
 		this.arrivalTime = Date.now();
+		
+		this.password = obj.password;
 		this.containerDeliveryJobId = obj.containerDeliveryJobId;
 	}
 
@@ -14,7 +15,7 @@ class AcceptContainerDeliveryCommand
 		tx.password = this.password;
 		tx.arrivalDateTime = this.arrivalTime;
 
-		tx.job = factory.newRelationship("nl.tudelft.logistics", "ContainerDeliveryJob", this.containerDeliveryJobId);
+		tx.job = factory.newRelationship("nl.tudelft.blockchain.logistics", "ContainerDeliveryJob", this.containerDeliveryJobId);
 
 		return tx;
 	}
