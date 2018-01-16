@@ -14,12 +14,12 @@ class TestService {
 	}
 
 	initNetwork(){		
-		//var methods = new TestMethods();
-		//methods.CreateTrucker('1');
-		//methods.CreateTrucker('2');
+		var methods = new TestMethods();
+		Promise.resolve(methods.CreateTrucker('1'));
+		Promise.resolve(methods.CreateTrucker('2'));
 
-		//methods.CreateContainerGuy("1");
-		//methods.CreateContainerGuy("2");
+		Promise.resolve(methods.CreateContainerGuy("1"));
+		Promise.resolve(methods.CreateContainerGuy("2"));
 
 		var containerInfoService = new ContainerInfoService();
 
