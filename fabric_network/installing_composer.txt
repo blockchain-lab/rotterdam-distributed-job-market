@@ -13,9 +13,9 @@ Installing Composer on Linux (proper):
 	run: nvm install node
 
 3. Install all the composer npm stuff (note: some packages will start compiling C-code! Don't be scared by strange looking output, it's not running Fabric)
-	npm install -g composer-cli
-	npm install -g generator-hyperledger-composer
-	npm install -g composer-rest-server
+	npm install -g composer-cli@next
+	npm install -g generator-hyperledger-composer@next
+	npm install -g composer-rest-server@next
 4. Install Yeoman, code generation tool
 	npm install -g yo
 
@@ -24,7 +24,7 @@ te some simple low-level commands such as asset creation. The "test"-area is ver
 
 Having gotten some grips with Composer, I have to say the playground is quite essential to my current dev workflow. The big changes I do locally in Sublime then just pase the code over and do the necessary fixes there. Once no errors there, I copy back and commit. This is much faster to do than running the Composer archive command (it checks your code and outputs detected errors in terminal) 
 
-	npm install -g composer-playground
+	npm install -g composer-playground@next
 
 
 Fabric-tools install:
@@ -33,6 +33,7 @@ Fabric-tools install:
 	unzip fabric-dev-servers.zip
 
 Fabric dev environment initial setup:
+	export FABRIC_VERSION=hlfv11
 	cd ~/fabric-tools
 	./downloadFabric.sh
 	./startFabric.sh
@@ -51,6 +52,39 @@ Now you have a dev environment for the two test networks, Rotterdam Logistics ma
 3. Import the newly created Network Administrator card
 	composer card import --file networkadmin.card
 
-
 4. Check if network is running
 	composer network ping --card admin@rotterdam_logistics_blocklab
+
+
+----UPGRADING TO HYPER LEDGER FABRIC 1.1----
+To upgrade execute the following commands first:
+
+1. Remove composer cards/connection profiles
+	composer card list
+	composer card remove --name admin@rotterdam_logistics_blocklab
+	composer card remove --name PeerAdmin@hlfv1
+
+   Delete the cards in /tmp/ (typed this from memory, name and/or extension might differ!)
+	rm /tmp/PeerAdmin@hlfv1.card
+	rm /tmp/admin@rotterdam_logistics_blocklab.card
+
+   Flush cards from local store (the composer commands didn't remove anything for me initially)
+    rm ~/.composer/cards -rf
+
+2. Remove previous composer versions
+	npm uninstall -g composer-cli
+	npm uninstall -g composer-rest-server
+	npm uninstall -g generator-hyperledger-composer
+	npm uninstall -g composer-playground
+
+3. Remove Fabric
+	cd ~/fabric-tools (assuming this is where you initially extracted the fabric-tools archive)
+	./teardownAllDocker.sh (choose option 2)
+
+4. Remove Tools
+	rm ~/fabric-tools -rf
+
+5. Redownload the Fabric-Tools as outlined in the install section
+6. Do installation step 3, skip 4, install the new playground too
+7. run start_test_network.sh
+8. enjoy!

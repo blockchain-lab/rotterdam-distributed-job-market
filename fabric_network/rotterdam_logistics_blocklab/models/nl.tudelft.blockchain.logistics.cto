@@ -97,6 +97,10 @@ asset ContainerDeliveryJob identified by containerDeliveryJobId {
 	o Exception exception optional
 	o ContainerDeliveryJobStatus status
 
+	/* Copies from the job offer to make querying for conflicting jobs easier */
+	o DateTime availableForPickupDateTime /* TODO: either keep using DateTime or use SLOTS */
+	o DateTime toBeDeliveredByDateTime
+
 	// Quick 'n' Dirty: some password the receiving party must enter
 	// Would be nice to stick this into an Asset only the shipper and/or delivery
 	// owns. <-- TODO (or ensure this value is hashed & salted)
@@ -173,7 +177,6 @@ transaction CreateContainerDeliveryJobOffer {
 	o String terminalContainerAvailableAt
 	o String destination
 
-
 	o DateTime availableForPickupDateTime
 	o DateTime toBeDeliveredByDateTime
 
@@ -199,4 +202,7 @@ transaction UpdateTruckerPreferences {
 transaction CancelBid {
 	--> ContainerDeliveryJobOffer containerDeliveryJobOffer
 	--> TruckerBidOnContainerJobOffer truckerBid
+}
+
+transaction test {
 }

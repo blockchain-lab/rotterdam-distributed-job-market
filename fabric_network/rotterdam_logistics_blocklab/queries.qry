@@ -66,3 +66,26 @@ query FindAllTruckerBidOnContainerJobOffer {
     SELECT nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer
         WHERE (bidder == _$truckerId)
 }
+
+/**
+ * Params:
+ *   - truckerRef (reference string ('resource:namespace.type#id') to Trucker participant)
+ *   - candidateJobPickupDateTime (DateTime):
+ *   - candidateJobToBeDeliveredByDateTime (DateTime):
+ */
+query QueryConflictingAcceptedJobsForTrucker {
+  description: "Returns all accepted jobs by the given Trucker that conflict (has overlap in pickup<->delivery times)"
+  statement:
+    SELECT nl.tudelft.blockchain.logistics.ContainerDeliveryJob
+    WHERE (
+      contractedTrucker == _$truckerRef
+      AND (
+        (availableForPickupDateTime <= _$candidateJobPickupDateTime AND _$candidateJobPickupDateTime <= toBeDeliveredByDateTime)
+        OR (availableForPickupDateTime <= _$candidateJobToBeDeliveredByDateTime AND _$candidateJobToBeDeliveredByDateTime <= toBeDeliveredByDateTime)
+        OR (_$candidateJobPickupDateTime <= availableForPickupDateTime AND toBeDeliveredByDateTime <= _$candidateJobToBeDeliveredByDateTime)
+      )
+    )
+    LIMIT 1
+}
+  
+

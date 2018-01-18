@@ -29,32 +29,67 @@ function isTruckCapacityEligableForContainerSize(truckCapacityType, containerSiz
 }
 
 /**
+ * Checks if the {containerDeliveryJobOffer} given conflicts (time-wise) with previously accepted Jobs * 
  * @param {nl.tudelft.blockchain.logistics.Trucker} trucker
  * @param {nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer} containerDeliveryJobOffer
+ * @return implicit {Promise} boolean - indicating if Trucker has a conflicting, accepted job
  */
-function isTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOffer)
+async function hasConflictingAcceptedJobs(trucker, containerDeliveryJobOffer)
 {
-    // should we check preferences as well?
-  
-    // currently: just sticking to legal things (ADR && truck capacity)
-    var adrEligable = isTruckerAdrEligable(trucker.adrTraining, containerDeliveryJobOffer.requiredAdrTraining);
-    var truckCapacityEligable = isTruckCapacityEligableForContainerSize(trucker.truckCapacity, containerDeliveryJobOffer.containerInfo.containerSize);
-    var withinTruckerPickupAvailability = isContainerPickupDateTimeWithinTruckerAvailability(containerDeliveryJobOffer.availableForPickupDateTime, trucker.availability);
+    // querying by relation not directly on the id, hence building the relation-definition string
+    var truckerReference = "resource:" + trucker.getFullyQualifiedIdentifier();
 
-    return adrEligable && truckCapacityEligable && withinTruckerPickupAvailability;
+    var result = await query('QueryConflictingAcceptedJobsForTrucker', {
+        truckerRef: truckerReference,
+        candidateJobPickupDateTime: containerDeliveryJobOffer.availableForPickupDateTime,
+        candidateJobToBeDeliveredByDateTime: containerDeliveryJobOffer.toBeDeliveredByDateTime
+    }).then((result) => result.length);
+
+    return result > 0;
 }
 
 /**
  * @param {nl.tudelft.blockchain.logistics.Trucker} trucker
  * @param {nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer} containerDeliveryJobOffer
+ * @return implicit {Promise} boolean - boolean indicating if Trucker is allowed to bid on Job Offer
  */
-function isTruckerAllowedToAcceptJob(trucker, containerDeliveryJobOffer)
+async function isTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOffer)
 {
-    var stillEligableForJobOffer = isTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOffer);
-    var noConflictingJobsAcceptedPreviously = true; /* TODO: this part */
+    // should we check preferences as well?
+  
+    // currently: just sticking to legal things (ADR && truck capacity)
+    var adrEligable = isTruckerAdrEligable(trucker.adrTraining, containerDeliveryJobOffer.requiredAdrTraining);
+    if (!adrEligable) {
+        throw new Error("adr_not_eligable");
+    }
 
-    /* Future optimization: short-ciruit this */
-    return stillEligableForJobOffer && noConflictingJobsAcceptedPreviously;
+    var truckCapacityEligable = isTruckCapacityEligableForContainerSize(trucker.truckCapacity, containerDeliveryJobOffer.containerInfo.containerSize);
+    if (!truckCapacityEligable) {
+        throw new Error("truck_capacity_not_eligable");
+    }
+
+    var withinTruckerPickupAvailability = isContainerPickupDateTimeWithinTruckerAvailability(containerDeliveryJobOffer.availableForPickupDateTime, trucker.availability);
+    if (!withinTruckerPickupAvailability) {
+        throw new Error("job_not_within_trucker_availability");
+    }
+
+    var hasConflicts = await hasConflictingAcceptedJobs(trucker, containerDeliveryJobOffer);
+    if(hasConflicts) {
+        throw new Error("job_conflict");
+    }
+
+    return adrEligable && truckCapacityEligable && withinTruckerPickupAvailability && !hasConflicts;
+}
+
+/**
+ * @param {nl.tudelft.blockchain.logistics.Trucker} trucker
+ * @param {nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer} containerDeliveryJobOffer
+ * @return implicit {Promise} boolean - boolean indicating if Trucker is allowed to accept Job Offer
+ */
+async function isTruckerAllowedToAcceptJob(trucker, containerDeliveryJobOffer)
+{
+    var hasNoConflictingAcceptedJobs = !(await hasConflictingAcceptedJobs(trucker, containerDeliveryJobOffer));
+    return hasNoConflictingAcceptedJobs;
 }
 
 /**
@@ -62,7 +97,7 @@ function isTruckerAllowedToAcceptJob(trucker, containerDeliveryJobOffer)
  * @param {nl.tudelft.blockchain.logistics.BidOnContainerDeliveryJobOffer} tx
  * @transaction
  */
-function bidOnContainerDeliveryJobOffer(tx)
+async function bidOnContainerDeliveryJobOffer(tx)
 {
     var factory = getFactory();
 
@@ -77,11 +112,11 @@ function bidOnContainerDeliveryJobOffer(tx)
     }
 
     // Check if Trucker is eligable
-    // TODO: Would be nice to have this business-rule somewhere "central" for maintenance reasons
-    if (!isTruckerEligableToBidOnJobOffer(biddingTrucker, containerDeliveryJobOffer))
+    let truckerIsEligibleToBid = await isTruckerEligableToBidOnJobOffer(biddingTrucker, containerDeliveryJobOffer);
+    if (!truckerIsEligibleToBid)
     {
         // Trucker does not meet criteria
-        throw new Error('Trucker is not eligable to bid on container delivery job offer');
+        throw new Error('Trucker is not eligible to bid on container delivery job offer');
     }
     
     var bidId =  biddingTrucker.truckerId + '_' + containerDeliveryJobOffer.containerDeliveryJobOfferId + '_' + tx.bidAmount;
@@ -108,8 +143,13 @@ function bidOnContainerDeliveryJobOffer(tx)
 * @param {nl.tudelft.blockchain.logistics.AcceptBidOnContainerDeliveryJobOffer} tx - transaction parameters
 * @transaction
 */
-function acceptBidOnContainerDeliveryJobOffer(tx)
+async function acceptBidOnContainerDeliveryJobOffer(tx)
 {
+    let truckerIsAllowedToAcceptJob = await isTruckerAllowedToAcceptJob(tx.acceptedBid.bidder, tx.containerDeliveryJobOffer);
+    if(!truckerIsAllowedToAcceptJob) {
+        throw new Error('job_conflict');
+    }
+
     tx.containerDeliveryJobOffer.acceptedBid = tx.acceptedBid;
     tx.containerDeliveryJobOffer.status = "CONTRACTED";
 
@@ -117,6 +157,8 @@ function acceptBidOnContainerDeliveryJobOffer(tx)
     var containerDeliveryJob = getFactory().newResource('nl.tudelft.blockchain.logistics', 'ContainerDeliveryJob', jobId);
     containerDeliveryJob.jobOffer = tx.containerDeliveryJobOffer;
     containerDeliveryJob.contractedTrucker = tx.acceptedBid.bidder;
+    containerDeliveryJob.availableForPickupDateTime = tx.containerDeliveryJobOffer.availableForPickupDateTime;
+    containerDeliveryJob.toBeDeliveredByDateTime = tx.containerDeliveryJobOffer.toBeDeliveredByDateTime;
 
     // TODO: some mechanism for negotating this. Maybe part of a DH-exchange (to also decrypt other data, also todo)
     containerDeliveryJob.arrivalPassword = "CHANGE_ME";
