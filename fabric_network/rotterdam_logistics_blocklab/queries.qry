@@ -58,7 +58,7 @@ query FindContainersByContainerGuyId {
 
 /**
  * Params:
- *   - truckerId (String): Id of trucker who bid 
+ *   - truckerId (String): Id of trucker who bid, NO ITS TRUCKER REF!
  */
 query FindAllTruckerBidOnContainerJobOffer {
   description: "Returns all TruckerBidOnContainerJobOffer that the Trucker made"
@@ -73,8 +73,8 @@ query FindAllTruckerBidOnContainerJobOffer {
  *   - candidateJobPickupDateTime (DateTime):
  *   - candidateJobToBeDeliveredByDateTime (DateTime):
  */
-query QueryConflictingAcceptedJobsForTrucker {
-  description: "Returns all accepted jobs by the given Trucker that conflict (has overlap in pickup<->delivery times)"
+query FindAnyConflictingAcceptedJobsForTrucker {
+  description: "Returns any conflicting, accepted job by the given Trucker that conflict (has overlap in pickup<->delivery times)"
   statement:
     SELECT nl.tudelft.blockchain.logistics.ContainerDeliveryJob
     WHERE (
@@ -85,7 +85,7 @@ query QueryConflictingAcceptedJobsForTrucker {
         OR (_$candidateJobPickupDateTime <= availableForPickupDateTime AND toBeDeliveredByDateTime <= _$candidateJobToBeDeliveredByDateTime)
       )
     )
-    LIMIT 1
+    LIMIT 1 // finding one is enough to signal that there is a conflict somewhere
 }
   
 

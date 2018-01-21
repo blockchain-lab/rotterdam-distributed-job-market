@@ -19,6 +19,97 @@ function isTruckerAdrEligable(truckerAdrTraining, requiredAdrTraining)
 }
 
 /**
+ * @param {String} truckerId - id of Trucker participant to check conflicts for
+ * @param {DateTime} availableForPickupDateTime - pickup datatime, is the start point of the "overlap"
+ * @param {DateTime} toBeDeliveredByDateTime - delivery-by datetime, is the end point of the "overlap"
+ * @return {Promise} ContainerDeliveryJob[] - at most 1 container delivery job that is "conflicting" or overlapping with given dateTimes for given trucker
+ */
+function queryAnyConflictingAcceptedJobsForTrucker(truckerId, availableForPickupDateTime, toBeDeliveredByDateTime)
+{
+    // querying by relation not directly on the id, hence building the relation-definition string
+    var truckerReference = "resource:nl.tudelft.blockchain.logistics.Trucker#" + truckerId;
+    return query('FindAnyConflictingAcceptedJobsForTrucker', {
+        truckerRef: truckerReference,
+        candidateJobPickupDateTime: availableForPickupDateTime,
+        candidateJobToBeDeliveredByDateTime: toBeDeliveredByDateTime
+    });
+}
+
+/**
+ * Find all jobOffers that the trucker has bids in, that when accepted, would result in a conflicting ContainerDeliveryJob.
+ * @param {nl.tudelft.blockchain.logistics.Trucker} trucker - The trucker
+ * @param {nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer} containerDeliveryJobOffer - the job offer in question
+ * @return {Promise} - ContainerDeliveryJobOffer[] that would conflict with Trucker's accepted jobs if accepted
+ */
+async function getAllConflictingJobOffersForTruckerAndJobBeingAccepted(trucker, containerDeliveryJobOffer)
+{
+    // first: get all the bids of the trucker
+    let truckerRef = trucker.toURI();
+    let truckerBids = await query('FindAllTruckerBidOnContainerJobOffer', {truckerId: truckerRef});
+
+    let queryString = 'SELECT nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer' +
+        // job must be INMARKET,
+        ' WHERE (status =="INMARKET" ' +
+        // overlap with the job we have as argument,
+        ' AND ((availableForPickupDateTime <= _$candidateJobPickupDateTime AND _$candidateJobPickupDateTime <= toBeDeliveredByDateTime) ' +
+        '  OR (availableForPickupDateTime <= _$candidateJobToBeDeliveredByDateTime AND _$candidateJobToBeDeliveredByDateTime <= toBeDeliveredByDateTime) ' + 
+        '  OR (_$candidateJobPickupDateTime <= availableForPickupDateTime AND toBeDeliveredByDateTime <= _$candidateJobToBeDeliveredByDateTime)) ';
+
+    // (just trick not to have to skip first OR in the loop below)
+    queryString += ' AND (status == "" '; // todo: maybe more efficient to pass in some value and query against 
+
+    // and it must be bid on by the trucker
+    truckerBids.forEach((bid) => {
+        queryString += " OR (containerBids CONTAINS '" + bid.toURI() + "') ";
+    });
+    queryString += ")) LIMIT 9999"; // huge limit here, not ideal but if don't specify the default it 25 (as of HLFv1.1)
+
+    return query(buildQuery(queryString), {
+        candidateJobPickupDateTime: containerDeliveryJobOffer.availableForPickupDateTime,
+        candidateJobToBeDeliveredByDateTime: containerDeliveryJobOffer.toBeDeliveredByDateTime
+    });
+}
+
+/** 
+ * Cancels bids of Trucker on ContainerDeliveryJobOffers that if bid accepted, would result in a job conflict.
+ * This is done for sanity and UX reasons as accepting a bid that results in a conflict would throw an error anyway, forcing the
+ * shipper/containerGuy to a lot of trial-and-error in a the worst case.
+ * @param {nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer} containerDeliveryJobOffer - the job offer which is being accepted
+ * @param {nl.tudelft.blockchain.logistics.Trucker} forTrucker - the Trucker in question
+ * @return {Promise} - Promise which when resolved indicates that bids on conflicting offers are canceled
+ */
+async function cancelTruckersBidsOnConflictingJobOffers(containerDeliveryJobOffer, forTrucker)
+{
+    var conflictingJobOffersTruckerHasBidOn = await getAllConflictingJobOffersForTruckerAndJobBeingAccepted(forTrucker, containerDeliveryJobOffer);
+
+    // Need to find all the bids of the trucker in the conflictingJobOffers, get the actual asset and then cancel those
+    let truckerId = forTrucker.getIdentifier();
+
+    // first filter exclude the jobOffer provided in the arguments, as it always conflicts with itself and we don't want to cancel that bid
+    let toCancel = conflictingJobOffersTruckerHasBidOn.filter((offer) => offer.getIdentifier() != containerDeliveryJobOffer.getIdentifier())
+        .map((conflictingOffer) =>
+        {
+            // hacky: all bids of a tricker share same resource URI prefix, so use that instead of querying and filtering on ID's
+            // trucker might have more than one bid on an JobOffer
+            let bidsToCancel = conflictingOffer.containerBids.filter((bidRelationship) => bidRelationship.getIdentifier().startsWith(truckerId))
+            return {bidsToCancel: bidsToCancel, conflictingOffer: conflictingOffer}
+        });
+
+    const cancelConflictingBidsPromises = [];
+    toCancel.forEach((offerWithBidsToCancel) =>
+        offerWithBidsToCancel.bidsToCancel.forEach((bidToCancel) =>
+            cancelConflictingBidsPromises.push(
+                getAssetRegistry("nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer")
+                    .then((registry) => registry.get(bidToCancel.getIdentifier()))
+                    .then((bid) => cancelBid({truckerBid: bid, containerDeliveryJobOffer: offerWithBidsToCancel.conflictingOffer}))
+            )
+        )
+    );
+
+    return Promise.all(cancelConflictingBidsPromises);
+}   
+
+/**
  * @param {nl.tudelft.blockchain.logistics.TruckCapacityType} availableForPickupDateTime
  * @param {nl.tudelft.blockchain.logistics.ContainerSize} containerSize
  */
@@ -29,21 +120,18 @@ function isTruckCapacityEligableForContainerSize(truckCapacityType, containerSiz
 }
 
 /**
- * Checks if the {containerDeliveryJobOffer} given conflicts (time-wise) with previously accepted Jobs * 
+ * Checks if the containerDeliveryJobOffer given conflicts (time-wise) with previously accepted Jobs
  * @param {nl.tudelft.blockchain.logistics.Trucker} trucker
  * @param {nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer} containerDeliveryJobOffer
- * @return implicit {Promise} boolean - indicating if Trucker has a conflicting, accepted job
+ * @return {Promise} - boolean indicating if Trucker has a conflicting, accepted job
  */
 async function hasConflictingAcceptedJobs(trucker, containerDeliveryJobOffer)
 {
-    // querying by relation not directly on the id, hence building the relation-definition string
-    var truckerReference = "resource:" + trucker.getFullyQualifiedIdentifier();
-
-    var result = await query('QueryConflictingAcceptedJobsForTrucker', {
-        truckerRef: truckerReference,
-        candidateJobPickupDateTime: containerDeliveryJobOffer.availableForPickupDateTime,
-        candidateJobToBeDeliveredByDateTime: containerDeliveryJobOffer.toBeDeliveredByDateTime
-    }).then((result) => result.length);
+    var result = await queryAnyConflictingAcceptedJobsForTrucker(
+            trucker.getIdentifier(),
+            containerDeliveryJobOffer.availableForPickupDateTime,
+            containerDeliveryJobOffer.toBeDeliveredByDateTime
+        ).then((result) => result.length);
 
     return result > 0;
 }
@@ -51,7 +139,7 @@ async function hasConflictingAcceptedJobs(trucker, containerDeliveryJobOffer)
 /**
  * @param {nl.tudelft.blockchain.logistics.Trucker} trucker
  * @param {nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer} containerDeliveryJobOffer
- * @return implicit {Promise} boolean - boolean indicating if Trucker is allowed to bid on Job Offer
+ * @return {Promise} - of a boolean indicating if Trucker is allowed to bid on Job Offer
  */
 async function isTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOffer)
 {
@@ -84,7 +172,7 @@ async function isTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOff
 /**
  * @param {nl.tudelft.blockchain.logistics.Trucker} trucker
  * @param {nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer} containerDeliveryJobOffer
- * @return implicit {Promise} boolean - boolean indicating if Trucker is allowed to accept Job Offer
+ * @return {Promise} - boolean indicating if Trucker is allowed to accept Job Offer
  */
 async function isTruckerAllowedToAcceptJob(trucker, containerDeliveryJobOffer)
 {
@@ -145,14 +233,20 @@ async function bidOnContainerDeliveryJobOffer(tx)
 */
 async function acceptBidOnContainerDeliveryJobOffer(tx)
 {
-    let truckerIsAllowedToAcceptJob = await isTruckerAllowedToAcceptJob(tx.acceptedBid.bidder, tx.containerDeliveryJobOffer);
-    if(!truckerIsAllowedToAcceptJob) {
+    // Ensure Trucker has no conflicts if job is accepted
+    let truckerIsAllowedToAcceptJob = isTruckerAllowedToAcceptJob(tx.acceptedBid.bidder, tx.containerDeliveryJobOffer);
+    if(!(await truckerIsAllowedToAcceptJob)) {
         throw new Error('job_conflict');
     }
 
+    // Cancel Truckers bids on conflicting jobs 
+    const cancelBidsOnConflictingJobOffersPromise = cancelTruckersBidsOnConflictingJobOffers(tx.containerDeliveryJobOffer, tx.acceptedBid.bidder);
+
+    // Set status of the JobOffer
     tx.containerDeliveryJobOffer.acceptedBid = tx.acceptedBid;
     tx.containerDeliveryJobOffer.status = "CONTRACTED";
 
+    // Make the ContainerDeliveryJob asset
     var jobId = tx.containerDeliveryJobOffer.containerDeliveryJobOfferId + '_' + tx.acceptedBid.truckerBidId;
     var containerDeliveryJob = getFactory().newResource('nl.tudelft.blockchain.logistics', 'ContainerDeliveryJob', jobId);
     containerDeliveryJob.jobOffer = tx.containerDeliveryJobOffer;
@@ -164,7 +258,7 @@ async function acceptBidOnContainerDeliveryJobOffer(tx)
     containerDeliveryJob.arrivalPassword = "CHANGE_ME";
     containerDeliveryJob.status = "CONTRACTED";
 
-    return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
+    const recordAcceptedBidPromise = getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {
             return assetRegistry.update(tx.containerDeliveryJobOffer);
         })
@@ -174,6 +268,9 @@ async function acceptBidOnContainerDeliveryJobOffer(tx)
         .then (function (assetRegistry) {
             return assetRegistry.add(containerDeliveryJob);
         });
+
+    // All promises must resolve successfully for this TX to complete
+    return Promise.all([cancelBidsOnConflictingJobOffersPromise, recordAcceptedBidPromise]);
 }
 
 /**
@@ -314,11 +411,14 @@ function updateTruckerPreferences(tx)
  */
 function cancelBid(tx)
 {
-    var index = tx.containerDeliveryJobOffer.containerBids.indexOf(tx.truckerBid);
-    if(index > -1)
+    var index = tx.containerDeliveryJobOffer.containerBids.findIndex((value) => value.getIdentifier() == tx.truckerBid.getIdentifier());
+    if(index < 0)
     {
-        tx.containerDeliveryJobOffer.containerBids.splice(index, 1);
+        // not found, do nothing
+        return Promise.resolve(null);
     }
+
+    tx.containerDeliveryJobOffer.containerBids.splice(index, 1);
 
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function(assetRegistry) 
