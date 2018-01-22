@@ -20,7 +20,7 @@ router.get('/preferences/:truckerId', (req, res) =>
 		});
 });
 
-router.get('/truckerBids/:truckerId', (req, res) =>
+router.get('/bids/:truckerId', (req, res) =>
 {
 	new TruckerService().getTruckerBids(req.params.truckerId)
 		.then((truckerBids) =>
@@ -37,7 +37,7 @@ router.get('/rating/:truckerId', (req, res) => {
 		.catch((error) => res.status(500).send(error));
 });
 
-router.post('/updateTruckerPreferences', (req, res) =>
+router.post('/preferences', (req, res) =>
 {
 	let truckerId = req.body.truckerId;
 	let truckCapacity = req.body.truckCapacity;
@@ -62,6 +62,7 @@ router.post('/acceptDelivery/:containerDeliveryJobId/:password', (req, res) =>
 		.catch(() => res.status(501).send("error accepting delivery"));
 });
 
+// todo: send bid as body, prevents resending of bid by accident (from broweser history, page reload etc)
 router.post("/:containerDeliveryJobOfferId/submitBid/:bidderId/:bidAmount", (req, res) => {
 	const containerDeliveryJobOfferId = req.params.containerDeliveryJobOfferId;
 	const bidderId = req.params.bidderId;
