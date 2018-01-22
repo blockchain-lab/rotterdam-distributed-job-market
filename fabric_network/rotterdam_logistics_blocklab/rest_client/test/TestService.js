@@ -13,13 +13,13 @@ class TestService {
 		return "success";
 	}
 
-	initNetwork(){		
+	async initNetwork(){		
 		var methods = new TestMethods();
-		Promise.resolve(methods.CreateTrucker('1'));
-		Promise.resolve(methods.CreateTrucker('2'));
+		await methods.CreateTrucker('1');
+		await methods.CreateTrucker('2');
 
-		Promise.resolve(methods.CreateContainerGuy("1"));
-		Promise.resolve(methods.CreateContainerGuy("2"));
+		await methods.CreateContainerGuy("1");
+		await methods.CreateContainerGuy("2");
 
 		var containerInfoService = new ContainerInfoService();
 
@@ -30,7 +30,7 @@ class TestService {
 		  "containerType": "BasicContainer",
 		  "containerSize": "TWENTY"
 		}`;
-		Promise.resolve(containerInfoService.CreateContainerInfo(JSON.parse(cont)));
+		await containerInfoService.CreateContainerInfo(JSON.parse(cont));
 
 		var cont = `{
 		  "$class": "nl.tudelft.blockchain.logistics.ContainerInfo",
@@ -39,7 +39,7 @@ class TestService {
 		  "containerType": "BasicContainer",
 		  "containerSize": "TWENTY"
 		}`;
-		Promise.resolve(containerInfoService.CreateContainerInfo(JSON.parse(cont)));
+		await containerInfoService.CreateContainerInfo(JSON.parse(cont));
 
 		var containerInfoDeliveryJobService = new ContainerDeliveryJobOfferService();
 
@@ -49,16 +49,16 @@ class TestService {
 		  "containerGuyId": "1",
 		  "containerInfoId": "2",
 		  "availableForPickupDateTime": "2018-01-15T15:30:21.024Z",
-		  "toBeDeliveredByDateTime": "2018-01-15T15:30:21.024Z",
+		  "toBeDeliveredByDateTime": "2018-01-20T15:30:21.024Z",
 		  "terminalContainerAvailableAt": "",
-		  "destination": "",
+		  "destination": "Berlin",
 		  "requiredAdrTraining": "YES",
 		  "containerBids": [],
 		  "status": "NEW",
 		  "canceled": false
 		}`;
 
-		Promise.resolve(containerInfoDeliveryJobService.createContainerDeliveryJobOffer(JSON.parse(data)));
+		await containerInfoDeliveryJobService.createContainerDeliveryJobOffer(JSON.parse(data));
 
 		var containerInfoDeliveryJobService = new ContainerDeliveryJobOfferService();
 

@@ -82,24 +82,24 @@ class TestMethods {
 
 	CreateTrucker(truckerId){
 		const namespace = "nl.tudelft.blockchain.logistics";
-		const trucker = new LogisticsNetwork().createParticipant(
+		const promise = new LogisticsNetwork().createParticipant(
 			namespace, 
 			"Trucker", 
 			truckerId, 
 			(res, factory) => this.testTrucker(res, factory)
 		);
-		return trucker;
+		return promise;
 	}
 
 	CreateContainerGuy(containerGuyId){
 		const namespace = "nl.tudelft.blockchain.logistics";
-		const trucker = new LogisticsNetwork().createParticipant(
+		const promise = new LogisticsNetwork().createParticipant(
 			namespace, 
 			"ContainerGuy", 
 			containerGuyId, 
 			(res, factory) => this.testGuy(res, factory)
 		);
-		return trucker;
+		return promise;
 	}
 }
 
