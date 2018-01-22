@@ -116,10 +116,23 @@ participant Trucker identified by truckerId {
 	
 	o AdrTraining adrTraining
 
+	o TruckerRating rating
+
 	/* Job-Search criteria: */
 	o TruckCapacityType truckCapacity
+
+	// todo: get rid of first, then in a later iteration rework into JobRequests for the auto-bidding & notification stuff
     o TruckerAvailability availability
     o String[] allowedDestinations /* Ideally, an array of Destination's */
+}
+
+// Ideally we should be able to determine this at runtime, but CouchDb integration is not as rich as SQL, can't count Jobs
+concept TruckerRating {
+	// "Past Job" here means a Job that the Trucker accepted and is no longer active (delivered, cancelled, exception or w.e.)
+	o Integer totalPastJobsAccepted default = 0 range =[0,]
+
+	// Nr of jobs delivered successfully
+	o Integer jobsDelivered default = 0 range = [0,]
 }
 
 /* Philipe: I think a free-form might be somewhat easier than sticking to Slots. The slots are basically implied by these values! */

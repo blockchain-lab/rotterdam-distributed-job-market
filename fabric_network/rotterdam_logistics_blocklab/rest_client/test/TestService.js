@@ -13,15 +13,15 @@ class TestService {
 		return "success";
 	}
 
-	async initNetwork(){		
-		var methods = new TestMethods();
-		await methods.CreateTrucker('1');
-		await methods.CreateTrucker('2');
+	initNetwork(){		
+		let methods = new TestMethods();
+		let containerInfoService = new ContainerInfoService();
+		var containerInfoDeliveryJobService = new ContainerDeliveryJobOfferService();
 
-		await methods.CreateContainerGuy("1");
-		await methods.CreateContainerGuy("2");
-
-		var containerInfoService = new ContainerInfoService();
+		let promiseTrucker1 = methods.CreateTrucker('1');
+		let promiseTrucker2 = methods.CreateTrucker('2');
+		let promiseContainerGuy1 = methods.CreateContainerGuy("1");
+		let promiseContainerGuy2 = methods.CreateContainerGuy("2");
 
 		var cont = `{
 		  "$class": "nl.tudelft.blockchain.logistics.ContainerInfo",
@@ -30,7 +30,7 @@ class TestService {
 		  "containerType": "BasicContainer",
 		  "containerSize": "TWENTY"
 		}`;
-		await containerInfoService.CreateContainerInfo(JSON.parse(cont));
+		let promiseContainer1 = containerInfoService.CreateContainerInfo(JSON.parse(cont));
 
 		var cont = `{
 		  "$class": "nl.tudelft.blockchain.logistics.ContainerInfo",
@@ -39,9 +39,7 @@ class TestService {
 		  "containerType": "BasicContainer",
 		  "containerSize": "TWENTY"
 		}`;
-		await containerInfoService.CreateContainerInfo(JSON.parse(cont));
-
-		var containerInfoDeliveryJobService = new ContainerDeliveryJobOfferService();
+		let promiseContainer2 = containerInfoService.CreateContainerInfo(JSON.parse(cont));
 
 		var data = `{
 		  "$class": "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer",
@@ -58,11 +56,8 @@ class TestService {
 		  "canceled": false
 		}`;
 
-		await containerInfoDeliveryJobService.createContainerDeliveryJobOffer(JSON.parse(data));
-
-		var containerInfoDeliveryJobService = new ContainerDeliveryJobOfferService();
-
-		return "object";
+		return Promise.all([promiseTrucker1, promiseTrucker2, promiseContainerGuy1, promiseContainerGuy2, promiseContainer1, promiseContainer2])
+			.then(() => containerInfoDeliveryJobService.createContainerDeliveryJobOffer(JSON.parse(data)));
 	}
 
 	createOffers(){

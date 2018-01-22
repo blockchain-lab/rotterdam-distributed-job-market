@@ -1,6 +1,7 @@
 var config = require('config');
 var LogisticsNetwork = require('../connector/LogisticsNetwork');
 
+var Trucker = require('../domain/Trucker')
 var TruckerPreferences = require('../domain/TruckerPreferences');
 var UpdateTruckerPreferencesCommand = require('../domain/tx/UpdateTruckerPreferencesCommand');
 var TruckerBidOnContainerDeliveryJobOfferForList = require('../domain/TruckerBidOnContainerDeliveryJobOfferForList');
@@ -13,13 +14,11 @@ class TruckerService
 	*/
 	getTrucker(truckerId) 
 	{
-		console.log("Got truckerId: " + truckerId);
+		console.log(`[getTrucker] truckerId: ${truckerId}`);
 
 		return new LogisticsNetwork().getTruckerParticipantRegistry()
 			.then((truckerParticipantRegistry) => truckerParticipantRegistry.get(truckerId))
-			.catch((error) => {
-				throw error;
-			});
+			.then((rawTrucker) => new Trucker(rawTrucker));
 	}
 
 	/**
@@ -29,7 +28,7 @@ class TruckerService
 	getTruckerPreferences(truckerId) 
 	{
 		return this.getTrucker(truckerId)
-			.then((trucker) => new TruckerPreferences(trucker));
+			.then((trucker) => trucker.getPreferences());
 	}
 
 	/**
@@ -38,11 +37,10 @@ class TruckerService
 		@param {DateTime} availableFrom
 		@param {DateTime} availableTo
 		@param {String[]} allowedDestinations
-		*/
+	*/
 	updateTruckerPreferences(truckerId, truckCapacity, availableFrom, availableTo, allowedDestinations) 
 	{
-		console.log(`[updateTruckerPreferences] updating trucker preferences for ${truckerId} to: ${truckCapacity}
-		${availableFrom}, ${availableTo}, ${allowedDestinations}`);
+		console.log(`[updateTruckerPreferences] updating trucker preferences for ${truckerId} to: ${truckCapacity} ${availableFrom}, ${availableTo}, ${allowedDestinations}`);
 
 		const namespace = "nl.tudelft.blockchain.logistics";
 		const txName = "UpdateTruckerPreferences";
@@ -73,10 +71,20 @@ class TruckerService
 		console.log("[getTruckerBids] for trucker: " + truckerId);
 
 		return new LogisticsNetwork().executeNamedQuery('FindAllTruckerBidOnContainerJobOffer', {truckerId: truckerReference})
-			.then((assets) => assets.map(x => new TruckerBidOnContainerDeliveryJobOfferForList(x)))
-			.catch((error) => {
-				throw error;
-			});
+			.then((assets) => assets.map(x => new TruckerBidOnContainerDeliveryJobOfferForList(x)));
+	}
+
+	/**
+	 *  Returns the Trucker's rating, but you might just as well use getTrucker
+	 *	@param {String} truckerId
+	 *	@return {TruckerRating}
+	 */
+	getRating(truckerId)
+	{
+		console.log(`[getRating] for trucker: ${truckerId}`);
+
+		return this.getTrucker(truckerId)
+			.then((trucker) => trucker.getRating());
 	}
 }
 

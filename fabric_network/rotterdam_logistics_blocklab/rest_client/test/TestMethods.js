@@ -1,6 +1,8 @@
 
 var LogisticsNetwork = require('../connector/LogisticsNetwork');
 
+
+// TODO: rework to parse a JSON file for the test data and upload to Network
 class TestMethods {
 	constructor(){
 		this.truckerData = [];
@@ -11,6 +13,11 @@ class TestMethods {
 		  "lastName": "van der Zee",
 		  "adrTraining": "YES",
 		  "truckCapacity": "TWENTY",
+  		  "rating": {
+		    "$class": "nl.tudelft.blockchain.logistics.TruckerRating",
+		    "totalPastJobsAccepted": 0,
+		    "jobsDelivered": 0
+		  },
 		  "availability": {
 		    "$class": "nl.tudelft.blockchain.logistics.TruckerAvailability",
 		    "from": "2018-01-01T00:00:00.000Z",
@@ -28,6 +35,11 @@ class TestMethods {
 		  "lastName": "Lamme",
 		  "adrTraining": "YES",
 		  "truckCapacity": "FOURTY",
+		  "rating": {
+		    "$class": "nl.tudelft.blockchain.logistics.TruckerRating",
+		    "totalPastJobsAccepted": 0,
+		    "jobsDelivered": 0
+		  },
 		  "availability": {
 		    "$class": "nl.tudelft.blockchain.logistics.TruckerAvailability",
 		    "from": "2000-01-01T00:00:00.000Z",
@@ -64,6 +76,10 @@ class TestMethods {
 		resource.adrTraining = trucker.adrTraining;
 		resource.truckCapacity = trucker.truckCapacity;
 		resource.allowedDestinations = trucker.allowedDestinations;
+
+		resource.rating = factory.newConcept("nl.tudelft.blockchain.logistics", "TruckerRating");
+		resource.rating.jobsDelivered = trucker.rating.jobsDelivered;
+		resource.rating.totalPastJobsAccepted = trucker.rating.totalPastJobsAccepted;
 		
 		resource.availability = factory.newConcept("nl.tudelft.blockchain.logistics", "TruckerAvailability");
 		resource.availability.from = new Date(trucker.availability.from);

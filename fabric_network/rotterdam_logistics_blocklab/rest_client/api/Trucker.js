@@ -29,6 +29,14 @@ router.get('/truckerBids/:truckerId', (req, res) =>
 		});
 });
 
+router.get('/rating/:truckerId', (req, res) => {
+	const truckerId = req.params.truckerId;
+
+	new TruckerService().getRating(truckerId)
+		.then((truckerRating) => res.json(truckerRating))
+		.catch((error) => res.status(500).send(error));
+});
+
 router.post('/updateTruckerPreferences', (req, res) =>
 {
 	let truckerId = req.body.truckerId;

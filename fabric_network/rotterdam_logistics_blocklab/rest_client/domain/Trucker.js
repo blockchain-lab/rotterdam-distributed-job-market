@@ -1,5 +1,8 @@
 'use strict';
 
+let TruckerRating = require('./TruckerRating');
+let TruckerPreferences = require('./TruckerPreferences');
+
 class Trucker
 {
 	constructor(obj)
@@ -10,6 +13,8 @@ class Trucker
 		this.firstName = obj.firstName;
 		this.lastName = obj.lastName;
 
+		this.rating = new TruckerRating(obj.rating);
+
 		this.adrTraining = obj.adrTraining;
 		this.truckCapacity = obj.truckCapacity;
 		this.allowedDestinations = obj.allowedDestinations;
@@ -18,6 +23,11 @@ class Trucker
 			from: obj.availability.from,
 			to: obj.availability.to
 		}
+	}
+
+	getRating()
+	{
+		return this.rating;
 	}
 
 	getTruckerId()
@@ -48,6 +58,11 @@ class Trucker
 	getAllowedDestinations()
 	{
 		return this.allowedDestinations;
+	}
+
+	getPreferences()
+	{
+		return new TruckerPreferences(this);
 	}
 
 	getAvailability()
