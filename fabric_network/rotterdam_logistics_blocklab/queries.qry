@@ -87,5 +87,15 @@ query FindAnyConflictingAcceptedJobsForTrucker {
     )
     LIMIT 1 // finding one is enough to signal that there is a conflict somewhere
 }
-  
 
+/**
+ * Params:
+ *   - truckerRef (reference string ('resource:namespace.type#id') to Trucker participant)
+ */
+query FindContractedJobsOfTrucker {
+  description: "Returns all (9999 max) jobs that the Trucker is accepted in, and is contracted so Accepted Jobs that are active"
+  statement:
+    SELECT nl.tudelft.blockchain.logistics.ContainerDeliveryJob
+    WHERE (contractedTrucker == _$truckerRef AND status == "CONTRACTED")
+    LIMIT 9999 // Large limit, needs a better long-term solution for Production
+}

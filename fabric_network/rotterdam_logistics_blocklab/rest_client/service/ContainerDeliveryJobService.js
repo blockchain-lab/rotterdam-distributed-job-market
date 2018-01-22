@@ -2,8 +2,10 @@
 
 const config = require('config');
 const LogisticsNetwork = require('../connector/LogisticsNetwork');
+const ContainerDeliveryJobOfferService = require('./ContainerDeliveryJobOfferService');
 
 const ContainerDeliveryJobWithPassword = require('../domain/ContainerDeliveryJobWithPassword');
+const ContainerDeliveryJobForTrucker = require('../domain/ContainerDeliveryJobForTrucker');
 
 const AcceptContainerDeliveryCommand = require('../domain/tx/AcceptContainerDeliveryCommand');
 const CreateContainerDeliveryJobOfferCommand = require('../domain/tx/CreateContainerDeliveryJobOfferCommand');
@@ -28,6 +30,17 @@ class ContainerDeliveryJobService
 		return this.logisticsNetwork.getContainerDeliveryJobAssetRegistry()
 			.then((registry) => registry.resolve(containerDeliveryJobId))
 			.then((rawResult) => new ContainerDeliveryJobWithPassword(rawResult));
+	}
+
+	async retrieveByTruckerId(truckerId)
+	{
+		console.log(`[retrieve(ContainerDeliveryJobForTrucker)] truckerId ${truckerId}`);
+
+		let assets = await this.logisticsNetwork.executeNamedQuery('FindContractedJobsOfTrucker', {truckerRef: `resource:nl.tudelft.blockchain.logistics.Trucker#${truckerId}`});
+		let promiseToResolveResult = assets.map((asset) => this.retrieveById(asset.getIdentifier()));
+
+		return Promise.all(promiseToResolveResult)
+			.then((assets) => assets.map((asset) => new ContainerDeliveryJobForTrucker(asset)));
 	}
 
 	acceptDelivery(containerDeliveryJobId, arrivalPassword)

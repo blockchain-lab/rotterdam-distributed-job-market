@@ -51,6 +51,16 @@ router.post('/preferences', (req, res) =>
 		.catch(() => res.status(500).send("unsuccessful"));
 });
 
+router.get('/acceptedjobs/:truckerId', (req, res) =>
+{
+	const truckerId = req.params.truckerId;
+
+	new ContainerDeliveryJobService()
+		.retrieveByTruckerId(truckerId)
+		.then((results) => res.json(results));
+		// .catch((error) => res.status(501).json({error: error}));
+});
+
 router.post('/acceptDelivery/:containerDeliveryJobId/:password', (req, res) => 
 {
 	const containerDeliveryJobId = req.params.containerDeliveryJobId;
