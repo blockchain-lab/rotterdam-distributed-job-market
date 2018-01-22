@@ -4,6 +4,13 @@ const TruckerService = require('../service/TruckerService');
 const ContainerDeliveryJobService = require('../service/ContainerDeliveryJobService');
 const ContainerDeliveryJobOfferService = require('../service/ContainerDeliveryJobOfferService');
 
+router.get("/:truckerId", (req, res) => {
+	const truckerId = req.params.truckerId;
+
+	new TruckerService().getTrucker(truckerId)
+		.then((result) => res.json(result));
+});
+
 router.get('/preferences/:truckerId', (req, res) =>
 {
 	new TruckerService().getTruckerPreferences(req.params.truckerId)
