@@ -32,7 +32,7 @@ class ContainerDeliveryJobService
 			.then((rawResult) => new ContainerDeliveryJobWithPassword(rawResult));
 	}
 
-	async retrieveByTruckerId(truckerId)
+	async retrieveContractedByTruckerId(truckerId)
 	{
 		console.log(`[retrieve(ContainerDeliveryJobForTrucker)] truckerId ${truckerId}`);
 

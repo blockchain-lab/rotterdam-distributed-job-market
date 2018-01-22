@@ -51,12 +51,12 @@ router.post('/preferences', (req, res) =>
 		.catch(() => res.status(500).send("unsuccessful"));
 });
 
-router.get('/acceptedjobs/:truckerId', (req, res) =>
+router.get('/contractedJobs/:truckerId', (req, res) =>
 {
 	const truckerId = req.params.truckerId;
 
 	new ContainerDeliveryJobService()
-		.retrieveByTruckerId(truckerId)
+		.retrieveContractedByTruckerId(truckerId)
 		.then((results) => res.json(results));
 		// .catch((error) => res.status(501).json({error: error}));
 });
