@@ -77,8 +77,8 @@ class ContainerDeliveryJobOfferService
 	 */
 	retrieveTruckerBidsForContainer(containerDeliveryJobOfferId)
 	{
-		return retrieveById(containerDeliveryJobOfferId)
-			.then((assets) => assets.map(x => new ContainerDeliveryJobOffer(x).getContainerBids()));
+		return this.retrieveById(containerDeliveryJobOfferId)
+			.then((asset) => asset.getContainerBids());
 	}
 
 	/**
