@@ -235,12 +235,24 @@ async function updateTrucker(trucker)
 }
 
 /**
+ * Records Trucker getting contracted for a delivery Job
  * @param {nl.tudelft.blockchain.logistics.Trucker} trucker - The trucker resource
  * @return {Promise} - of updated Trucker
  */
 async function recordAcceptedJobForTruckerRating(trucker)
 {
     trucker.rating.totalPastJobsAccepted += 1;
+    return updateTrucker(trucker);
+}
+
+/**
+ * Records the delivery of a Job for Trucker's rating
+ * @param {nl.tudelft.blockchain.logistics.Trucker} trucker - The trucker resource
+ * @return {Promise} - of updated Trucker
+ */
+async function recordDeliveredJobForTruckerRating(trucker)
+{
+    trucker.rating.jobsDelivered += 1;
     return updateTrucker(trucker);
 }
 
@@ -381,8 +393,6 @@ function createContainerDeliveryJobOffer(tx)
  */
 function acceptContainerDelivery(tx)
 {
-    //TODO: Raise event w.r.t. the delivery being made (to "ContainerGuy")
-
     if (tx.job.arrivalPassword !== tx.password) {
         throw new Error('Delivery password is incorrect, cannot accept delivery');
     }
@@ -392,18 +402,18 @@ function acceptContainerDelivery(tx)
     }
 
     tx.job.arrivalDateTime = tx.arrivalDateTime;
-    tx.job.jobOffer.status = "DELIVERED"
+    tx.job.jobOffer.status = "DELIVERED";
+    tx.job.status = "DELIVERED";
 
-    return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJob')
-        .then(function(assetRegistry) {
-            return assetRegistry.update(tx.job);
-        })
-        .then(function(x) {
-            return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer');
-        })
-        .then(function(assetRegistry) {
-            return assetRegistry.update(tx.job.jobOffer);
-        });
+    let updateTruckerRatingPromise = recordDeliveredJobForTruckerRating(tx.job.contractedTrucker);
+
+    let updateDeliveryJobPromise = getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJob')
+        .then((assetRegistry) => assetRegistry.update(tx.job));
+
+    let updateDeliveryJobOfferPromise = getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
+        .then((assetRegistry) => assetRegistry.update(tx.job.jobOffer));
+
+    return Promise.all([updateTruckerRatingPromise, updateDeliveryJobPromise, updateDeliveryJobOfferPromise]);
 }
 
 /**
