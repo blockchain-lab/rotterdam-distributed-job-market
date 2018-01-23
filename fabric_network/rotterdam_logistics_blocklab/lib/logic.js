@@ -226,6 +226,24 @@ async function bidOnContainerDeliveryJobOffer(tx)
     return Promise.all([addNewBidPromise, updateJobOfferPromise]);
 }
 
+async function updateTrucker(trucker)
+{
+    return getParticipantRegistry("nl.tudelft.blockchain.logistics.Trucker")
+        .then((registry) => {
+            registry.update(trucker);
+        });   
+}
+
+/**
+ * @param {nl.tudelft.blockchain.logistics.Trucker} trucker - The trucker resource
+ * @return {Promise} - of updated Trucker
+ */
+async function recordAcceptedJobForTruckerRating(trucker)
+{
+    trucker.rating.totalPastJobsAccepted += 1;
+    return updateTrucker(trucker);
+}
+
 /**
 * ContainerGuy accepts bid
 * @param {nl.tudelft.blockchain.logistics.AcceptBidOnContainerDeliveryJobOffer} tx - transaction parameters
@@ -258,6 +276,8 @@ async function acceptBidOnContainerDeliveryJobOffer(tx)
     containerDeliveryJob.arrivalPassword = "CHANGE_ME";
     containerDeliveryJob.status = "CONTRACTED";
 
+    let truckerRatingUpdatePromise = recordAcceptedJobForTruckerRating(tx.acceptedBid.bidder);
+
     const recordAcceptedBidPromise = getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {
             return assetRegistry.update(tx.containerDeliveryJobOffer);
@@ -270,7 +290,7 @@ async function acceptBidOnContainerDeliveryJobOffer(tx)
         });
 
     // All promises must resolve successfully for this TX to complete
-    return Promise.all([cancelBidsOnConflictingJobOffersPromise, recordAcceptedBidPromise]);
+    return Promise.all([cancelBidsOnConflictingJobOffersPromise, recordAcceptedBidPromise, truckerRatingUpdatePromise]);
 }
 
 /**
@@ -398,10 +418,7 @@ function updateTruckerPreferences(tx)
     tx.trucker.availability.to = tx.availableTo;
     tx.trucker.allowedDestinations = tx.allowedDestinations;
 
-    return getParticipantRegistry('nl.tudelft.blockchain.logistics.Trucker')
-        .then(function(assetRegistry) {
-            return assetRegistry.update(tx.trucker);
-        });
+    return updateTrucker(tx.trucker);
 }
 
 /**
