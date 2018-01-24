@@ -173,6 +173,12 @@ async function assertTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJo
 
 function assertJobOfferIsBiddable(containerDeliveryJobOffer)
 {
+    // Bidding phase is only when offer is IN MARKET
+    let isInMarket = containerDeliveryJobOffer.status == "INMARKET";
+    if (!isInMarket) {
+        throw new Error("job_not_in_market");
+    }
+
     // is job offer is still valid
     let isCanceled = containerDeliveryJobOffer.canceled;
     if (isCanceled) {
@@ -243,6 +249,12 @@ async function updateTrucker(trucker)
         });   
 }
 
+async function getContainerDeliveryJobOffer(id)
+{
+    return getAssetRegistry("nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer")
+        then((registry) => registry.get(id));
+}
+
 /**
  * Records Trucker getting contracted for a delivery Job
  * @param {nl.tudelft.blockchain.logistics.Trucker} trucker - The trucker resource
@@ -272,38 +284,41 @@ async function recordDeliveredJobForTruckerRating(trucker)
 */
 async function acceptBidOnContainerDeliveryJobOffer(tx)
 {
+    let bid = tx.acceptedBid;
+    let containerDeliveryJobOffer = tx.containerDeliveryJobOffer;
+
     // Ensure Trucker has no conflicts if job is accepted
-    let truckerIsAllowedToAcceptJob = isTruckerAllowedToAcceptJob(tx.acceptedBid.bidder, tx.containerDeliveryJobOffer);
+    let truckerIsAllowedToAcceptJob = isTruckerAllowedToAcceptJob(bid.bidder, containerDeliveryJobOffer);
     if(!(await truckerIsAllowedToAcceptJob)) {
         throw new Error('job_conflict');
     }
 
     // Cancel Truckers bids on conflicting jobs 
-    const cancelBidsOnConflictingJobOffersPromise = cancelTruckersBidsOnConflictingJobOffers(tx.containerDeliveryJobOffer, tx.acceptedBid.bidder);
+    const cancelBidsOnConflictingJobOffersPromise = cancelTruckersBidsOnConflictingJobOffers(containerDeliveryJobOffer, bid.bidder);
 
     // Set status of the JobOffer
-    tx.containerDeliveryJobOffer.acceptedBid = tx.acceptedBid;
-    tx.containerDeliveryJobOffer.status = "CONTRACTED";
+    containerDeliveryJobOffer.acceptedBid = bid;
+    containerDeliveryJobOffer.status = "CONTRACTED";
 
     // Make the ContainerDeliveryJob asset
-    var jobId = tx.containerDeliveryJobOffer.containerDeliveryJobOfferId + '_' + tx.acceptedBid.truckerBidId;
-    var containerDeliveryJob = getFactory().newResource('nl.tudelft.blockchain.logistics', 'ContainerDeliveryJob', jobId);
-    containerDeliveryJob.jobOffer = tx.containerDeliveryJobOffer;
-    containerDeliveryJob.contractedTrucker = tx.acceptedBid.bidder;
-    containerDeliveryJob.availableForPickupDateTime = tx.containerDeliveryJobOffer.availableForPickupDateTime;
-    containerDeliveryJob.toBeDeliveredByDateTime = tx.containerDeliveryJobOffer.toBeDeliveredByDateTime;
+    let jobId = containerDeliveryJobOffer.getIdentifier() + '_' + bid.getIdentifier();
+    let containerDeliveryJob = getFactory().newResource('nl.tudelft.blockchain.logistics', 'ContainerDeliveryJob', jobId);
+    containerDeliveryJob.jobOffer = containerDeliveryJobOffer;
+    containerDeliveryJob.contractedTrucker = bid.bidder;
+    containerDeliveryJob.availableForPickupDateTime = containerDeliveryJobOffer.availableForPickupDateTime;
+    containerDeliveryJob.toBeDeliveredByDateTime = containerDeliveryJobOffer.toBeDeliveredByDateTime;
 
     // TODO: some mechanism for negotating this. Maybe part of a DH-exchange (to also decrypt other data, also todo)
     containerDeliveryJob.arrivalPassword = "CHANGE_ME";
     containerDeliveryJob.status = "CONTRACTED";
 
-    let truckerRatingUpdatePromise = recordAcceptedJobForTruckerRating(tx.acceptedBid.bidder);
+    let truckerRatingUpdatePromise = recordAcceptedJobForTruckerRating(bid.bidder);
 
     const recordAcceptedBidPromise = getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {
-            return assetRegistry.update(tx.containerDeliveryJobOffer);
+            return assetRegistry.update(containerDeliveryJobOffer);
         })
-        .then (function (result) {
+        .then (function () {
             return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJob');
         })
         .then (function (assetRegistry) {
@@ -448,6 +463,8 @@ function updateTruckerPreferences(tx)
 function cancelBid(tx)
 {
     let containerDeliveryJobOffer = tx.truckerBid.containerDeliveryJobOffer;
+    
+    assertJobOfferIsBiddable(containerDeliveryJobOffer);
 
     var index = containerDeliveryJobOffer.containerBids.findIndex((value) => value.getIdentifier() == tx.truckerBid.getIdentifier());
     if(index < 0)
