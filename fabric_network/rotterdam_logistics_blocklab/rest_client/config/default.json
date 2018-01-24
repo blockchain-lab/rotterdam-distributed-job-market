@@ -6,5 +6,22 @@
 		
 		"containerDeliveryJobAssetRegistryName": "nl.tudelft.blockchain.logistics.ContainerDeliveryJob",
 		"containerDeliveryJobOfferAssetRegistryName": "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer"
-	}
+	},
+    "ComposerConfig": {
+       "debug": {
+         "logger": "default",
+         "config": {
+           "console": {
+             "enabledLevel": "verbose",
+             "alwaysLevel": "verbose"
+
+           },
+           "file": {
+             "filename": "./trace_PID.log",
+             "enabledLevel": "verbose",
+             "alwaysLevel": "info"
+           }
+         }
+       }
+      }
 }

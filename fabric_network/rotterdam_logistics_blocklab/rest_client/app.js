@@ -3,9 +3,17 @@ var express = require('express'),
   	bodyParser = require('body-parser'),
   	url = require('url'),
 	config = require('config');
+const fileUpload = require('express-fileupload');
+var cors = require('cors');
 
 var app = express();
 app.use(bodyParser.json());
+app.use(fileUpload());
+app.use(cors({
+    //origin: ['<DOMAIN1>', '<DOMAIN2>', ...],
+  	credentials: true
+}));
+
 
 require('./routes')(app);
 
