@@ -19,7 +19,7 @@ Installing Composer on Linux (proper):
 4. Install Yeoman, code generation tool
 	npm install -g yo
 
-Composer Playground, this is basically a site that allows you to create Business Network Defitions from your browser and execu
+5. (Optional) Composer Playground, this is basically a site that allows you to create Business Network Defitions from your browser and execu
 te some simple low-level commands such as asset creation. The "test"-area is very much like a SQL Workbench.
 
 Having gotten some grips with Composer, I have to say the playground is quite essential to my current dev workflow. The big changes I do locally in Sublime then just pase the code over and do the necessary fixes there. Once no errors there, I copy back and commit. This is much faster to do than running the Composer archive command (it checks your code and outputs detected errors in terminal) 
@@ -27,12 +27,12 @@ Having gotten some grips with Composer, I have to say the playground is quite es
 	npm install -g composer-playground@next
 
 
-Fabric-tools install:
+6. Fabric-tools install:
 	mkdir ~/fabric-tools && cd ~/fabric-tools
 	curl -O https://raw.githubusercontent.com/hyperledger/composer-tools/master/packages/fabric-dev-servers/fabric-dev-servers.zip
 	unzip fabric-dev-servers.zip
 
-Fabric dev environment initial setup:
+7. Fabric dev environment initial setup:
 	export FABRIC_VERSION=hlfv11
 	cd ~/fabric-tools
 	./downloadFabric.sh
@@ -84,7 +84,7 @@ To upgrade execute the following commands first:
 4. Remove Tools
 	rm ~/fabric-tools -rf
 
-5. Redownload the Fabric-Tools as outlined in the install section
-6. Do installation step 3, skip 4, install the new playground too
+5. Perform steps 3 and 5 in the initial setup 
+6. Perform step 6 of initial setup
 7. run start_test_network.sh
 8. enjoy!
