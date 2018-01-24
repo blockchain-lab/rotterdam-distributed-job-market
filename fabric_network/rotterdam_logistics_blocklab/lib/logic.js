@@ -112,9 +112,13 @@ async function cancelTruckersBidsOnConflictingJobOffers(containerDeliveryJobOffe
 /**
  * @param {nl.tudelft.blockchain.logistics.TruckCapacityType} availableForPickupDateTime
  * @param {nl.tudelft.blockchain.logistics.ContainerSize} containerSize
+ * @return {boolean} - true if truck capacity can fit the container size
  */
 function isTruckCapacityEligableForContainerSize(truckCapacityType, containerSize)
 {
+    // We support two types: 20, 40
+    // Truck is eligable if the capacity is same as size, or the Truck is a 2x20 type while the container is 20
+    // note: currently there is no support for a 2x20 truck accepting 2 concurrent jobs
     return (truckCapacityType == containerSize)
             || (truckCapacityType == "TWENTY_TWENTY" && containerSize == "TWENTY");
 }
@@ -141,7 +145,7 @@ async function hasConflictingAcceptedJobs(trucker, containerDeliveryJobOffer)
  * @param {nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer} containerDeliveryJobOffer
  * @return {Promise} - of a boolean indicating if Trucker is allowed to bid on Job Offer
  */
-async function isTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOffer)
+async function assertTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOffer)
 {
     // should we check preferences as well?
   
@@ -165,8 +169,20 @@ async function isTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOff
     if(hasConflicts) {
         throw new Error("job_conflict");
     }
+}
 
-    return adrEligable && truckCapacityEligable && withinTruckerPickupAvailability && !hasConflicts;
+function assertJobOfferIsBiddable()
+{
+    // is job offer is still valid
+    let isCanceled = containerDeliveryJobOffer.canceled;
+    if (isCanceled) {
+        throw new Error('job_canceled');
+    }
+
+    let isAccepted = containerDeliveryJobOffer.hasOwnProperty('acceptedContainerBid')
+    if (isAccepted) {
+        throw new Error('job_accepted');
+    }
 }
 
 /**
@@ -193,21 +209,13 @@ async function bidOnContainerDeliveryJobOffer(tx)
     var biddingTrucker = tx.bidder;
     var containerDeliveryJobOffer = tx.containerDeliveryJobOffer;
 
-    // Check if job offer is still valid
-    if (containerDeliveryJobOffer.canceled || containerDeliveryJobOffer.hasOwnProperty('acceptedContainerBid'))
-    {
-        throw new Error('Cannot bid on job, job offer is canceled or another trucker has been contracted');
-    }
+    // Check if JobOffer is open for bidding
+    assertJobOfferIsBiddable();
 
     // Check if Trucker is eligable
-    let truckerIsEligibleToBid = await isTruckerEligableToBidOnJobOffer(biddingTrucker, containerDeliveryJobOffer);
-    if (!truckerIsEligibleToBid)
-    {
-        // Trucker does not meet criteria
-        throw new Error('Trucker is not eligible to bid on container delivery job offer');
-    }
+    await assertTruckerEligableToBidOnJobOffer(biddingTrucker, containerDeliveryJobOffer);
     
-    var bidId =  biddingTrucker.truckerId + '_' + containerDeliveryJobOffer.containerDeliveryJobOfferId + '_' + tx.bidAmount;
+    var bidId = biddingTrucker.truckerId + '_' + containerDeliveryJobOffer.containerDeliveryJobOfferId + '_' + tx.bidAmount;
     var newContainerBid = factory.newResource('nl.tudelft.blockchain.logistics', 'TruckerBidOnContainerJobOffer', bidId);
     newContainerBid.bidAmount = tx.bidAmount;
     newContainerBid.bidder = biddingTrucker;
@@ -376,7 +384,7 @@ function createContainerDeliveryJobOffer(tx)
 
     newContainerDeliveryJobOffer.containerGuyId = tx.containerInfo.owner.containerGuyId;
     
-    // intialize to staring values
+    // intialize to starting values
     newContainerDeliveryJobOffer.containerBids = [];
     newContainerDeliveryJobOffer.status = "INMARKET";
   
