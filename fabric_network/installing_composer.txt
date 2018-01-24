@@ -61,8 +61,8 @@ To upgrade execute the following commands first:
 
 1. Remove composer cards/connection profiles
 	composer card list
-	composer card remove --name admin@rotterdam_logistics_blocklab
-	composer card remove --name PeerAdmin@hlfv1
+	composer card delete --name admin@rotterdam_logistics_blocklab
+	composer card delete --name PeerAdmin@hlfv1
 
    Delete the cards in /tmp/ (typed this from memory, name and/or extension might differ!)
 	rm /tmp/PeerAdmin@hlfv1.card
