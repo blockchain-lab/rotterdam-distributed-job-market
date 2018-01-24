@@ -32,7 +32,9 @@ enum ContainerSize {
 
 asset TruckerBidOnContainerJobOffer identified by truckerBidId {
 	o String truckerBidId
+	
 	--> Trucker bidder
+	--> ContainerDeliveryJobOffer containerDeliveryJobOffer
 	
 	/* Use integers for monetary values, we're not an exchange.
 	Can always work in "cents" if more precision is required.
@@ -213,7 +215,6 @@ transaction UpdateTruckerPreferences {
 }
 
 transaction CancelBid {
-	--> ContainerDeliveryJobOffer containerDeliveryJobOffer
 	--> TruckerBidOnContainerJobOffer truckerBid
 }
 

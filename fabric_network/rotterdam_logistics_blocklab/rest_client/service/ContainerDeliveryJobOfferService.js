@@ -85,7 +85,7 @@ class ContainerDeliveryJobOfferService
 	 * @param {String} containerDeliveryJobOfferId
 	 * @return {Promise} TruckerBidOnContainerJobOffer[]
 	 */
-	cancelBid(containerDeliveryJobOfferId, truckerBidId)
+	cancelBid(truckerBidId)
 	{
 		console.log(`[cancelBid] cancel bid ${truckerBidId} on ${containerDeliveryJobOfferId}`);
 
@@ -97,7 +97,6 @@ class ContainerDeliveryJobOfferService
 			txName,
 			(tx, factory) => {
 				return new CancelBidCommand({
-					containerDeliveryJobOfferId: containerDeliveryJobOfferId, 
 					truckerBidId: truckerBidId
 				}).hydrateTx(tx, factory);
 			});

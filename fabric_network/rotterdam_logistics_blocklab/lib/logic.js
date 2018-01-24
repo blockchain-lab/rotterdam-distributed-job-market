@@ -101,7 +101,7 @@ async function cancelTruckersBidsOnConflictingJobOffers(containerDeliveryJobOffe
             cancelConflictingBidsPromises.push(
                 getAssetRegistry("nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer")
                     .then((registry) => registry.get(bidToCancel.getIdentifier()))
-                    .then((bid) => cancelBid({truckerBid: bid, containerDeliveryJobOffer: offerWithBidsToCancel.conflictingOffer}))
+                    .then((bid) => cancelBid({truckerBid: bid}))
             )
         )
     );
@@ -171,7 +171,7 @@ async function assertTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJo
     }
 }
 
-function assertJobOfferIsBiddable()
+function assertJobOfferIsBiddable(containerDeliveryJobOffer)
 {
     // is job offer is still valid
     let isCanceled = containerDeliveryJobOffer.canceled;
@@ -210,7 +210,7 @@ async function bidOnContainerDeliveryJobOffer(tx)
     var containerDeliveryJobOffer = tx.containerDeliveryJobOffer;
 
     // Check if JobOffer is open for bidding
-    assertJobOfferIsBiddable();
+    assertJobOfferIsBiddable(containerDeliveryJobOffer);
 
     // Check if Trucker is eligable
     await assertTruckerEligableToBidOnJobOffer(biddingTrucker, containerDeliveryJobOffer);
@@ -219,6 +219,7 @@ async function bidOnContainerDeliveryJobOffer(tx)
     var newContainerBid = factory.newResource('nl.tudelft.blockchain.logistics', 'TruckerBidOnContainerJobOffer', bidId);
     newContainerBid.bidAmount = tx.bidAmount;
     newContainerBid.bidder = biddingTrucker;
+    newContainerBid.containerDeliveryJobOffer = containerDeliveryJobOffer;
 
     var addNewBidPromise = getAssetRegistry('nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer')
         .then(function (assetRegistry) {
@@ -446,19 +447,21 @@ function updateTruckerPreferences(tx)
  */
 function cancelBid(tx)
 {
-    var index = tx.containerDeliveryJobOffer.containerBids.findIndex((value) => value.getIdentifier() == tx.truckerBid.getIdentifier());
+    let containerDeliveryJobOffer = tx.truckerBid.containerDeliveryJobOffer;
+
+    var index = containerDeliveryJobOffer.containerBids.findIndex((value) => value.getIdentifier() == tx.truckerBid.getIdentifier());
     if(index < 0)
     {
         // not found, do nothing
         return Promise.resolve(null);
     }
 
-    tx.containerDeliveryJobOffer.containerBids.splice(index, 1);
+    containerDeliveryJobOffer.containerBids.splice(index, 1);
 
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function(assetRegistry) 
         {
-            return assetRegistry.update(tx.containerDeliveryJobOffer);
+            return assetRegistry.update(containerDeliveryJobOffer);
         })
         .then(function(x) 
         {
