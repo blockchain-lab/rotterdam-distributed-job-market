@@ -166,7 +166,6 @@ transaction BidOnContainerDeliveryJobOffer {
 }
 
 transaction AcceptBidOnContainerDeliveryJobOffer {
-	--> ContainerDeliveryJobOffer containerDeliveryJobOffer
 	--> TruckerBidOnContainerJobOffer acceptedBid
 }
 

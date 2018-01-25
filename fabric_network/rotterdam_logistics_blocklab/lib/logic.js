@@ -285,7 +285,7 @@ async function recordDeliveredJobForTruckerRating(trucker)
 async function acceptBidOnContainerDeliveryJobOffer(tx)
 {
     let bid = tx.acceptedBid;
-    let containerDeliveryJobOffer = tx.containerDeliveryJobOffer;
+    let containerDeliveryJobOffer = tx.acceptedBid.containerDeliveryJobOffer;
 
     // Ensure Trucker has no conflicts if job is accepted
     let truckerIsAllowedToAcceptJob = isTruckerAllowedToAcceptJob(bid.bidder, containerDeliveryJobOffer);
