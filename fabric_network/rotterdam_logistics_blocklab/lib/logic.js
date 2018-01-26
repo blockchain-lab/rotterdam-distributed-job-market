@@ -80,31 +80,39 @@ async function getAllConflictingJobOffersForTruckerAndJobBeingAccepted(trucker, 
  */
 async function cancelTruckersBidsOnConflictingJobOffers(containerDeliveryJobOffer, forTrucker)
 {
+    // Need to find all the bids of the trucker in the conflictingJobOffers, get the actual asset and then cancel those
     var conflictingJobOffersTruckerHasBidOn = await getAllConflictingJobOffersForTruckerAndJobBeingAccepted(forTrucker, containerDeliveryJobOffer);
 
-    // Need to find all the bids of the trucker in the conflictingJobOffers, get the actual asset and then cancel those
     let truckerId = forTrucker.getIdentifier();
 
-    // first filter exclude the jobOffer provided in the arguments, as it always conflicts with itself and we don't want to cancel that bid
-    let toCancel = conflictingJobOffersTruckerHasBidOn.filter((offer) => offer.getIdentifier() != containerDeliveryJobOffer.getIdentifier())
-        .map((conflictingOffer) =>
-        {
-            // hacky: all bids of a tricker share same resource URI prefix, so use that instead of querying and filtering on ID's
-            // trucker might have more than one bid on an JobOffer
-            let bidsToCancel = conflictingOffer.containerBids.filter((bidRelationship) => bidRelationship.getIdentifier().startsWith(truckerId))
-            return {bidsToCancel: bidsToCancel, conflictingOffer: conflictingOffer}
-        });
+    let cancelBidBy = (bidRef, jobOffer) =>
+    {
+        return getAssetRegistry("nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer")
+            .then((registry) => registry.get(bidRef.getIdentifier()))
+            .then((bid) => {
+                // workaround for RuntimeApi registry not resolving relations
+                bid.containerDeliveryJobOffer = jobOffer;
+                cancelBid({truckerBid: bid});
+            });
+    }
 
-    const cancelConflictingBidsPromises = [];
-    toCancel.forEach((offerWithBidsToCancel) =>
-        offerWithBidsToCancel.bidsToCancel.forEach((bidToCancel) =>
-            cancelConflictingBidsPromises.push(
-                getAssetRegistry("nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer")
-                    .then((registry) => registry.get(bidToCancel.getIdentifier()))
-                    .then((bid) => cancelBid({truckerBid: bid}))
-            )
-        )
-    );
+    let jobOfferIntoItemsWithBidRefAndJobOffer = (jobOffer) => jobOffer.containerBids.map((bidRef) => {
+        return {bidRef: bidRef, correspondingJobOffer: jobOffer};
+    });
+
+    let cancelConflictingBidsPromises = conflictingJobOffersTruckerHasBidOn
+        // exclude the jobOffer provided in the arguments, don't want to touch that
+        .filter((offer) => offer.getIdentifier() != containerDeliveryJobOffer.getIdentifier())
+        // map elements to arrays of bids
+        // note: need to keep track of the jobOffers as the RuntimeApi registry does not have a 'resolve' method
+        .map(jobOfferIntoItemsWithBidRefAndJobOffer)
+        // unpack a stream of arrays of items into just a stream of items so that we can use map and simply return promises
+        .reduce((accumulator, value) => accumulator.concat(value))
+        // hacky: all bids of a tricker share same resource URI prefix, so use that instead of querying and filtering on ID's
+        // trucker might have more than one bid on an JobOffer. Also note that we're not dealing with Bid objects, but the refs
+        .filter((item) => item.bidRef.getIdentifier().startsWith(truckerId))
+        // now cancel each matched bid and collect the promises (on which the TX engine needs to wait)
+        .map((item) => cancelBidBy(item.bidRef, item.correspondingJobOffer));
 
     return Promise.all(cancelConflictingBidsPromises);
 }   
@@ -176,7 +184,7 @@ function assertJobOfferIsBiddable(containerDeliveryJobOffer)
     // Bidding phase is only when offer is IN MARKET
     let isInMarket = containerDeliveryJobOffer.status == "INMARKET";
     if (!isInMarket) {
-        throw new Error("job_not_in_market");
+        throw new Error("job_not_in_market, was: " + containerDeliveryJobOffer.status);
     }
 
     // is job offer is still valid
@@ -287,6 +295,8 @@ async function acceptBidOnContainerDeliveryJobOffer(tx)
     let bid = tx.acceptedBid;
     let containerDeliveryJobOffer = tx.acceptedBid.containerDeliveryJobOffer;
 
+    assertJobOfferIsBiddable(containerDeliveryJobOffer);
+
     // Ensure Trucker has no conflicts if job is accepted
     let truckerIsAllowedToAcceptJob = isTruckerAllowedToAcceptJob(bid.bidder, containerDeliveryJobOffer);
     if(!(await truckerIsAllowedToAcceptJob)) {
@@ -346,12 +356,17 @@ function RaiseExceptionOnDeliveryJob(tx)
 }
 
 /**
-* Cancel delivery
+* Cancel job offer -- can only do this when there is no Trucker contracted
 * @param {nl.tudelft.blockchain.logistics.CancelContainerDeliveryJobOffer} tx - transaction parameters
 * @transaction
 */
 function cancelContainerDeliveryJobOffer(tx)
-{
+{   
+    let jobStatus = tx.ContainerDeliveryJobOffer.status;
+    if (jobStatus != "INMARKET" || jobStatus != "NEW") {
+        throw new Error("job_not_cancelable");
+    }
+
     tx.containerDeliveryJobOffer.canceled = true;
     
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
@@ -463,7 +478,8 @@ function updateTruckerPreferences(tx)
 function cancelBid(tx)
 {
     let containerDeliveryJobOffer = tx.truckerBid.containerDeliveryJobOffer;
-    
+    console.log(containerDeliveryJobOffer.status);
+
     assertJobOfferIsBiddable(containerDeliveryJobOffer);
 
     var index = containerDeliveryJobOffer.containerBids.findIndex((value) => value.getIdentifier() == tx.truckerBid.getIdentifier());
@@ -486,6 +502,7 @@ function cancelBid(tx)
         })
         .then(function(assetRegistry) 
         {
-            return assetRegistry.remove(tx.truckerBid);
+            // TODO: bid doesn't get removed for some reason :S
+            return assetRegistry.remove(tx.truckerBid.getIdentifier());
         });
 }
