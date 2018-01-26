@@ -18,10 +18,10 @@ class TestService {
 		let containerInfoService = new ContainerInfoService();
 		var containerInfoDeliveryJobService = new ContainerDeliveryJobOfferService();
 
-		let promiseTrucker1 = methods.CreateTrucker('1');
-		let promiseTrucker2 = methods.CreateTrucker('2');
-		let promiseContainerGuy1 = methods.CreateContainerGuy("1");
-		let promiseContainerGuy2 = methods.CreateContainerGuy("2");
+		let promiseTrucker1 = methods.CreateTrucker('1').catch(() => null);
+		let promiseTrucker2 = methods.CreateTrucker('2').catch(() => null);
+		let promiseContainerGuy1 = methods.CreateContainerGuy("1").catch(() => null);
+		let promiseContainerGuy2 = methods.CreateContainerGuy("2").catch(() => null);
 
 		var cont = `{
 		  "$class": "nl.tudelft.blockchain.logistics.ContainerInfo",
@@ -30,16 +30,16 @@ class TestService {
 		  "containerType": "BasicContainer",
 		  "containerSize": "TWENTY"
 		}`;
-		let promiseContainer1 = containerInfoService.CreateContainerInfo(JSON.parse(cont));
+		let promiseContainer1 = containerInfoService.CreateContainerInfo(JSON.parse(cont)).catch(() => null);
 
 		var cont = `{
 		  "$class": "nl.tudelft.blockchain.logistics.ContainerInfo",
 		  "containerId": "2",
-		  "ownerId": "1",
+		  "ownerId": "2",
 		  "containerType": "BasicContainer",
 		  "containerSize": "TWENTY"
 		}`;
-		let promiseContainer2 = containerInfoService.CreateContainerInfo(JSON.parse(cont));
+		let promiseContainer2 = containerInfoService.CreateContainerInfo(JSON.parse(cont)).catch(() => null);
 
 		var data = `{
 		  "$class": "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer",

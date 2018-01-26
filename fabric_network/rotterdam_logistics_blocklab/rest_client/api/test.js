@@ -9,7 +9,7 @@ router.get('/runTest', (req, res) => {
 router.get('/initNetwork', (req, res) => {
 	new TestService().initNetwork()
 		.then(() => res.send("Completed"))
-		.catch((error) => res.status(501).json({error: error}));
+		.catch((error) => res.status(501).json({error: error.message}));
 });
 
 module.exports = router;
