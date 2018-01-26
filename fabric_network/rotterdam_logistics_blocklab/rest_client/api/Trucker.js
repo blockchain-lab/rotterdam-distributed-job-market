@@ -8,25 +8,21 @@ router.get("/:truckerId", (req, res) => {
 	const truckerId = req.params.truckerId;
 
 	new TruckerService().getTrucker(truckerId)
-		.then((result) => res.json(result));
+		.then((result) => res.json(result))
+		.then((error) => res.status(501).json({error: error}));
 });
 
 router.get('/preferences/:truckerId', (req, res) =>
 {
 	new TruckerService().getTruckerPreferences(req.params.truckerId)
-		.then((truckerPrefs) => 
-		{
-			res.json(truckerPrefs);
-		});
+		.then((truckerPrefs) => res.json(truckerPrefs));
 });
 
 router.get('/bids/:truckerId', (req, res) =>
 {
 	new TruckerService().getTruckerBids(req.params.truckerId)
-		.then((truckerBids) =>
-		{
-			res.json(truckerBids);
-		});
+		.then((truckerBids) => res.json(truckerBids))
+		.catch((error) => res.status(501).json({error: error}));
 });
 
 router.get('/rating/:truckerId', (req, res) => {
@@ -34,7 +30,7 @@ router.get('/rating/:truckerId', (req, res) => {
 
 	new TruckerService().getRating(truckerId)
 		.then((truckerRating) => res.json(truckerRating))
-		.catch((error) => res.status(500).send(error));
+		.catch((error) => res.status(501).send({error: error}));
 });
 
 router.post('/preferences', (req, res) =>
@@ -48,7 +44,7 @@ router.post('/preferences', (req, res) =>
 	new TruckerService()
 		.updateTruckerPreferences(truckerId, truckCapacity, availableFrom, availableTo, allowedDestinations)
 		.then((result) => res.json(result))
-		.catch(() => res.status(500).send("unsuccessful"));
+		.catch((error) => res.status(501).json({error: error.message}));
 });
 
 router.get('/contractedJobs/:truckerId', (req, res) =>
@@ -57,8 +53,8 @@ router.get('/contractedJobs/:truckerId', (req, res) =>
 
 	new ContainerDeliveryJobService()
 		.retrieveContractedByTruckerId(truckerId)
-		.then((results) => res.json(results));
-		// .catch((error) => res.status(501).json({error: error}));
+		.then((results) => res.json(results))
+		.catch((error) => res.status(501).json({error: error.message}));
 });
 
 router.post('/acceptDelivery/:containerDeliveryJobId/:password', (req, res) => 
@@ -80,7 +76,8 @@ router.post("/:containerDeliveryJobOfferId/submitBid/:bidderId/:bidAmount", (req
 
 	new ContainerDeliveryJobOfferService()
 		.submitBid(containerDeliveryJobOfferId, bidderId, bidAmount)
-		.then((result) => { res.status(200).send("tx submitted successfully"); } ); // TODO: proper status, maybe return the DeliveryJob
+		.then((result) => res.status(200).send("tx submitted successfully")) // TODO: proper status, maybe return the DeliveryJob
+		.catch((error) => res.status(501).json({error: error.message}));
 });
 
 module.exports = router;
