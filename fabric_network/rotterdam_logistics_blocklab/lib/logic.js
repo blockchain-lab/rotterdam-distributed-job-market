@@ -74,6 +74,14 @@ async function getAllConflictingJobOffersForTruckerAndJobBeingAccepted(trucker, 
  * Cancels bids of Trucker on ContainerDeliveryJobOffers that if bid accepted, would result in a job conflict.
  * This is done for sanity and UX reasons as accepting a bid that results in a conflict would throw an error anyway, forcing the
  * shipper/containerGuy to a lot of trial-and-error in a the worst case.
+ *
+ * We can image the jobs being not so tight delivery-time wise as this ProofOfConcept and that what we currently see as a "conflict" 
+ * is not a conflict in real life. In the future, the decision if the jobs are a conflict can be left to the Trucker. And can be even executed
+ * from the Restful-Api-Application. But doing so is considerably more complex as all kinds of race-conditions, business rules, usability
+ * and Shipper & Trucker satisfaction must be taken into account. Therefore we KISS'd it and simply cancel every conflict here assuming that
+ * pickup-datetime and expected-delivery-datetime and fairly tight (tight enough to not allow the Trucker enough time to deliver,
+ * drive back to the Port and pick up some other accepted job on-time before the expected-delivery-datetime of the first job has passed)
+ *
  * @param {nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer} containerDeliveryJobOffer - the job offer which is being accepted
  * @param {nl.tudelft.blockchain.logistics.Trucker} forTrucker - the Trucker in question
  * @return {Promise} - Promise which when resolved indicates that bids on conflicting offers are canceled
