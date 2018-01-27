@@ -7,27 +7,24 @@ const CreateContainerInfoCommand = require('../domain/tx/CreateContainerInfoComm
 
 class IdentityService
 {
-
-	Login(data){
+	login(data)
+	{
 		return LogisticsNetwork.importCardToNetwork(data);
 	}
 
-	Ping(authorization){
+	ping(authorization)
+	{
 		var cardName = authorization;
 	    var logisticsNetwork = new LogisticsNetwork(cardName);
 
-	    return logisticsNetwork.init().then(function () {
-	        return logisticsNetwork.Ping();
-	    });
+	    return logisticsNetwork.ping();
 	}
 
-	Logout(authorization){
+	logout(authorization)
+	{
 		var cardName = authorization;
-		var logisticsNetwork = new LogisticsNetwork(cardName);
-
-	    logisticsNetwork.init().then(function () {
-	        return logisticsNetwork.logout();
-	    });
+		var logisticsNetwork = new LogisticsNetwork(cardName)
+			.logout();
 	}
 }
 

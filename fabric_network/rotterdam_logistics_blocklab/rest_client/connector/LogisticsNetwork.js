@@ -12,12 +12,8 @@ const FileSystemCardStore = require('composer-common').FileSystemCardStore;
 const BusinessNetworkCardStore = require('composer-common').BusinessNetworkCardStore;
 const AdminConnection = require('composer-admin').AdminConnection;
 
-var fileSystemCardStore = new FileSystemCardStore();
-var businessNetworkCardStore = new BusinessNetworkCardStore();
-var adminConnection = new AdminConnection();
-
 const config = require('config').get('logistics-app');
-const cardname = config.get('cardname');
+const admin_cardname = config.get('cardname');
 
 const truckerParticipantRegistryName = config.get('truckerParticipantRegistryName');
 const containerDeliveryJobOfferAssetRegistryName = config.get('containerDeliveryJobOfferAssetRegistryName');
@@ -28,39 +24,36 @@ class LogisticsNetwork
 	constructor(cardName) 
 	{
 	    this.currentParticipantId;
-	    this.cardName = cardName;
+	    this.cardname = cardName === undefined ? admin_cardname : cardName;
 		this.bizNetworkConnection = new BusinessNetworkConnection();
 	}
 
 	init()
 	{
-		var _this = this;
 		if (this.connectPromise === undefined)
 		{
 			this.connectPromise = this.bizNetworkConnection.connect(this.cardname)
 				.then((result) => {
-				    _this.businessNetworkDefinition = result;
-				    _this.serializer = _this.businessNetworkDefinition.getSerializer();
-					this.businessNetworkDefinition = result;
+				    this.businessNetworkDefinition = result;
+				    this.serializer = this.businessNetworkDefinition.getSerializer();
 				});
 		}
 
 		return this.connectPromise;
 	}
 
-	ping() {
-		var _this = this;
-		return this.bizNetworkConnection.ping().then(function (result) {
-			return result
-		})
+	ping() 
+	{
+		return this.init()
+			.then(() => this.bizNetworkConnection.ping());
 	}
 
-	logout() {
-		var _this = this;
-
-		return this.ping().then(function(){
-			return AdminConnection.deleteCard(_this.cardName)
-		})
+	logout()
+	{
+		// Not sure if deleting a card can be branded as "logout"
+		return this.ping()
+			.then(() => new AdminConnection().connect(admin_cardname))
+			.then((adminConnection) => adminConnection.deleteCard(this.cardName));
 	}
 
 	getTruckerParticipantRegistry()
@@ -116,43 +109,33 @@ class LogisticsNetwork
 
 				return fn(resource, factory);
 			})
-			.then((res) => 
-				this.bizNetworkConnection.getParticipantRegistry(namespace + "." + type)
-					.then((reg) => reg.add(res)
-						.then()
-						.catch((error) => {
-							throw error;
-						})
-				)
+			.then((res) => this.bizNetworkConnection.getParticipantRegistry(`${namespace}.${type}`)
+				.then((reg) => reg.add(res))
 			);
 	}
 
-	static importCardToNetwork(cardData) {
-		var _idCardData, _idCardName;
-		var businessNetworkConnection = new BusinessNetworkConnection();
+	static async importCardToNetwork(cardData)
+	{
+		let fileSystemCardStore = new FileSystemCardStore();
+		let adminConnection = new AdminConnection({cardStore: fileSystemCardStore});
+		let adminConnectionConnectPromise = adminConnection.connect(admin_cardname);
 
-		return IdCard.fromArchive(cardData).then(function(idCardData) {
-			_idCardData = idCardData;
-			return BusinessNetworkCardStore.getDefaultCardName(idCardData)
-		}).then(function(idCardName) {
-			_idCardName = idCardName;
-			return fileSystemCardStore.put(_idCardName, _idCardData)
-		}).then(function(result) {
-			return adminConnection.importCard(_idCardName, _idCardData);
-		})
+		let _idCardData = await IdCard.fromArchive(cardData);
+		let _idCardName = await BusinessNetworkCardStore.getDefaultCardName(_idCardData);
 
-		// .then(function(imported) {
-		// 	if (imported) {
-		// 		return businessNetworkConnection.connect(_idCardName)
-		// 	} else {
-		// 		return null;
-		// 	}
-		// }).then(function(businessNetworkDefinition){
-		// 	if (!businessNetworkDefinition) {
-		//   		return null
-		// 	}
-		// 	return _idCardName;
-		// })
+		let isCardImportedAlready = adminConnectionConnectPromise.then(() => adminConnection.hasCard(_idCardName));
+
+		if (!isCardImportedAlready) {
+			// await fileSystemCardStore.put(_idCardName, _idCardData);
+			await adminConnectionConnectPromise.then(() =>
+				adminConnection.importCard(_idCardName, _idCardData)
+			).then(() => adminConnection.ping());
+
+			console.log(`\n\cardname: ${_idCardName}`);
+		}
+
+		return new LogisticsNetwork(_idCardName).init()
+			.then(() => _idCardName);
 	}
 }
 
