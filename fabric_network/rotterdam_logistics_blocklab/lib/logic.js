@@ -486,7 +486,7 @@ function updateTruckerPreferences(tx)
 function cancelBid(tx)
 {
     let containerDeliveryJobOffer = tx.truckerBid.containerDeliveryJobOffer;
-    console.log(containerDeliveryJobOffer.status);
+    let bidId = tx.truckerBid.getIdentifier();
 
     assertJobOfferIsBiddable(containerDeliveryJobOffer);
 
@@ -499,18 +499,11 @@ function cancelBid(tx)
 
     containerDeliveryJobOffer.containerBids.splice(index, 1);
 
-    return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
-        .then(function(assetRegistry) 
-        {
-            return assetRegistry.update(containerDeliveryJobOffer);
-        })
-        .then(function(x) 
-        {
-            return getAssetRegistry('nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer');
-        })
-        .then(function(assetRegistry) 
-        {
-            // TODO: bid doesn't get removed for some reason :S
-            return assetRegistry.remove(tx.truckerBid.getIdentifier());
-        });
+    let removeBidFromJobOfferPromise = getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
+            .then((assetRegistry) => assetRegistry.update(containerDeliveryJobOffer));
+
+    let removeBidFromAssetRegistryPromise = getAssetRegistry('nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer')
+            .then((assetRegistry) => assetRegistry.remove(bidId));
+
+    return Promise.all([removeBidFromAssetRegistryPromise, removeBidFromJobOfferPromise]);
 }
