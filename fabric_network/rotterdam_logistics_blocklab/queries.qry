@@ -29,7 +29,7 @@ query FindContainerDeliveryJobOfferById {
  	TruckerJobSearchNotice? This way truckers can have multiple days they're searching for work in advance.
 
 	Params:
-     - allowedDestinations (String[]) = String array of general destinations (Trucker.allowedDestinations)
+     - allowedDestinations (String[]) = String array of general destinations
      - availableFrom = DateTime of moment from which the container is to be picked-up (Trucker.availability.from)
      - availableTill = DateTime of moment until the container can be picked-up (Trucker.availability.to)
      - requiredAdrTraining = AdrTraining required for the job (Trucker.adrTraining)

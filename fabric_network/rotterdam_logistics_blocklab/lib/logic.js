@@ -1,15 +1,6 @@
 'use strict';
 
 /**
- * @param {DateTime} availableForPickupDateTime
- * @param {nl.tudelft.blockchain.logistics.TruckerAvailability} truckerAvailability
- */
-function isContainerPickupDateTimeWithinTruckerAvailability(availableForPickupDateTime, truckerAvailability)
-{
-    return truckerAvailability.from <= availableForPickupDateTime && availableForPickupDateTime <= truckerAvailability.to;
-}
-
-/**
  * @param {nl.tudelft.blockchain.logistics.AdrTraining} truckerAdrTraining
  * @param {nl.tudelft.blockchain.logistics.AdrTraining} requiredAdrTraining
  */
@@ -162,9 +153,7 @@ async function hasConflictingAcceptedJobs(trucker, containerDeliveryJobOffer)
  * @return {Promise} - of a boolean indicating if Trucker is allowed to bid on Job Offer
  */
 async function assertTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOffer)
-{
-    // should we check preferences as well?
-  
+{  
     // currently: just sticking to legal things (ADR && truck capacity)
     var adrEligable = isTruckerAdrEligable(trucker.adrTraining, containerDeliveryJobOffer.requiredAdrTraining);
     if (!adrEligable) {
@@ -174,11 +163,6 @@ async function assertTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJo
     var truckCapacityEligable = isTruckCapacityEligableForContainerSize(trucker.truckCapacity, containerDeliveryJobOffer.containerInfo.containerSize);
     if (!truckCapacityEligable) {
         throw new Error("truck_capacity_not_eligable");
-    }
-
-    var withinTruckerPickupAvailability = isContainerPickupDateTimeWithinTruckerAvailability(containerDeliveryJobOffer.availableForPickupDateTime, trucker.availability);
-    if (!withinTruckerPickupAvailability) {
-        throw new Error("job_not_within_trucker_availability");
     }
 
     var hasConflicts = await hasConflictingAcceptedJobs(trucker, containerDeliveryJobOffer);
@@ -192,7 +176,7 @@ function assertJobOfferIsBiddable(containerDeliveryJobOffer)
     // Bidding phase is only when offer is IN MARKET
     let isInMarket = containerDeliveryJobOffer.status == "INMARKET";
     if (!isInMarket) {
-        throw new Error("job_not_in_market, was: " + containerDeliveryJobOffer.status);
+        throw new Error("job_not_in_market");
     }
 
     // is job offer is still valid
@@ -214,8 +198,8 @@ function assertJobOfferIsBiddable(containerDeliveryJobOffer)
  */
 async function isTruckerAllowedToAcceptJob(trucker, containerDeliveryJobOffer)
 {
-    var hasNoConflictingAcceptedJobs = !(await hasConflictingAcceptedJobs(trucker, containerDeliveryJobOffer));
-    return hasNoConflictingAcceptedJobs;
+    var hasConflicts = await hasConflictingAcceptedJobs(trucker, containerDeliveryJobOffer);
+    return !hasConflicts;
 }
 
 /**
@@ -471,9 +455,6 @@ function acceptContainerDelivery(tx)
 function updateTruckerPreferences(tx)
 {
     tx.trucker.truckCapacity = tx.truckCapacity;
-    tx.trucker.availability.from = tx.availableFrom;
-    tx.trucker.availability.to = tx.availableTo;
-    tx.trucker.allowedDestinations = tx.allowedDestinations;
 
     return updateTrucker(tx.trucker);
 }

@@ -18,10 +18,12 @@ class TestService {
 		let containerInfoService = new ContainerInfoService();
 		var containerInfoDeliveryJobService = new ContainerDeliveryJobOfferService();
 
-		let promiseTrucker1 = methods.CreateTrucker('1').catch(() => null);
-		let promiseTrucker2 = methods.CreateTrucker('2').catch(() => null);
-		let promiseContainerGuy1 = methods.CreateContainerGuy("1").catch(() => null);
-		let promiseContainerGuy2 = methods.CreateContainerGuy("2").catch(() => null);
+		let handleError = (error) => console.log(error);
+		
+		let promiseTrucker1 = methods.CreateTrucker('1').catch(handleError);
+		let promiseTrucker2 = methods.CreateTrucker('2').catch(handleError);
+		let promiseContainerGuy1 = methods.CreateContainerGuy("1").catch(handleError);
+		let promiseContainerGuy2 = methods.CreateContainerGuy("2").catch(handleError);
 
 		var cont = `{
 		  "$class": "nl.tudelft.blockchain.logistics.ContainerInfo",

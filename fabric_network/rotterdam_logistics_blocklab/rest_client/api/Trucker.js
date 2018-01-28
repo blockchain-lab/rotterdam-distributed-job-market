@@ -18,11 +18,11 @@ router.get("/:truckerId", (req, res) => {
 		.then((error) => logAndReturnError(res, error));
 });
 
-router.get('/preferences/:truckerId', (req, res) =>
-{
-	new TruckerService().getTruckerPreferences(req.params.truckerId)
-		.then((truckerPrefs) => logAndReturnError(res, error));
-});
+// router.get('/preferences/:truckerId', (req, res) =>
+// {
+// 	new TruckerService().getTruckerPreferences(req.params.truckerId)
+// 		.then((truckerPrefs) => logAndReturnError(res, error));
+// });
 
 router.get('/bids/:truckerId', (req, res) =>
 {
