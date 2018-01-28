@@ -1,10 +1,14 @@
-var config = require('config');
-var LogisticsNetwork = require('../connector/LogisticsNetwork');
+'use strict';
 
-var Trucker = require('../domain/Trucker')
-var TruckerPreferences = require('../domain/TruckerPreferences');
-var UpdateTruckerPreferencesCommand = require('../domain/tx/UpdateTruckerPreferencesCommand');
-var TruckerBidOnContainerDeliveryJobOfferForList = require('../domain/TruckerBidOnContainerDeliveryJobOfferForList');
+const config = require('config');
+const LogisticsNetwork = require('../connector/LogisticsNetwork');
+
+const Trucker = require('../domain/Trucker')
+const TruckerPreferences = require('../domain/TruckerPreferences');
+const TruckerBidOnContainerDeliveryJobOfferForList = require('../domain/TruckerBidOnContainerDeliveryJobOfferForList');
+
+const UpdateTruckerPreferencesCommand = require('../domain/tx/UpdateTruckerPreferencesCommand');
+const CreateTruckerCommand = require('../domain/tx/CreateTruckerCommand');
 
 class TruckerService 
 {
@@ -85,6 +89,23 @@ class TruckerService
 
 		return this.getTrucker(truckerId)
 			.then((trucker) => trucker.getRating());
+	}
+
+	/**
+	 * Creates a new Trucker participant on the network
+	 * @param {domain.Trucker} trucker - data for the new Trucker participant
+	 * @return {Promise} - Trucker is created when promise is fulfilled
+	 */
+	createTrucker(trucker)
+	{
+		const namespace = "nl.tudelft.blockchain.logistics";
+		return new LogisticsNetwork().createParticipant(
+			namespace, 
+			"Trucker", 
+			trucker.getTruckerId(), 
+			(res, factory) => new CreateTruckerCommand(trucker)
+				.hydrateTx(res, factory)
+		);
 	}
 }
 

@@ -1,47 +1,51 @@
-var config = require('config');
-var LogisticsNetwork = require('../connector/LogisticsNetwork');
-var TestMethods = require('./TestMethods');
-var ContainerDeliveryJobOfferService = require('../service/ContainerDeliveryJobOfferService');
-var ContainerInfoService = require('../service/ContainerInfoService');
+'use strict';
 
-class TestService {
-	/**
-		@param {String} TruckerId
-		@return {Promise} of a Trucker
-	*/
-	runTest() {
-		return "success";
+const config = require('config');
+const TestDataProvider = require('./TestDataProvider');
+
+const LogisticsNetwork = require('../connector/LogisticsNetwork');
+
+const TruckerService = require('../service/TruckerService');
+const ContainerGuyService = require('../service/ContainerGuyService');
+const ContainerInfoService = require('../service/ContainerInfoService');
+const ContainerDeliveryJobOfferService = require('../service/ContainerDeliveryJobOfferService');
+
+const CreateTruckerCommand = require('../domain/tx/CreateTruckerCommand');
+
+class TestService
+{
+	runTest()
+	{
+		return "failure";
 	}
 
-	initNetwork(){		
-		let methods = new TestMethods();
+	initNetwork()
+	{		
+		let testDataProvider = new TestDataProvider();
 		let containerInfoService = new ContainerInfoService();
 		var containerInfoDeliveryJobService = new ContainerDeliveryJobOfferService();
 
 		let handleError = (error) => console.log(error);
-		
-		let promiseTrucker1 = methods.CreateTrucker('1').catch(handleError);
-		let promiseTrucker2 = methods.CreateTrucker('2').catch(handleError);
-		let promiseContainerGuy1 = methods.CreateContainerGuy("1").catch(handleError);
-		let promiseContainerGuy2 = methods.CreateContainerGuy("2").catch(handleError);
 
-		var cont = `{
-		  "$class": "nl.tudelft.blockchain.logistics.ContainerInfo",
-		  "containerId": "5011",
-		  "ownerId": "1",
-		  "containerType": "BasicContainer",
-		  "containerSize": "TWENTY"
-		}`;
-		let promiseContainer1 = containerInfoService.CreateContainerInfo(JSON.parse(cont)).catch(() => null);
+		const promises = [];
 
-		var cont = `{
-		  "$class": "nl.tudelft.blockchain.logistics.ContainerInfo",
-		  "containerId": "2",
-		  "ownerId": "2",
-		  "containerType": "BasicContainer",
-		  "containerSize": "TWENTY"
-		}`;
-		let promiseContainer2 = containerInfoService.CreateContainerInfo(JSON.parse(cont)).catch(() => null);
+		for (var i = 0; i < 2; i++) {
+			let data = testDataProvider.constructNextTestTrucker();
+			let promise = this.createTrucker(data).catch(handleError);
+			promises.push(promise);
+		}
+
+		for (var i = 0; i < 2; i++) {
+			let data = testDataProvider.constructNextTestContainerGuy();
+			let promise = this.createContainerGuy(data).catch(handleError);
+			promises.push(promise);
+		}
+
+		for (var i = 0; i < 2; i++) {
+			let data = testDataProvider.constructNextTestContainerInfo();
+			let promise = this.createContainerInfo(data).catch(handleError);
+			promises.push(promise);
+		}
 
 		var data = `{
 		  "$class": "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer",
@@ -58,12 +62,32 @@ class TestService {
 		  "canceled": false
 		}`;
 
-		return Promise.all([promiseTrucker1, promiseTrucker2, promiseContainerGuy1, promiseContainerGuy2, promiseContainer1, promiseContainer2])
-			.then(() => containerInfoDeliveryJobService.createContainerDeliveryJobOffer(JSON.parse(data)));
+		return Promise.all(promises)
+			.then(() => this.createContainerDeliveryJobOffer(JSON.parse(data)));
 	}
 
-	createOffers(){
-		var offerService = new ContainerDeliveryJobOfferService();
+	createTrucker(trucker)
+	{
+		const service = new TruckerService();
+		return service.createTrucker(trucker);
+	}
+
+	createContainerGuy(containerGuy)
+	{
+		const service = new ContainerGuyService();
+		return service.createContainerGuy(containerGuy)
+	}
+
+	createContainerInfo(containerInfo)
+	{
+		const service = new ContainerInfoService();
+		return service.createContainerInfo(containerInfo);
+	}
+
+	createContainerDeliveryJobOffer(containerDeliveryJobOffer)
+	{
+		var service = new ContainerDeliveryJobOfferService();
+		return service.createContainerDeliveryJobOffer(containerDeliveryJobOffer);
 	}
 
 

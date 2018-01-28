@@ -7,8 +7,8 @@ const CreateContainerInfoCommand = require('../domain/tx/CreateContainerInfoComm
 
 class ContainerInfoService
 {
-
-	CreateContainerInfo(containerInfo){
+	createContainerInfo(containerInfo)
+	{
 		const namespace = "nl.tudelft.blockchain.logistics";
 		const txName = "CreateContainerInfo";
 

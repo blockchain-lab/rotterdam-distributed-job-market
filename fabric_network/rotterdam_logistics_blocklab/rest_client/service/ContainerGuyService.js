@@ -4,7 +4,7 @@ const config = require('config');
 const LogisticsNetwork = require('../connector/LogisticsNetwork');
 
 const ContainerDeliveryJobOfferForList = require('../domain/ContainerDeliveryJobOfferForList');
-const CreateContainerInfoCommand = require('../domain/tx/CreateContainerInfoCommand');
+const CreateContainerGuyCommand = require('../domain/tx/CreateContainerGuyCommand');
 
 class ContainerGuyService
 {
@@ -23,21 +23,21 @@ class ContainerGuyService
 			});
 	}
 
-	CreateContainerInfo(containerInfo){
+	createContainerGuy(containerGuy)
+	{
 		const namespace = "nl.tudelft.blockchain.logistics";
-		const txName = "CreateContainerInfo";
+		const typename = "ContainerGuy";
 
-		const txExecutedPromise = new LogisticsNetwork().submitTransaction(
-			namespace,
-			txName,
-			(tx, factory) =>  {
-				return new CreateContainerInfoCommand(containerInfo)
-					.hydrateTx(tx, factory)
-			}
+		return new LogisticsNetwork().createParticipant(
+			namespace, 
+			typename, 
+			containerGuy.getContainerGuyId(), 
+			(res, factory) => new CreateContainerGuyCommand(containerGuy)
+				.hydrateTx(res, factory)
 		);
-
-		return txExecutedPromise;
 	}
+
+
 }
 
 module.exports = ContainerGuyService;
