@@ -7,8 +7,6 @@ class Trucker
 {
 	constructor(obj)
 	{
-		console.log(obj);
-
 		this.truckerId = obj.truckerId;
 		this.firstName = obj.firstName;
 		this.lastName = obj.lastName;
