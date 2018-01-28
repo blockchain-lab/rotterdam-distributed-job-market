@@ -15,12 +15,6 @@ class Trucker
 
 		this.adrTraining = obj.adrTraining;
 		this.truckCapacity = obj.truckCapacity;
-		this.allowedDestinations = obj.allowedDestinations;
-		
-		this.availability = {
-			from: obj.availability.from,
-			to: obj.availability.to
-		}
 	}
 
 	getRating()
