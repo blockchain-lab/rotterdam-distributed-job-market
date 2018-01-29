@@ -20,7 +20,7 @@ class TestDataProvider
 		this.truckerNumber = 0;
 		this.containerInfoNumber = 0;
 	
-		populateTestData();
+		this.populateTestData();
 	}
 
 	populateTestData()
