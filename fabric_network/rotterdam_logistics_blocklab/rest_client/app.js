@@ -1,8 +1,11 @@
-var express = require('express'),
-  	path = require('path'),
-  	bodyParser = require('body-parser'),
-  	url = require('url'),
-	config = require('config');
+const express = require('express');
+const path = require('path');
+const bodyParser = require('body-parser');
+const url = require('url');
+const config = require('config');
+
+const ErrorTranslator = require('./errors/ErrorTranslator');
+const errorTranslator = new ErrorTranslator();
 
 var app = express();
 app.use(bodyParser.json());
@@ -17,6 +20,8 @@ app.listen(port, () => {
 });
 
 app.use((error, req, res, next) => {
-	console.error(error);
-	res.status(500).json({error: error.message});
+	const translatedError = errorTranslator.translate(error);
+
+	console.error(translatedError);
+	res.status(500).json({error: translatedError.message});
 });

@@ -425,11 +425,12 @@ function createContainerDeliveryJobOffer(tx)
 function acceptContainerDelivery(tx)
 {
     if (tx.job.arrivalPassword !== tx.password) {
-        throw new Error('Delivery password is incorrect, cannot accept delivery');
+        // TODO: log who, and count bad attempts to prevent brute-forcing
+        throw new Error('delivery_password_incorrect');
     }
 
     if (tx.job.jobOffer.status != "CONTRACTED") {
-        throw new Error('Cannot mark container delivered, job status is not "contracted"');
+        throw new Error('delivery_job_not_contracted');
     }
 
     tx.job.arrivalDateTime = tx.arrivalDateTime;
