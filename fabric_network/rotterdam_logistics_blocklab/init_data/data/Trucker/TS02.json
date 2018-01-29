@@ -1,0 +1,22 @@
+{
+    "$class": "nl.tudelft.blockchain.logistics.Trucker",
+    "truckerId": "T02",
+    "firstName": "Izak",
+    "lastName": "Lamme",
+    "adrTraining": "YES",
+    "truckCapacity": "FOURTY",
+    "availability": {
+      "$class": "nl.tudelft.blockchain.logistics.TruckerAvailability",
+      "from": "2000-01-01T00:00:00.000Z",
+      "to": "2020-01-01T00:00:00.000Z"
+    },
+    "allowedDestinations": [
+      "Berlin"
+    ],
+    "truckerBids": [],
+    "rating": {
+      "$class": "nl.tudelft.blockchain.logistics.TruckerRating",
+      "totalPastJobsAccepted": 0,
+      "jobsDelivered": 0
+    }
+  }

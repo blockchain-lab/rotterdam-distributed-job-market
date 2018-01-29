@@ -1,0 +1,5 @@
+{
+    "$class": "nl.tudelft.blockchain.logistics.ContainerGuy",
+    "containerGuyId": "CTG02",
+    "name": "Rotterdam World Gateway Logistics"
+  }
