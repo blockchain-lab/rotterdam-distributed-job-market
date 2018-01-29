@@ -49,11 +49,11 @@ router.post("/:containerDeliveryJobOfferId/acceptBid/:truckerBidId", (req, res) 
 		.then((result) => { res.status(200).send("tx submitted successfully"); } ); // TODO: proper status, maybe return the DeliveryJob
 });
 
-router.get('/containerDeliveryJobOffersForTrucker/:truckerId', (req, res) => {
+router.get('/containerDeliveryJobOffers/:allowedDestinations/:availableFrom/:availableTo/:requiredAdrTraining', (req, res) => {
 	const truckerId = req.params.truckerId;
 
 	new ContainerDeliveryJobOfferService()
-		.getContainerDeliveryJobOffersAvailableForTrucker(truckerId)
+		.getContainerDeliveryJobOffersAvailableForTrucker(allowedDestinations, availableFrom, availableTo, requiredAdrTraining)
 		.then((result) => res.json(result));
 });
 

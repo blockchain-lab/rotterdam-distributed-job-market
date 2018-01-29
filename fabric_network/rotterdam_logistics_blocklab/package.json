@@ -18,5 +18,8 @@
     "istanbul": "latest",
     "mkdirp": "latest",
     "mocha": "latest"
+  },
+  "dependencies": {
+    "curlrequest": "^1.0.1"
   }
 }

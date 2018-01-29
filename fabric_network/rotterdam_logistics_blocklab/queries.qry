@@ -30,12 +30,11 @@ query FindContainerDeliveryJobOfferById {
 
 	Params:
      - allowedDestinations (String[]) = String array of general destinations (Trucker.allowedDestinations)
-     - availableFrom = DateTime of moment from which the container is to be picked-up (Trucker.availability.from)
-     - availableTill = DateTime of moment until the container can be picked-up (Trucker.availability.to)
+     - availableFrom (DateTime) = DateTime of moment from which the container is to be picked-up (Trucker.availability.from)
+     - availableTill (DateTime) = DateTime of moment until the container can be picked-up (Trucker.availability.to)
      - requiredAdrTraining = AdrTraining required for the job (Trucker.adrTraining)
  */
-
-query FindEligableJobOffersForTrucker {
+query FindEligableContainerDelivery {
 	description: "Returns Job Offers that the Trucker is eligable to bid on"
   	statement:
   		SELECT nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer
@@ -54,7 +53,7 @@ query FindContainersByContainerGuyId {
   statement:
     SELECT nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer
         WHERE (containerGuyId == _$containerGuyId)
-}
+}   
 
 /**
  * Params:

@@ -1,0 +1,6 @@
+{
+    "$class": "nl.tudelft.blockchain.logistics.BidOnContainerDeliveryJobOffer",
+    "bidAmount": 10,
+    "containerDeliveryJobOffer": "resource:nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer#0001",
+    "bidder": "resource:nl.tudelft.blockchain.logistics.Trucker#T01"
+}

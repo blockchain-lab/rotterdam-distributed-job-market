@@ -1,0 +1,7 @@
+{
+    "$class": "nl.tudelft.blockchain.logistics.ContainerInfo",
+    "containerId": "0003",
+    "owner": "resource:nl.tudelft.blockchain.logistics.ContainerGuy#CTG03",
+    "containerType": "BasicContainer",
+    "containerSize": "TWENTY"
+  }

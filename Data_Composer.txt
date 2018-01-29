@@ -58,7 +58,12 @@ Trucker
     "Berlin",
     "Warsaw"
   ],
-  "truckerBids": []
+  "truckerBids": [],
+  "rating": {
+    "$class": "nl.tudelft.blockchain.logistics.TruckerRating",
+    "totalPastJobsAccepted": 0,
+    "jobsDelivered": 0
+  }
 }
 
 
@@ -77,7 +82,12 @@ Trucker
   "allowedDestinations": [
     "Berlin"
   ],
-  "truckerBids": []
+  "truckerBids": [],
+  "rating": {
+    "$class": "nl.tudelft.blockchain.logistics.TruckerRating",
+    "totalPastJobsAccepted": 0,
+    "jobsDelivered": 0
+  }
 }
 
 ---------------------------------------------------------------------------------------------------
@@ -89,10 +99,27 @@ ContainerInfo
 {
   "$class": "nl.tudelft.blockchain.logistics.ContainerInfo",
   "containerId": "0001",
-  "owner": "resource:nl.tudelft.blockchain.logistics.ContainerGuy#9717",
+  "owner": "resource:nl.tudelft.blockchain.logistics.ContainerGuy#CTG01",
   "containerType": "BasicContainer",
   "containerSize": "TWENTY"
 }
+
+{
+  "$class": "nl.tudelft.blockchain.logistics.ContainerInfo",
+  "containerId": "0002",
+  "owner": "resource:nl.tudelft.blockchain.logistics.ContainerGuy#CTG02",
+  "containerType": "BasicContainer",
+  "containerSize": "FOURTY"
+}
+
+{
+  "$class": "nl.tudelft.blockchain.logistics.ContainerInfo",
+  "containerId": "0003",
+  "owner": "resource:nl.tudelft.blockchain.logistics.ContainerGuy#CTG03",
+  "containerType": "BasicContainer",
+  "containerSize": "TWENTY"
+}
+
 
 
 ---------------------------------------------------------------------------------------------------
@@ -115,6 +142,37 @@ Job Offers / Transaction
   "status": "NEW",
   "canceled": false
 }
+
+{
+  "$class": "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer",
+  "containerDeliveryJobOfferId": "0002",
+  "containerGuyId": "",
+  "containerInfo": "resource:nl.tudelft.blockchain.logistics.ContainerInfo#0003",
+  "availableForPickupDateTime": "2018-01-15T13:39:20.055Z",
+  "toBeDeliveredByDateTime": "2018-01-15T13:39:20.055Z",
+  "terminalContainerAvailableAt": "",
+  "destination": "",
+  "requiredAdrTraining": "YES",
+  "containerBids": [],
+  "status": "NEW",
+  "canceled": false
+}
+
+{
+  "$class": "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer",
+  "containerDeliveryJobOfferId": "0003",
+  "containerGuyId": "",
+  "containerInfo": "resource:nl.tudelft.blockchain.logistics.ContainerInfo#0002",
+  "availableForPickupDateTime": "2018-01-15T13:39:20.055Z",
+  "toBeDeliveredByDateTime": "2018-01-15T13:39:20.055Z",
+  "terminalContainerAvailableAt": "",
+  "destination": "",
+  "requiredAdrTraining": "NONE",
+  "containerBids": [],
+  "status": "NEW",
+  "canceled": false
+}
+
 
 ---------------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------------
