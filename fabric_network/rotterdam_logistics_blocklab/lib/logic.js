@@ -1,15 +1,6 @@
 'use strict';
 
 /**
- * @param {DateTime} availableForPickupDateTime
- * @param {nl.tudelft.blockchain.logistics.TruckerAvailability} truckerAvailability
- */
-function isContainerPickupDateTimeWithinTruckerAvailability(availableForPickupDateTime, truckerAvailability)
-{
-    return truckerAvailability.from <= availableForPickupDateTime && availableForPickupDateTime <= truckerAvailability.to;
-}
-
-/**
  * @param {nl.tudelft.blockchain.logistics.AdrTraining} truckerAdrTraining
  * @param {nl.tudelft.blockchain.logistics.AdrTraining} requiredAdrTraining
  */
@@ -74,6 +65,14 @@ async function getAllConflictingJobOffersForTruckerAndJobBeingAccepted(trucker, 
  * Cancels bids of Trucker on ContainerDeliveryJobOffers that if bid accepted, would result in a job conflict.
  * This is done for sanity and UX reasons as accepting a bid that results in a conflict would throw an error anyway, forcing the
  * shipper/containerGuy to a lot of trial-and-error in a the worst case.
+ *
+ * We can image the jobs being not so tight delivery-time wise as this ProofOfConcept and that what we currently see as a "conflict" 
+ * is not a conflict in real life. In the future, the decision if the jobs are a conflict can be left to the Trucker. And can be even executed
+ * from the Restful-Api-Application. But doing so is considerably more complex as all kinds of race-conditions, business rules, usability
+ * and Shipper & Trucker satisfaction must be taken into account. Therefore we KISS'd it and simply cancel every conflict here assuming that
+ * pickup-datetime and expected-delivery-datetime and fairly tight (tight enough to not allow the Trucker enough time to deliver,
+ * drive back to the Port and pick up some other accepted job on-time before the expected-delivery-datetime of the first job has passed)
+ *
  * @param {nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer} containerDeliveryJobOffer - the job offer which is being accepted
  * @param {nl.tudelft.blockchain.logistics.Trucker} forTrucker - the Trucker in question
  * @return {Promise} - Promise which when resolved indicates that bids on conflicting offers are canceled
@@ -154,9 +153,7 @@ async function hasConflictingAcceptedJobs(trucker, containerDeliveryJobOffer)
  * @return {Promise} - of a boolean indicating if Trucker is allowed to bid on Job Offer
  */
 async function assertTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOffer)
-{
-    // should we check preferences as well?
-  
+{  
     // currently: just sticking to legal things (ADR && truck capacity)
     var adrEligable = isTruckerAdrEligable(trucker.adrTraining, containerDeliveryJobOffer.requiredAdrTraining);
     if (!adrEligable) {
@@ -166,11 +163,6 @@ async function assertTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJo
     var truckCapacityEligable = isTruckCapacityEligableForContainerSize(trucker.truckCapacity, containerDeliveryJobOffer.containerInfo.containerSize);
     if (!truckCapacityEligable) {
         throw new Error("truck_capacity_not_eligable");
-    }
-
-    var withinTruckerPickupAvailability = isContainerPickupDateTimeWithinTruckerAvailability(containerDeliveryJobOffer.availableForPickupDateTime, trucker.availability);
-    if (!withinTruckerPickupAvailability) {
-        throw new Error("job_not_within_trucker_availability");
     }
 
     var hasConflicts = await hasConflictingAcceptedJobs(trucker, containerDeliveryJobOffer);
@@ -184,7 +176,7 @@ function assertJobOfferIsBiddable(containerDeliveryJobOffer)
     // Bidding phase is only when offer is IN MARKET
     let isInMarket = containerDeliveryJobOffer.status == "INMARKET";
     if (!isInMarket) {
-        throw new Error("job_not_in_market, was: " + containerDeliveryJobOffer.status);
+        throw new Error("job_not_in_market");
     }
 
     // is job offer is still valid
@@ -206,8 +198,8 @@ function assertJobOfferIsBiddable(containerDeliveryJobOffer)
  */
 async function isTruckerAllowedToAcceptJob(trucker, containerDeliveryJobOffer)
 {
-    var hasNoConflictingAcceptedJobs = !(await hasConflictingAcceptedJobs(trucker, containerDeliveryJobOffer));
-    return hasNoConflictingAcceptedJobs;
+    var hasConflicts = await hasConflictingAcceptedJobs(trucker, containerDeliveryJobOffer);
+    return !hasConflicts;
 }
 
 /**
@@ -463,9 +455,6 @@ function acceptContainerDelivery(tx)
 function updateTruckerPreferences(tx)
 {
     tx.trucker.truckCapacity = tx.truckCapacity;
-    tx.trucker.availability.from = tx.availableFrom;
-    tx.trucker.availability.to = tx.availableTo;
-    tx.trucker.allowedDestinations = tx.allowedDestinations;
 
     return updateTrucker(tx.trucker);
 }
@@ -478,7 +467,7 @@ function updateTruckerPreferences(tx)
 function cancelBid(tx)
 {
     let containerDeliveryJobOffer = tx.truckerBid.containerDeliveryJobOffer;
-    console.log(containerDeliveryJobOffer.status);
+    let bidId = tx.truckerBid.getIdentifier();
 
     assertJobOfferIsBiddable(containerDeliveryJobOffer);
 
@@ -491,18 +480,11 @@ function cancelBid(tx)
 
     containerDeliveryJobOffer.containerBids.splice(index, 1);
 
-    return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
-        .then(function(assetRegistry) 
-        {
-            return assetRegistry.update(containerDeliveryJobOffer);
-        })
-        .then(function(x) 
-        {
-            return getAssetRegistry('nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer');
-        })
-        .then(function(assetRegistry) 
-        {
-            // TODO: bid doesn't get removed for some reason :S
-            return assetRegistry.remove(tx.truckerBid.getIdentifier());
-        });
+    let removeBidFromJobOfferPromise = getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
+            .then((assetRegistry) => assetRegistry.update(containerDeliveryJobOffer));
+
+    let removeBidFromAssetRegistryPromise = getAssetRegistry('nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer')
+            .then((assetRegistry) => assetRegistry.remove(bidId));
+
+    return Promise.all([removeBidFromAssetRegistryPromise, removeBidFromJobOfferPromise]);
 }
