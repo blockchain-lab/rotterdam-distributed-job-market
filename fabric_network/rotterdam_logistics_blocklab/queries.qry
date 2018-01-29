@@ -29,26 +29,35 @@ query FindContainerDeliveryJobOfferById {
  	TruckerJobSearchNotice? This way truckers can have multiple days they're searching for work in advance.
 
 	Params:
-     - allowedDestinations (String[]) = String array of general destinations
      - availableFrom (DateTime) = DateTime of moment from which the container is to be picked-up (Trucker.availability.from)
-     - availableTill (DateTime) = DateTime of moment until the container can be picked-up (Trucker.availability.to)
+     - availableTo (DateTime) = DateTime of moment until the container can be picked-up (Trucker.availability.to)
      - requiredAdrTraining = AdrTraining required for the job (Trucker.adrTraining)
  */
 query FindEligableContainerDelivery {
 	description: "Returns Job Offers that the Trucker is eligable to bid on"
   	statement:
   		SELECT nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer
-  		WHERE ((_$allowedDestinations CONTAINS destination) /* todo: this might not work, unsure if arrays are allowed as query parameters. Otherwise use filter query? */
-  			AND (_$availableFrom <= availableForPickupDateTime AND availableForPickupDateTime <= _$availableTill)
+  		WHERE ((_$availableFrom <= availableForPickupDateTime AND availableForPickupDateTime <= _$availableTo)
   			AND (_$requiredAdrTraining == requiredAdrTraining OR requiredAdrTraining == "NONE"))
 
 }
 
 /**
  * Params:
+ *   - containerGuyRef (reference string ('resource:namespace.type#id') to ContainerGuy participant)
+ */
+query FindContainerInfoByContainerGuyId {
+  description: "Returns all ContainerInfo that the ContainerGuy has created"
+  statement:
+    SELECT nl.tudelft.blockchain.logistics.ContainerInfo
+        WHERE (owner == _$containerGuyRef)
+} 
+
+/**
+ * Params:
  *   - containerGuyId (String): Id of ContainerGuy who created the offer 
  */
-query FindContainersByContainerGuyId {
+query FindContainerDeliveryJobOffersByContainerGuyId {
   description: "Returns all ContainerDeliveryJobOffers that the ContainerGuy has created"
   statement:
     SELECT nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer

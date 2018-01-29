@@ -4,6 +4,7 @@ const config = require('config');
 const LogisticsNetwork = require('../connector/LogisticsNetwork');
 
 const ContainerDeliveryJobOffer = require('../domain/ContainerDeliveryJobOffer');
+const ContainerDeliveryJobOfferForTrucker = require('../domain/ContainerDeliveryJobOfferForTrucker');
 const ContainerDeliveryJobOfferForList = require('../domain/ContainerDeliveryJobOfferForList');
 const CreateContainerDeliveryJobOfferCommand = require('../domain/tx/CreateContainerDeliveryJobOfferCommand');
 const AcceptBidOnContainerDeliveryJobOfferCommand = require('../domain/tx/AcceptBidOnContainerDeliveryJobOfferCommand');
@@ -134,12 +135,10 @@ class ContainerDeliveryJobOfferService
 	*/
 	getEligableContainerDeliveryJobOffer(allowedDestinations, availableFrom, availableTo, requiredAdrTraining)
 	{
-		let truckerReference = "resource:nl.tudelft.blockchain.logistics.Trucker#" + truckerId;
-		console.log("[getTruckerBids] for trucker: " + truckerId);
-
 		return new LogisticsNetwork().executeNamedQuery('FindEligableContainerDelivery', 
-				{allowedDestinations: allowedDestinations, availableFrom : availableFrom, availableTo : availableTo, requiredAdrTraining : requiredAdrTraining})
-			.then((assets) => assets.map(x => new ContainerDeliveryJobForTrucker(x)));
+				{availableFrom : availableFrom, availableTo : availableTo, requiredAdrTraining : requiredAdrTraining})
+			.then((assets) => assets.map(x => new ContainerDeliveryJobOfferForTrucker(x)))
+			.then((collection) => collection.filter(x => allowedDestinations.includes(x.destination)));
 	}
 }
 

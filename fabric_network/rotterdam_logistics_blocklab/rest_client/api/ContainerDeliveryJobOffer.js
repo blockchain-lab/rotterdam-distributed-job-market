@@ -49,11 +49,26 @@ router.post("/:containerDeliveryJobOfferId/acceptBid/:truckerBidId", (req, res) 
 		.then((result) => { res.status(200).send("tx submitted successfully"); } ); // TODO: proper status, maybe return the DeliveryJob
 });
 
+/**
+	@param {| delimited String} allowedDestinations
+	@param {Date} availableFrom
+	@param {Date} availableTo
+	@param {YES|NONE String} requiredAdrTraining
+*/
 router.get('/containerDeliveryJobOffers/:allowedDestinations/:availableFrom/:availableTo/:requiredAdrTraining', (req, res) => {
-	const truckerId = req.params.truckerId;
+	const allowedDestinations = req.params.allowedDestinations.toString().split("|");
+	const availableFrom = req.params.availableFrom;
+	const availableTo = req.params.availableTo;
+	const requiredAdrTraining = req.params.requiredAdrTraining;
+	
+	console.log(`ContainerDeliveryJobOffers query: 
+	allowedDestinations ${allowedDestinations}
+	availableFrom ${availableFrom},
+	availableTo ${availableTo},
+	requiredAdrTraining ${requiredAdrTraining}`)
 
 	new ContainerDeliveryJobOfferService()
-		.getContainerDeliveryJobOffersAvailableForTrucker(allowedDestinations, availableFrom, availableTo, requiredAdrTraining)
+		.getEligableContainerDeliveryJobOffer(allowedDestinations, availableFrom, availableTo, requiredAdrTraining)
 		.then((result) => res.json(result));
 });
 

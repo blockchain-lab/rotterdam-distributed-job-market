@@ -6,12 +6,15 @@ const ContainerDeliveryJobOfferService = require('../service/ContainerDeliveryJo
 
 const CreateContainerDeliveryJobOfferCommand = require('../domain/tx/CreateContainerDeliveryJobOfferCommand');
 
+router.get('/allContainerDeliveryJobOffersOf/:containerGuyId', (req, res) => {
+	const containerGuyId = req.params.containerGuyId;
+	new ContainerGuyService().retrieveAllContainerDeliveryJobOffersByContainerGuyId(containerGuyId)
+		.then((assets) => res.json(assets));
+});
+
 router.get('/allContainersOf/:containerGuyId', (req, res) => {
 	const containerGuyId = req.params.containerGuyId;
-	
-	console.log("allContainersOf containerGuyId: " + containerGuyId);
-
-	new ContainerGuyService().retrieveAllContainerDeliveryJobOffersByContainerGuyId(containerGuyId)
+	new ContainerGuyService().retrieveAllContainerInfoByContainerGuyId(containerGuyId)
 		.then((assets) => res.json(assets));
 });
 

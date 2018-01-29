@@ -1,7 +1,7 @@
 {
     "$class": "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer",
     "containerDeliveryJobOfferId": "0001",
-    "containerGuyId": "",
+    "containerGuyId": "CTG01",
     "containerInfo": "resource:nl.tudelft.blockchain.logistics.ContainerInfo#0001",
     "availableForPickupDateTime": "2018-01-15T13:39:20.055Z",
     "toBeDeliveredByDateTime": "2018-01-15T13:39:20.055Z",
