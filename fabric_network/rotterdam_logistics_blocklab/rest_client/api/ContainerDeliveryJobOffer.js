@@ -4,7 +4,7 @@ const router = require('express').Router();
 
 const ContainerDeliveryJobOfferService = require('../service/ContainerDeliveryJobOfferService');
 
-router.get('/:containerDeliveryJobOfferId/getTruckerBids', (req, res) => {
+router.get('/:containerDeliveryJobOfferId/getTruckerBids', (req, res, next) => {
 	const containerDeliveryJobOfferId = req.params.containerDeliveryJobOfferId;
 
 	new ContainerDeliveryJobOfferService()
@@ -21,40 +21,44 @@ router.get('/byId/:id', (req, res) => {
 		.then((result) => res.json(result));
 });
 
-// BACKWARDS COMPAT (remove after GUI update)
-router.post("/:containerDeliveryJobOfferId/cancelBid/:truckerBidId", (req, res) => {
+// BACKWARDS COMPAT (remove after GUI update to use /cancelBid/)
+router.post("/:containerDeliveryJobOfferId/cancelBid/:truckerBidId", (req, res, next) => {
 	const containerDeliveryJobOfferId = req.params.containerDeliveryJobOfferId;
 	const truckerBidId = req.params.truckerBidId;
 
 	new ContainerDeliveryJobOfferService()
 		.cancelBid(truckerBidId)
-		.then((result) => { res.status(200).send("tx submitted successfully"); } ); // TODO: proper status, maybe return the DeliveryJob
+		.then((result) => { res.status(200).send("tx submitted successfully"); } )
+		.catch(next);
 });
 
-router.post("/cancelBid/:truckerBidId", (req, res) => {
+router.post("/cancelBid/:truckerBidId", (req, res, next) => {
 	const truckerBidId = req.params.truckerBidId;
 
 	new ContainerDeliveryJobOfferService()
 		.cancelBid(truckerBidId)
-		.then((result) => { res.status(200).send("tx submitted successfully"); } ); // TODO: proper status, maybe return the DeliveryJob
+		.then((result) => { res.status(200).send("tx submitted successfully"); } )
+		.catch(next);
 });
 
 // TODO: remove containerDeliveryJobOfferId, the truckerBidId is enough to identify the jobOffer
-router.post("/:containerDeliveryJobOfferId/acceptBid/:truckerBidId", (req, res) => {
+router.post("/:containerDeliveryJobOfferId/acceptBid/:truckerBidId", (req, res, next) => {
 	const containerDeliveryJobOfferId = req.params.containerDeliveryJobOfferId;
 	const truckerBidId = req.params.truckerBidId;
 
 	new ContainerDeliveryJobOfferService()
 		.acceptBid(containerDeliveryJobOfferId, truckerBidId)
-		.then((result) => { res.status(200).send("tx submitted successfully"); } ); // TODO: proper status, maybe return the DeliveryJob
+		.then((result) => { res.status(200).send("tx submitted successfully"); } )
+		.catch(next);
 });
 
-router.get('/containerDeliveryJobOffersForTrucker/:truckerId', (req, res) => {
+router.get('/containerDeliveryJobOffersForTrucker/:truckerId', (req, res, next) => {
 	const truckerId = req.params.truckerId;
 
 	new ContainerDeliveryJobOfferService()
 		.getContainerDeliveryJobOffersAvailableForTrucker(truckerId)
-		.then((result) => res.json(result));
+		.then((result) => res.json(result))
+		.catch(next);
 });
 
 module.exports = router;

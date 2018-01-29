@@ -15,3 +15,8 @@ app.listen(port, () => {
 	'use strict';
 	console.log('server starting on ' + port);
 });
+
+app.use((error, req, res, next) => {
+	console.error(error);
+	res.status(500).json({error: error.message});
+});

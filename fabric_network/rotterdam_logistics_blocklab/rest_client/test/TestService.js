@@ -25,7 +25,15 @@ class TestService
 		let containerInfoService = new ContainerInfoService();
 		var containerInfoDeliveryJobService = new ContainerDeliveryJobOfferService();
 
-		let handleError = (error) => console.log(error);
+		let handleError = (error) => {
+			if (error.message.search('already exists') >=0) {
+				console.log("skipping, item already exists");
+			}
+			else {
+				console.log(error);
+				throw error;
+			}
+		}
 
 		const promises = [];
 
@@ -61,9 +69,11 @@ class TestService
 		  "status": "NEW",
 		  "canceled": false
 		}`;
+		let promiseCreateDeliveryJobOffer = this.createContainerDeliveryJobOffer(JSON.parse(data))
+			.catch(handleError);
 
 		return Promise.all(promises)
-			.then(() => this.createContainerDeliveryJobOffer(JSON.parse(data)));
+			.then(() => promiseCreateDeliveryJobOffer);
 	}
 
 	createTrucker(trucker)

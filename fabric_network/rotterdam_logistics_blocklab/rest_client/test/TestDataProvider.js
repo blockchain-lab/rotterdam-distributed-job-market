@@ -20,6 +20,11 @@ class TestDataProvider
 		this.truckerNumber = 0;
 		this.containerInfoNumber = 0;
 	
+		populateTestData();
+	}
+
+	populateTestData()
+	{
 		this.truckerData.push(JSON.parse(
 		`{
 		  "$class": "nl.tudelft.blockchain.logistics.Trucker",
@@ -83,15 +88,6 @@ class TestDataProvider
 		
 		console.log("Initializing Trucker - " + trucker.firstName);
 
-		// resource.firstName = trucker.firstName;
-		// resource.lastName = trucker.lastName;
-		// resource.adrTraining = trucker.adrTraining;
-		// resource.truckCapacity = trucker.truckCapacity;
-
-		// resource.rating = factory.newConcept("nl.tudelft.blockchain.logistics", "TruckerRating");
-		// resource.rating.jobsDelivered = trucker.rating.jobsDelivered;
-		// resource.rating.totalPastJobsAccepted = trucker.rating.totalPastJobsAccepted;
-
 		return new Trucker(trucker);
 	}
 
@@ -108,7 +104,7 @@ class TestDataProvider
 	{
 		var containerInfo = this.containerInfoData[this.containerInfoNumber++];
 
-		console.log("Initializing ContainerInfo - " + containerInfo.containerInfoId);
+		console.log("Initializing ContainerInfo - " + containerInfo.containerId);
 
 		return new ContainerInfo(containerInfo);
 	}
