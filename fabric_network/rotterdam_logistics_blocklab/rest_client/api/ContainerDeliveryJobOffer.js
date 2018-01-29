@@ -52,15 +52,6 @@ router.post("/:containerDeliveryJobOfferId/acceptBid/:truckerBidId", (req, res, 
 		.catch(next);
 });
 
-<<<<<<< HEAD
-router.get('/containerDeliveryJobOffersForTrucker/:truckerId', (req, res, next) => {
-	const truckerId = req.params.truckerId;
-
-	new ContainerDeliveryJobOfferService()
-		.getContainerDeliveryJobOffersAvailableForTrucker(truckerId)
-		.then((result) => res.json(result))
-		.catch(next);
-=======
 /**
 	@param {| delimited String} allowedDestinations
 	@param {Date} availableFrom
@@ -77,10 +68,10 @@ router.get('/containerDeliveryJobOffers/:allowedDestinations/:availableFrom/:ava
 	allowedDestinations ${allowedDestinations}
 	availableFrom ${availableFrom},
 	availableTo ${availableTo},
-	requiredAdrTraining ${requiredAdrTraining}`)
+	requiredAdrTraining ${requiredAdrTraining}`);
 
 	new ContainerDeliveryJobOfferService()
-		.getEligableContainerDeliveryJobOffer(allowedDestinations, availableFrom, availableTo, requiredAdrTraining)
+		.getEligableContainerDeliveryJobOffers(allowedDestinations, availableFrom, availableTo, requiredAdrTraining)
 		.then((result) => res.json(result))
 		.catch(next);
 });
