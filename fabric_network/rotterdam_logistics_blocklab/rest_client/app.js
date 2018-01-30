@@ -2,13 +2,21 @@ const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 const url = require('url');
+const cors = require('cors');
 const config = require('config');
+const fileUpload = require('express-fileupload');
 
 const ErrorTranslator = require('./errors/ErrorTranslator');
 const errorTranslator = new ErrorTranslator();
 
 var app = express();
 app.use(bodyParser.json());
+app.use(fileUpload());
+app.use(cors({
+    //origin: ['<DOMAIN1>', '<DOMAIN2>', ...],
+  	credentials: true
+}));
+
 
 require('./routes')(app);
 

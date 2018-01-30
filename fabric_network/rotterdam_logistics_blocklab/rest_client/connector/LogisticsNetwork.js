@@ -7,8 +7,13 @@
 
 const BusinessNetworkConnection = require('composer-client').BusinessNetworkConnection;
 
+const IdCard = require('composer-common').IdCard;
+const FileSystemCardStore = require('composer-common').FileSystemCardStore;
+const BusinessNetworkCardStore = require('composer-common').BusinessNetworkCardStore;
+const AdminConnection = require('composer-admin').AdminConnection;
+
 const config = require('config').get('logistics-app');
-const cardname = config.get('cardname');
+const admin_cardname = config.get('cardname');
 
 const truckerParticipantRegistryName = config.get('truckerParticipantRegistryName');
 const containerDeliveryJobOfferAssetRegistryName = config.get('containerDeliveryJobOfferAssetRegistryName');
@@ -16,8 +21,10 @@ const containerDeliveryJobAssetRegistryName = config.get('containerDeliveryJobAs
 
 class LogisticsNetwork
 {
-	constructor()
+	constructor(cardName) 
 	{
+	    this.currentParticipantId;
+	    this.cardname = cardName === undefined ? admin_cardname : cardName;
 		this.bizNetworkConnection = new BusinessNetworkConnection();
 	}
 
@@ -25,13 +32,28 @@ class LogisticsNetwork
 	{
 		if (this.connectPromise === undefined)
 		{
-			this.connectPromise = this.bizNetworkConnection.connect(cardname)
+			this.connectPromise = this.bizNetworkConnection.connect(this.cardname)
 				.then((result) => {
-					this.businessNetworkDefinition = result;
+				    this.businessNetworkDefinition = result;
+				    this.serializer = this.businessNetworkDefinition.getSerializer();
 				});
 		}
 
 		return this.connectPromise;
+	}
+
+	ping() 
+	{
+		return this.init()
+			.then(() => this.bizNetworkConnection.ping());
+	}
+
+	logout()
+	{
+		// Not sure if deleting a card can be branded as "logout"
+		return this.ping()
+			.then(() => new AdminConnection().connect(admin_cardname))
+			.then((adminConnection) => adminConnection.deleteCard(this.cardName));
 	}
 
 	getTruckerParticipantRegistry()
@@ -87,15 +109,33 @@ class LogisticsNetwork
 
 				return fn(resource, factory);
 			})
-			.then((res) => 
-				this.bizNetworkConnection.getParticipantRegistry(namespace + "." + type)
-					.then((reg) => reg.add(res)
-						.then()
-						.catch((error) => {
-							throw error;
-						})
-				)
+			.then((res) => this.bizNetworkConnection.getParticipantRegistry(`${namespace}.${type}`)
+				.then((reg) => reg.add(res))
 			);
+	}
+
+	static async importCardToNetwork(cardData)
+	{
+		let fileSystemCardStore = new FileSystemCardStore();
+		let adminConnection = new AdminConnection({cardStore: fileSystemCardStore});
+		let adminConnectionConnectPromise = adminConnection.connect(admin_cardname);
+
+		let _idCardData = await IdCard.fromArchive(cardData);
+		let _idCardName = await BusinessNetworkCardStore.getDefaultCardName(_idCardData);
+
+		let isCardImportedAlready = adminConnectionConnectPromise.then(() => adminConnection.hasCard(_idCardName));
+
+		if (!isCardImportedAlready) {
+			// await fileSystemCardStore.put(_idCardName, _idCardData);
+			await adminConnectionConnectPromise.then(() =>
+				adminConnection.importCard(_idCardName, _idCardData)
+			).then(() => adminConnection.ping());
+
+			console.log(`\n\cardname: ${_idCardName}`);
+		}
+
+		return new LogisticsNetwork(_idCardName).init()
+			.then(() => _idCardName);
 	}
 }
 

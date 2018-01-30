@@ -14,6 +14,22 @@ rule NetworkAdminSystem {
 	action: ALLOW
 }
 
+rule NetworkAccessTrucker {
+	description: "Grant Truckers access to the network"
+	participant: "nl.tudelft.blockchain.logistics.Trucker"
+	operation: READ
+	resource: "org.hyperledger.composer.system.Network#rotterdam_logistics_blocklab@**"
+	action: ALLOW	
+}
+
+rule NetworkAccessTrucker {
+	description: "Grant ContainerGuys access to the network"
+	participant: "nl.tudelft.blockchain.logistics.ContainerGuy"
+	operation: READ
+	resource: "org.hyperledger.composer.system.Network#rotterdam_logistics_blocklab@**"
+	action: ALLOW	
+}
+
 rule ContainerGuyCanViewHisDeliveryJobs {
 	description: "ContainerGuyCanViewHisContainerDeliveryJobs"
 	participant(r): "nl.tudelft.blockchain.logistics.ContainerGuy"

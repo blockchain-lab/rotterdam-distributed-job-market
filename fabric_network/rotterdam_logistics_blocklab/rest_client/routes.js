@@ -6,4 +6,5 @@ module.exports = function (app) {
   app.use('/containerDeliveryJobOffer', require('./api/ContainerDeliveryJobOffer'));
   app.use('/containerDeliveryJob', require('./api/ContainerDeliveryJob'));
   app.use('/test', require('./api/test'));
+  app.use('/identity', require('./api/Identity'));
 }
