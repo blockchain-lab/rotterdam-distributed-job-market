@@ -21,6 +21,8 @@
     "http": "0.0.0",
     "node-gyp": "^3.6.2",
     "path": "^0.12.7",
+    "request": "^2.83.0",
+    "request-promise-native": "^1.0.5",
     "url": "^0.11.0"
   }
 }

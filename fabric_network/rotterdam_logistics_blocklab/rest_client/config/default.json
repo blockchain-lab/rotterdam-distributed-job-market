@@ -6,22 +6,25 @@
 		
 		"containerDeliveryJobAssetRegistryName": "nl.tudelft.blockchain.logistics.ContainerDeliveryJob",
 		"containerDeliveryJobOfferAssetRegistryName": "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer"
-	},
-    "ComposerConfig": {
-       "debug": {
-         "logger": "default",
-         "config": {
-           "console": {
-             "enabledLevel": "verbose",
-             "alwaysLevel": "verbose"
+  },
+  "graph-hopper": {
+    "api-key": "6b7aac66-6fc7-470f-949e-e66adb7c9584"
+  },
+  "ComposerConfig": {
+     "debug": {
+       "logger": "default",
+       "config": {
+         "console": {
+           "enabledLevel": "verbose",
+           "alwaysLevel": "verbose"
 
-           },
-           "file": {
-             "filename": "./trace_PID.log",
-             "enabledLevel": "verbose",
-             "alwaysLevel": "info"
-           }
+         },
+         "file": {
+           "filename": "./trace_PID.log",
+           "enabledLevel": "verbose",
+           "alwaysLevel": "info"
          }
        }
-      }
+     }
+    }
 }
