@@ -1,10 +1,14 @@
 const router = require('express').Router();
 
+
 const ContainerGuyService = require('../service/ContainerGuyService');
+const ContainerInfoService = require('../service/ContainerInfoService');
 const ContainerDeliveryJobService = require('../service/ContainerDeliveryJobService');
 const ContainerDeliveryJobOfferService = require('../service/ContainerDeliveryJobOfferService');
 
 const CreateContainerDeliveryJobOfferCommand = require('../domain/tx/CreateContainerDeliveryJobOfferCommand');
+
+const ContainerInfo = require('../domain/ContainerInfo');
 
 router.get('/allContainerDeliveryJobOffersOf/:containerGuyId', (req, res, next) => {
 	const containerGuyId = req.params.containerGuyId;
@@ -26,15 +30,17 @@ router.post('/createContainerDeliveryJobOffer', (req, res, next) => {
 
 	new ContainerDeliveryJobOfferService()
 		.createContainerDeliveryJobOffer(req.body)
-		.then((result) => res.json(result))
+		.then((result) => res.status(200).send("created"))
 		.catch(next);
 });
 
 router.post('/createContainerInfo', (req, res, next) => {
+	const containerInfo = new ContainerInfo(req.body);
+	console.log(containerInfo);
 
-	new ContainerDeliveryJobOfferService()
-		.createContainerDeliveryJobOffer(req.body)
-		.then((result) => res.json(result))
+	new ContainerInfoService()
+		.createContainerInfo(containerInfo)
+		.then((result) => res.status(200).send("created"))
 		.catch(next);
 });
 

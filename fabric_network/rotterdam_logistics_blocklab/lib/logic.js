@@ -374,8 +374,8 @@ function cancelContainerDeliveryJobOffer(tx)
 */
 function createContainerInfo(tx)
 {
-    var factory = getFactory();
-    var newContainerInfo = factory.newResource('nl.tudelft.blockchain.logistics', 'ContainerInfo', tx.containerId);
+    let factory = getFactory();
+    let newContainerInfo = factory.newResource('nl.tudelft.blockchain.logistics', 'ContainerInfo', tx.containerId);
     newContainerInfo.containerType = tx.containerType;
     newContainerInfo.owner = tx.owner;
     newContainerInfo.containerSize = tx.containerSize;

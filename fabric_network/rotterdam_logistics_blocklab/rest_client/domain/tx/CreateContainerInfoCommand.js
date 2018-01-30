@@ -4,40 +4,21 @@ const config = require('config');
 
 class CreateContainerInfoCommand
 {
-	constructor(obj)
+	/**
+	 * @param {domain.ContainerInfo} containerInfo
+	 */
+	constructor(containerInfo)
 	{
-		this.containerId = obj.containerId;
-		this.ownerId = obj.ownerId;
-		this.containerSize = obj.containerSize;
-		this.containerType = obj.containerType;
-	}
-
-	getOwnerId()
-	{
-		return ownerId;
-	}
-
-	getContainerSize()
-	{
-		return containerSize;
-	}
-
-	getContainerType()
-	{
-		return containerType;
-	}
-
-	getContainerId()
-	{
-		return containerId;
+		this.containerInfo = containerInfo;
 	}
 
 	hydrateTx(tx, factory)
 	{
-		tx.owner = factory.newRelationship("nl.tudelft.blockchain.logistics", "ContainerGuy", this.ownerId);
-		tx.containerId = this.containerId;
-		tx.containerSize = this.containerSize;
-		tx.containerType = this.containerType;
+		tx.owner = factory.newRelationship("nl.tudelft.blockchain.logistics", "ContainerGuy", this.containerInfo.ownerId);
+		tx.containerId = this.containerInfo.containerId;
+		tx.containerSize = this.containerInfo.containerSize;
+		tx.containerType = this.containerInfo.containerType;
+
 		return tx;
 	}
 }
