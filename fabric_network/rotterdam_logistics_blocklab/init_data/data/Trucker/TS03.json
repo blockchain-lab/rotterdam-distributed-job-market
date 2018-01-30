@@ -1,0 +1,22 @@
+{
+    "$class": "nl.tudelft.blockchain.logistics.Trucker",
+    "truckerId": "T03",
+    "firstName": "Julius",
+    "lastName": "Ceasar",
+    "adrTraining": "YES",
+    "truckCapacity": "TWENTY",
+    "availability": {
+      "$class": "nl.tudelft.blockchain.logistics.TruckerAvailability",
+      "from": "2018-02-01T00:00:00.000Z",
+      "to": "2020-01-01T00:00:00.000Z"
+    },
+    "allowedDestinations": [
+      "Rome"
+    ],
+    "truckerBids": [],
+    "rating": {
+      "$class": "nl.tudelft.blockchain.logistics.TruckerRating",
+      "totalPastJobsAccepted": 0,
+      "jobsDelivered": 0
+    }
+  }

@@ -4,6 +4,7 @@ class ContainerInfo
 {
 	constructor(obj)
 	{
+		this.containerId = obj.containerId;
 		this.ownerId = obj.ownerId;
 		this.containerSize = obj.containerSize;
 		this.containerType = obj.containerType;

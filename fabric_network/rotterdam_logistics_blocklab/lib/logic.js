@@ -1,15 +1,6 @@
 'use strict';
 
 /**
- * @param {DateTime} availableForPickupDateTime
- * @param {nl.tudelft.blockchain.logistics.TruckerAvailability} truckerAvailability
- */
-function isContainerPickupDateTimeWithinTruckerAvailability(availableForPickupDateTime, truckerAvailability)
-{
-    return truckerAvailability.from <= availableForPickupDateTime && availableForPickupDateTime <= truckerAvailability.to;
-}
-
-/**
  * @param {nl.tudelft.blockchain.logistics.AdrTraining} truckerAdrTraining
  * @param {nl.tudelft.blockchain.logistics.AdrTraining} requiredAdrTraining
  */
@@ -74,37 +65,53 @@ async function getAllConflictingJobOffersForTruckerAndJobBeingAccepted(trucker, 
  * Cancels bids of Trucker on ContainerDeliveryJobOffers that if bid accepted, would result in a job conflict.
  * This is done for sanity and UX reasons as accepting a bid that results in a conflict would throw an error anyway, forcing the
  * shipper/containerGuy to a lot of trial-and-error in a the worst case.
+ *
+ * We can image the jobs being not so tight delivery-time wise as this ProofOfConcept and that what we currently see as a "conflict" 
+ * is not a conflict in real life. In the future, the decision if the jobs are a conflict can be left to the Trucker. And can be even executed
+ * from the Restful-Api-Application. But doing so is considerably more complex as all kinds of race-conditions, business rules, usability
+ * and Shipper & Trucker satisfaction must be taken into account. Therefore we KISS'd it and simply cancel every conflict here assuming that
+ * pickup-datetime and expected-delivery-datetime and fairly tight (tight enough to not allow the Trucker enough time to deliver,
+ * drive back to the Port and pick up some other accepted job on-time before the expected-delivery-datetime of the first job has passed)
+ *
  * @param {nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer} containerDeliveryJobOffer - the job offer which is being accepted
  * @param {nl.tudelft.blockchain.logistics.Trucker} forTrucker - the Trucker in question
  * @return {Promise} - Promise which when resolved indicates that bids on conflicting offers are canceled
  */
 async function cancelTruckersBidsOnConflictingJobOffers(containerDeliveryJobOffer, forTrucker)
 {
+    // Need to find all the bids of the trucker in the conflictingJobOffers, get the actual asset and then cancel those
     var conflictingJobOffersTruckerHasBidOn = await getAllConflictingJobOffersForTruckerAndJobBeingAccepted(forTrucker, containerDeliveryJobOffer);
 
-    // Need to find all the bids of the trucker in the conflictingJobOffers, get the actual asset and then cancel those
     let truckerId = forTrucker.getIdentifier();
 
-    // first filter exclude the jobOffer provided in the arguments, as it always conflicts with itself and we don't want to cancel that bid
-    let toCancel = conflictingJobOffersTruckerHasBidOn.filter((offer) => offer.getIdentifier() != containerDeliveryJobOffer.getIdentifier())
-        .map((conflictingOffer) =>
-        {
-            // hacky: all bids of a tricker share same resource URI prefix, so use that instead of querying and filtering on ID's
-            // trucker might have more than one bid on an JobOffer
-            let bidsToCancel = conflictingOffer.containerBids.filter((bidRelationship) => bidRelationship.getIdentifier().startsWith(truckerId))
-            return {bidsToCancel: bidsToCancel, conflictingOffer: conflictingOffer}
-        });
+    let cancelBidBy = (bidRef, jobOffer) =>
+    {
+        return getAssetRegistry("nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer")
+            .then((registry) => registry.get(bidRef.getIdentifier()))
+            .then((bid) => {
+                // workaround for RuntimeApi registry not resolving relations
+                bid.containerDeliveryJobOffer = jobOffer;
+                cancelBid({truckerBid: bid});
+            });
+    }
 
-    const cancelConflictingBidsPromises = [];
-    toCancel.forEach((offerWithBidsToCancel) =>
-        offerWithBidsToCancel.bidsToCancel.forEach((bidToCancel) =>
-            cancelConflictingBidsPromises.push(
-                getAssetRegistry("nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer")
-                    .then((registry) => registry.get(bidToCancel.getIdentifier()))
-                    .then((bid) => cancelBid({truckerBid: bid, containerDeliveryJobOffer: offerWithBidsToCancel.conflictingOffer}))
-            )
-        )
-    );
+    let jobOfferIntoItemsWithBidRefAndJobOffer = (jobOffer) => jobOffer.containerBids.map((bidRef) => {
+        return {bidRef: bidRef, correspondingJobOffer: jobOffer};
+    });
+
+    let cancelConflictingBidsPromises = conflictingJobOffersTruckerHasBidOn
+        // exclude the jobOffer provided in the arguments, don't want to touch that
+        .filter((offer) => offer.getIdentifier() != containerDeliveryJobOffer.getIdentifier())
+        // map elements to arrays of bids
+        // note: need to keep track of the jobOffers as the RuntimeApi registry does not have a 'resolve' method
+        .map(jobOfferIntoItemsWithBidRefAndJobOffer)
+        // unpack a stream of arrays of items into just a stream of items so that we can use map and simply return promises
+        .reduce((accumulator, value) => accumulator.concat(value))
+        // hacky: all bids of a tricker share same resource URI prefix, so use that instead of querying and filtering on ID's
+        // trucker might have more than one bid on an JobOffer. Also note that we're not dealing with Bid objects, but the refs
+        .filter((item) => item.bidRef.getIdentifier().startsWith(truckerId))
+        // now cancel each matched bid and collect the promises (on which the TX engine needs to wait)
+        .map((item) => cancelBidBy(item.bidRef, item.correspondingJobOffer));
 
     return Promise.all(cancelConflictingBidsPromises);
 }   
@@ -146,9 +153,7 @@ async function hasConflictingAcceptedJobs(trucker, containerDeliveryJobOffer)
  * @return {Promise} - of a boolean indicating if Trucker is allowed to bid on Job Offer
  */
 async function assertTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJobOffer)
-{
-    // should we check preferences as well?
-  
+{  
     // currently: just sticking to legal things (ADR && truck capacity)
     var adrEligable = isTruckerAdrEligable(trucker.adrTraining, containerDeliveryJobOffer.requiredAdrTraining);
     if (!adrEligable) {
@@ -160,19 +165,20 @@ async function assertTruckerEligableToBidOnJobOffer(trucker, containerDeliveryJo
         throw new Error("truck_capacity_not_eligable");
     }
 
-    var withinTruckerPickupAvailability = isContainerPickupDateTimeWithinTruckerAvailability(containerDeliveryJobOffer.availableForPickupDateTime, trucker.availability);
-    if (!withinTruckerPickupAvailability) {
-        throw new Error("job_not_within_trucker_availability");
-    }
-
     var hasConflicts = await hasConflictingAcceptedJobs(trucker, containerDeliveryJobOffer);
     if(hasConflicts) {
         throw new Error("job_conflict");
     }
 }
 
-function assertJobOfferIsBiddable()
+function assertJobOfferIsBiddable(containerDeliveryJobOffer)
 {
+    // Bidding phase is only when offer is IN MARKET
+    let isInMarket = containerDeliveryJobOffer.status == "INMARKET";
+    if (!isInMarket) {
+        throw new Error("job_not_in_market");
+    }
+
     // is job offer is still valid
     let isCanceled = containerDeliveryJobOffer.canceled;
     if (isCanceled) {
@@ -192,8 +198,8 @@ function assertJobOfferIsBiddable()
  */
 async function isTruckerAllowedToAcceptJob(trucker, containerDeliveryJobOffer)
 {
-    var hasNoConflictingAcceptedJobs = !(await hasConflictingAcceptedJobs(trucker, containerDeliveryJobOffer));
-    return hasNoConflictingAcceptedJobs;
+    var hasConflicts = await hasConflictingAcceptedJobs(trucker, containerDeliveryJobOffer);
+    return !hasConflicts;
 }
 
 /**
@@ -210,7 +216,7 @@ async function bidOnContainerDeliveryJobOffer(tx)
     var containerDeliveryJobOffer = tx.containerDeliveryJobOffer;
 
     // Check if JobOffer is open for bidding
-    assertJobOfferIsBiddable();
+    assertJobOfferIsBiddable(containerDeliveryJobOffer);
 
     // Check if Trucker is eligable
     await assertTruckerEligableToBidOnJobOffer(biddingTrucker, containerDeliveryJobOffer);
@@ -219,6 +225,7 @@ async function bidOnContainerDeliveryJobOffer(tx)
     var newContainerBid = factory.newResource('nl.tudelft.blockchain.logistics', 'TruckerBidOnContainerJobOffer', bidId);
     newContainerBid.bidAmount = tx.bidAmount;
     newContainerBid.bidder = biddingTrucker;
+    newContainerBid.containerDeliveryJobOffer = containerDeliveryJobOffer;
 
     var addNewBidPromise = getAssetRegistry('nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer')
         .then(function (assetRegistry) {
@@ -240,6 +247,12 @@ async function updateTrucker(trucker)
         .then((registry) => {
             registry.update(trucker);
         });   
+}
+
+async function getContainerDeliveryJobOffer(id)
+{
+    return getAssetRegistry("nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer")
+        then((registry) => registry.get(id));
 }
 
 /**
@@ -271,38 +284,43 @@ async function recordDeliveredJobForTruckerRating(trucker)
 */
 async function acceptBidOnContainerDeliveryJobOffer(tx)
 {
+    let bid = tx.acceptedBid;
+    let containerDeliveryJobOffer = tx.acceptedBid.containerDeliveryJobOffer;
+
+    assertJobOfferIsBiddable(containerDeliveryJobOffer);
+
     // Ensure Trucker has no conflicts if job is accepted
-    let truckerIsAllowedToAcceptJob = isTruckerAllowedToAcceptJob(tx.acceptedBid.bidder, tx.containerDeliveryJobOffer);
+    let truckerIsAllowedToAcceptJob = isTruckerAllowedToAcceptJob(bid.bidder, containerDeliveryJobOffer);
     if(!(await truckerIsAllowedToAcceptJob)) {
         throw new Error('job_conflict');
     }
 
     // Cancel Truckers bids on conflicting jobs 
-    const cancelBidsOnConflictingJobOffersPromise = cancelTruckersBidsOnConflictingJobOffers(tx.containerDeliveryJobOffer, tx.acceptedBid.bidder);
+    const cancelBidsOnConflictingJobOffersPromise = cancelTruckersBidsOnConflictingJobOffers(containerDeliveryJobOffer, bid.bidder);
 
     // Set status of the JobOffer
-    tx.containerDeliveryJobOffer.acceptedBid = tx.acceptedBid;
-    tx.containerDeliveryJobOffer.status = "CONTRACTED";
+    containerDeliveryJobOffer.acceptedBid = bid;
+    containerDeliveryJobOffer.status = "CONTRACTED";
 
     // Make the ContainerDeliveryJob asset
-    var jobId = tx.containerDeliveryJobOffer.containerDeliveryJobOfferId + '_' + tx.acceptedBid.truckerBidId;
-    var containerDeliveryJob = getFactory().newResource('nl.tudelft.blockchain.logistics', 'ContainerDeliveryJob', jobId);
-    containerDeliveryJob.jobOffer = tx.containerDeliveryJobOffer;
-    containerDeliveryJob.contractedTrucker = tx.acceptedBid.bidder;
-    containerDeliveryJob.availableForPickupDateTime = tx.containerDeliveryJobOffer.availableForPickupDateTime;
-    containerDeliveryJob.toBeDeliveredByDateTime = tx.containerDeliveryJobOffer.toBeDeliveredByDateTime;
+    let jobId = containerDeliveryJobOffer.getIdentifier() + '_' + bid.getIdentifier();
+    let containerDeliveryJob = getFactory().newResource('nl.tudelft.blockchain.logistics', 'ContainerDeliveryJob', jobId);
+    containerDeliveryJob.jobOffer = containerDeliveryJobOffer;
+    containerDeliveryJob.contractedTrucker = bid.bidder;
+    containerDeliveryJob.availableForPickupDateTime = containerDeliveryJobOffer.availableForPickupDateTime;
+    containerDeliveryJob.toBeDeliveredByDateTime = containerDeliveryJobOffer.toBeDeliveredByDateTime;
 
     // TODO: some mechanism for negotating this. Maybe part of a DH-exchange (to also decrypt other data, also todo)
     containerDeliveryJob.arrivalPassword = "CHANGE_ME";
     containerDeliveryJob.status = "CONTRACTED";
 
-    let truckerRatingUpdatePromise = recordAcceptedJobForTruckerRating(tx.acceptedBid.bidder);
+    let truckerRatingUpdatePromise = recordAcceptedJobForTruckerRating(bid.bidder);
 
     const recordAcceptedBidPromise = getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
         .then(function (assetRegistry) {
-            return assetRegistry.update(tx.containerDeliveryJobOffer);
+            return assetRegistry.update(containerDeliveryJobOffer);
         })
-        .then (function (result) {
+        .then (function () {
             return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJob');
         })
         .then (function (assetRegistry) {
@@ -330,12 +348,17 @@ function RaiseExceptionOnDeliveryJob(tx)
 }
 
 /**
-* Cancel delivery
+* Cancel job offer -- can only do this when there is no Trucker contracted
 * @param {nl.tudelft.blockchain.logistics.CancelContainerDeliveryJobOffer} tx - transaction parameters
 * @transaction
 */
 function cancelContainerDeliveryJobOffer(tx)
-{
+{   
+    let jobStatus = tx.ContainerDeliveryJobOffer.status;
+    if (jobStatus != "INMARKET" || jobStatus != "NEW") {
+        throw new Error("job_not_cancelable");
+    }
+
     tx.containerDeliveryJobOffer.canceled = true;
     
     return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
@@ -402,11 +425,12 @@ function createContainerDeliveryJobOffer(tx)
 function acceptContainerDelivery(tx)
 {
     if (tx.job.arrivalPassword !== tx.password) {
-        throw new Error('Delivery password is incorrect, cannot accept delivery');
+        // TODO: log who, and count bad attempts to prevent brute-forcing
+        throw new Error('delivery_password_incorrect');
     }
 
     if (tx.job.jobOffer.status != "CONTRACTED") {
-        throw new Error('Cannot mark container delivered, job status is not "contracted"');
+        throw new Error('delivery_job_not_contracted');
     }
 
     tx.job.arrivalDateTime = tx.arrivalDateTime;
@@ -432,9 +456,6 @@ function acceptContainerDelivery(tx)
 function updateTruckerPreferences(tx)
 {
     tx.trucker.truckCapacity = tx.truckCapacity;
-    tx.trucker.availability.from = tx.availableFrom;
-    tx.trucker.availability.to = tx.availableTo;
-    tx.trucker.allowedDestinations = tx.allowedDestinations;
 
     return updateTrucker(tx.trucker);
 }
@@ -446,26 +467,25 @@ function updateTruckerPreferences(tx)
  */
 function cancelBid(tx)
 {
-    var index = tx.containerDeliveryJobOffer.containerBids.findIndex((value) => value.getIdentifier() == tx.truckerBid.getIdentifier());
+    let containerDeliveryJobOffer = tx.truckerBid.containerDeliveryJobOffer;
+    let bidId = tx.truckerBid.getIdentifier();
+
+    assertJobOfferIsBiddable(containerDeliveryJobOffer);
+
+    var index = containerDeliveryJobOffer.containerBids.findIndex((value) => value.getIdentifier() == tx.truckerBid.getIdentifier());
     if(index < 0)
     {
         // not found, do nothing
         return Promise.resolve(null);
     }
 
-    tx.containerDeliveryJobOffer.containerBids.splice(index, 1);
+    containerDeliveryJobOffer.containerBids.splice(index, 1);
 
-    return getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
-        .then(function(assetRegistry) 
-        {
-            return assetRegistry.update(tx.containerDeliveryJobOffer);
-        })
-        .then(function(x) 
-        {
-            return getAssetRegistry('nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer');
-        })
-        .then(function(assetRegistry) 
-        {
-            return assetRegistry.remove(tx.truckerBid);
-        });
+    let removeBidFromJobOfferPromise = getAssetRegistry('nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer')
+            .then((assetRegistry) => assetRegistry.update(containerDeliveryJobOffer));
+
+    let removeBidFromAssetRegistryPromise = getAssetRegistry('nl.tudelft.blockchain.logistics.TruckerBidOnContainerJobOffer')
+            .then((assetRegistry) => assetRegistry.remove(bidId));
+
+    return Promise.all([removeBidFromAssetRegistryPromise, removeBidFromJobOfferPromise]);
 }

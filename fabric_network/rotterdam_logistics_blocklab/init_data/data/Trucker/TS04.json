@@ -1,0 +1,22 @@
+{
+  "$class": "nl.tudelft.blockchain.logistics.Trucker",
+  "truckerId": "T04",
+  "firstName": "Gaius",
+  "lastName": "Germanicus",
+  "adrTraining": "YES",
+  "truckCapacity": "TWENTY-TWENTY",
+  "availability": {
+    "$class": "nl.tudelft.blockchain.logistics.TruckerAvailability",
+    "from": "2000-02-01T00:00:00.000Z",
+    "to": "2020-01-01T00:00:00.000Z"
+  },
+  "allowedDestinations": [
+    "Berlin", "Warsaw"
+  ],
+  "truckerBids": [],
+  "rating": {
+    "$class": "nl.tudelft.blockchain.logistics.TruckerRating",
+    "totalPastJobsAccepted": 0,
+    "jobsDelivered": 0
+  }
+}

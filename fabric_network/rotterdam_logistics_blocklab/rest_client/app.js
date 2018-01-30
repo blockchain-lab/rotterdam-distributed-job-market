@@ -1,10 +1,13 @@
-var express = require('express'),
-  	path = require('path'),
-  	bodyParser = require('body-parser'),
-  	url = require('url'),
-	config = require('config');
+const express = require('express');
+const path = require('path');
+const bodyParser = require('body-parser');
+const url = require('url');
+const cors = require('cors');
+const config = require('config');
 const fileUpload = require('express-fileupload');
-var cors = require('cors');
+
+const ErrorTranslator = require('./errors/ErrorTranslator');
+const errorTranslator = new ErrorTranslator();
 
 var app = express();
 app.use(bodyParser.json());
@@ -22,4 +25,11 @@ const port = 8081;
 app.listen(port, () => {
 	'use strict';
 	console.log('server starting on ' + port);
+});
+
+app.use((error, req, res, next) => {
+	const translatedError = errorTranslator.translate(error);
+
+	console.error(translatedError);
+	res.status(500).json({error: translatedError.message});
 });

@@ -32,11 +32,11 @@ enum ContainerSize {
 
 asset TruckerBidOnContainerJobOffer identified by truckerBidId {
 	o String truckerBidId
-	--> Trucker bidder
 	
-	/* Use integers for monetary values, we're not an exchange.
-	Can always work in "cents" if more precision is required.
-	Too bad can't define/use "Money"-like object in CTO */
+	--> Trucker bidder
+	--> ContainerDeliveryJobOffer containerDeliveryJobOffer
+	
+	// use integers for monetary values, further precision unnecessary
 	o Integer bidAmount
 }
 
@@ -116,14 +116,11 @@ participant Trucker identified by truckerId {
 	
 	o AdrTraining adrTraining
 
+	// note: the value of rating can only be modified by a side-effect of some TX, trucker has no control over this
 	o TruckerRating rating
 
-	/* Job-Search criteria: */
+	// Does it still make sense to have this in Trucker?
 	o TruckCapacityType truckCapacity
-
-	// todo: get rid of first, then in a later iteration rework into JobRequests for the auto-bidding & notification stuff
-    o TruckerAvailability availability
-    o String[] allowedDestinations /* Ideally, an array of Destination's */
 }
 
 // Ideally we should be able to determine this at runtime, but CouchDb integration is not as rich as SQL, can't count Jobs
@@ -133,12 +130,6 @@ concept TruckerRating {
 
 	// Nr of jobs delivered successfully
 	o Integer jobsDelivered default = 0 range = [0,]
-}
-
-/* Philipe: I think a free-form might be somewhat easier than sticking to Slots. The slots are basically implied by these values! */
-concept TruckerAvailability {
-    o DateTime from default = "1900-01-01"
-    o DateTime to default = "1900-01-01"
 }
 
 concept Exception {
@@ -164,7 +155,6 @@ transaction BidOnContainerDeliveryJobOffer {
 }
 
 transaction AcceptBidOnContainerDeliveryJobOffer {
-	--> ContainerDeliveryJobOffer containerDeliveryJobOffer
 	--> TruckerBidOnContainerJobOffer acceptedBid
 }
 
@@ -207,15 +197,8 @@ transaction UpdateTruckerPreferences {
 	--> Trucker trucker
 
 	o TruckCapacityType truckCapacity
-	o DateTime availableFrom
-	o DateTime availableTo
-    o String[] allowedDestinations 
 }
 
 transaction CancelBid {
-	--> ContainerDeliveryJobOffer containerDeliveryJobOffer
 	--> TruckerBidOnContainerJobOffer truckerBid
-}
-
-transaction test {
 }
