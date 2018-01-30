@@ -53,22 +53,47 @@ router.post("/:containerDeliveryJobOfferId/acceptBid/:truckerBidId", (req, res, 
 });
 
 /**
-	@param {| delimited String} allowedDestinations
-	@param {Date} availableFrom
-	@param {Date} availableTo
-	@param {YES|NONE String} requiredAdrTraining
+	Query string:
+		* dest 	- allowed destination (at the moment: city name)
+		* from 	- datetime available from (to pickup)
+		* to 	- datetime available to (to pickup)
+		* adr 	- ADR level required {"YES", "NONE"}
 */
-router.get('/containerDeliveryJobOffers/:allowedDestinations/:availableFrom/:availableTo/:requiredAdrTraining', (req, res) => {
-	const allowedDestinations = req.params.allowedDestinations.toString().split("|");
-	const availableFrom = req.params.availableFrom;
-	const availableTo = req.params.availableTo;
-	const requiredAdrTraining = req.params.requiredAdrTraining;
+router.get('/search/?', (req, res, next) => {
+
+	/* some quick validation */
+	if (req.query.dest === undefined) {
+		res.status(400).send('dest parameter not supplied');
+		return;
+	}
+
+	if (req.query.from === undefined) {
+		res.status(400).send('from parameter not supplied');
+		return;
+	}
+
+	if (req.query.to === undefined) {
+		res.status(400).send('to parameter not supplied');
+		return;
+	}
+
+	if (req.query.adr === undefined) {
+		res.status(400).send('adr parameter not supplied');
+		return;
+	}
+
+	const allowedDestinations = req.query.dest.toString().split(",");;
+	const availableFrom = req.query.from;
+	const availableTo = req.query.to;
+	const requiredAdrTraining = req.query.adr;
 	
-	console.log(`ContainerDeliveryJobOffers query: 
-	allowedDestinations ${allowedDestinations}
-	availableFrom ${availableFrom},
-	availableTo ${availableTo},
-	requiredAdrTraining ${requiredAdrTraining}`);
+	console.log(
+		`ContainerDeliveryJobOffers query: ` +
+		`	allowedDestinations ${allowedDestinations} ` +
+		`	availableFrom ${availableFrom}, ` +
+		`	availableTo ${availableTo}, ` +
+		`	requiredAdrTraining ${requiredAdrTraining}`
+	);
 
 	new ContainerDeliveryJobOfferService()
 		.getEligableContainerDeliveryJobOffers(allowedDestinations, availableFrom, availableTo, requiredAdrTraining)
