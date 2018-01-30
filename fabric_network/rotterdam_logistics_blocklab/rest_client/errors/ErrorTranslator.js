@@ -63,8 +63,28 @@ class ErrorTranslator
 			return new Error("The job cannot be delivered as it is not in 'contracted' state");
 		}
 
+		if (this.messageIsGenericComposerTxError(originalMessage))
+		{
+			return this.parseGenericChaincodeError(originalMessage);
+		}
+
 		// didn't match any
 		return error;
+	}
+
+	messageIsGenericComposerTxError(message)
+	{
+		return message.includes('Calling chaincode Invoke()');
+	}
+
+	parseGenericChaincodeError(message)
+	{
+		const regex = /\[Error:(.+)\]/;
+		const extractedTxMessage = regex.exec(message)[1];
+
+		console.log(extractedTxMessage);
+
+		return new Error(extractedTxMessage);
 	}
 
 }
