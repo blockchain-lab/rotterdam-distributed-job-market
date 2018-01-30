@@ -44,7 +44,7 @@ class TruckerService
 	*/
 	updateTruckerPreferences(truckerId, truckCapacity, availableFrom, availableTo, allowedDestinations) 
 	{
-		console.log(`[updateTruckerPreferences] updating trucker preferences for ${truckerId} to: ${truckCapacity} ${availableFrom}, ${availableTo}, ${allowedDestinations}`);
+		console.log(`[updateTruckerPreferences] updating trucker preferences for ${truckerId} to: ${truckCapacity}`);
 
 		const namespace = "nl.tudelft.blockchain.logistics";
 		const txName = "UpdateTruckerPreferences";
@@ -53,15 +53,10 @@ class TruckerService
 			namespace,
 			txName,
 			(tx, factory) => {
-				return new UpdateTruckerPreferencesCommand(
-					{
+				return new UpdateTruckerPreferencesCommand({
 						truckerId: truckerId,
-						truckCapacity: truckCapacity,
-						availableFrom: availableFrom,
-						availableTo: availableTo,
-						allowedDestinations: allowedDestinations
-					})
-					.hydrateTx(tx, factory);
+						truckCapacity: truckCapacity
+					}).hydrateTx(tx, factory);
 			});
 	}
 

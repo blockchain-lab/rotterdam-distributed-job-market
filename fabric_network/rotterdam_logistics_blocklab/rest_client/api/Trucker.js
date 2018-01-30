@@ -31,12 +31,9 @@ router.get('/rating/:truckerId', (req, res, next) => {
 router.post('/preferences', (req, res, next) => {
 	let truckerId = req.body.truckerId;
 	let truckCapacity = req.body.truckCapacity;
-	let availableFrom = req.body.availableFrom;
-	let availableTo = req.body.availableTo;
-	let allowedDestinations = req.body.allowedDestinations;
 
 	new TruckerService()
-		.updateTruckerPreferences(truckerId, truckCapacity, availableFrom, availableTo, allowedDestinations)
+		.updateTruckerPreferences(truckerId, truckCapacity)
 		.then((result) => res.json(result))
 		.catch(next);
 });
