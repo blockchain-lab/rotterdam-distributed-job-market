@@ -22,7 +22,7 @@ rule NetworkAccessTrucker {
 	action: ALLOW	
 }
 
-rule NetworkAccessTrucker {
+rule NetworkAccessContainerGuy {
 	description: "Grant ContainerGuys access to the network"
 	participant: "nl.tudelft.blockchain.logistics.ContainerGuy"
 	operation: READ
