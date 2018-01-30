@@ -36,7 +36,6 @@ router.post('/createContainerDeliveryJobOffer', (req, res, next) => {
 
 router.post('/createContainerInfo', (req, res, next) => {
 	const containerInfo = new ContainerInfo(req.body);
-	console.log(containerInfo);
 
 	new ContainerInfoService()
 		.createContainerInfo(containerInfo)

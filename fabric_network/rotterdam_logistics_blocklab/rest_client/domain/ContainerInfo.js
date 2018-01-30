@@ -1,5 +1,7 @@
 'use strict';
 
+const SimpleObjectInitializer = require('../util/SimpleObjectInitializer');
+
 class ContainerInfo
 {
 	/**
@@ -8,15 +10,7 @@ class ContainerInfo
 	constructor(obj)
 	{
 		let requiredParams = ['containerId', 'ownerId', 'containerSize'];
-		for (var i = 0; i < requiredParams.length; i++) {
-			let param = requiredParams[i];
-
-			if (obj[param] === undefined) {				
-				throw new Error(`ContainerInfo missing '${param}' field`);
-			}
-
-			this[param] = obj[param];
-		}
+		SimpleObjectInitializer.setRequiredValues(requiredParams, obj, this);
 
 		// Not used for now, something that we left in for future expandability (like refrigerated containers distinction)
 		if (obj.containerType !== undefined) {
