@@ -43,32 +43,31 @@ class ContainerDeliveryJobService
 			.then((assets) => assets.map((asset) => new ContainerDeliveryJobForTrucker(asset)));
 	}
 
-	acceptDelivery(containerDeliveryJobId, arrivalPassword)
+	async acceptDelivery(containerDeliveryJobId, arrivalPassword)
 	{
 		console.log(`[acceptDelivery] for ContainerDeliveryJobId: ${containerDeliveryJobId}`);
 
-		let password = arrivalPassword; // will be overwritten by the promise if the argument was not passed in
-		let passwordPromise = arrivalPassword === undefined 
-			? this.retrieveById(containerDeliveryJobId).then((containerDeliveryJob) => {password = containerDeliveryJob.getPassword();})
-			: Promise.resolve(arrivalPassword); // wrap the provided password argument into a promise
+		if (arrivalPassword === undefined) {
+			arrivalPassword = await this.retrieveById(containerDeliveryJobId)
+				.then((containerDeliveryJob) => containerDeliveryJob.getPassword());
+		}
 
 		return this.logisticsNetwork.submitTransaction(
-			"nl.tudelft.blockchain.logistics", "AcceptContainerDelivery",
+			"nl.tudelft.blockchain.logistics",
+			"AcceptContainerDelivery",
 			(tx, factory) => {
-				// Make sure the passwordPromise is resolved before continueing
-				Promise.resolve(passwordPromise);
-
 				return new AcceptContainerDeliveryCommand({
-					password: password,
+					password: arrivalPassword,
 					containerDeliveryJobId: containerDeliveryJobId
-				})
+				}).hydrateTx(tx, factory);
 			});
 	}
 
 	raiseException(containerDeliveryJobId, details)
 	{
 		console.log(`[raiseException] for ContainerDeliveryJobId: ${containerDeliveryJobId}`);
-		var exc = {"details":details};
+
+		var exc = {details: details};
 		return this.logisticsNetwork.submitTransaction(
 			"nl.tudelft.blockchain.logistics", 
 			"RaiseExceptionOnDeliveryJob",
@@ -76,7 +75,7 @@ class ContainerDeliveryJobService
 				return new RaiseExceptionOnDeliveryJobCommand({
 					containerDeliveryJobId: containerDeliveryJobId,
 					exception: exc
-					}).hydrateTx(tx, factory);
+				}).hydrateTx(tx, factory);
 			});
 	}
 }
