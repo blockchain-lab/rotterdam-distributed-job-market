@@ -54,9 +54,9 @@ class ContainerDeliveryJobOfferService
 	 * @param {TruckerBidId}
 	 * @return {Promise} of AcceptBidStatus
 	 */
-	acceptBid(containerDeliveryJobOfferId, truckerBidId)
+	acceptBid(truckerBidId)
 	{
-		console.log(`[acceptBid] for containerDeliveryJobOfferId: ${containerDeliveryJobOfferId} and truckerBidId: ${truckerBidId}`);
+		console.log(`[acceptBid] truckerBidId: ${truckerBidId}`);
 
 		const namespace = "nl.tudelft.blockchain.logistics";
 		const txName = "AcceptBidOnContainerDeliveryJobOffer";
@@ -66,7 +66,6 @@ class ContainerDeliveryJobOfferService
 			txName,
 			(tx, factory) => {
 				return new AcceptBidOnContainerDeliveryJobOfferCommand({
-					containerDeliveryJobOfferId: containerDeliveryJobOfferId, 
 					truckerBidId: truckerBidId
 				}).hydrateTx(tx, factory);
 			});
@@ -88,7 +87,7 @@ class ContainerDeliveryJobOfferService
 	 */
 	cancelBid(truckerBidId)
 	{
-		console.log(`[cancelBid] cancel bid ${truckerBidId} on ${containerDeliveryJobOfferId}`);
+		console.log(`[cancelBid] truckerBidId: ${truckerBidId}`);
 
 		const namespace = "nl.tudelft.blockchain.logistics";
 		const txName = "CancelBid";

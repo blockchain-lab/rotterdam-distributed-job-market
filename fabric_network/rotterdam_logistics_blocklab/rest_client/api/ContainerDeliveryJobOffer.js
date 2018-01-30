@@ -43,11 +43,10 @@ router.post("/cancelBid/:truckerBidId", (req, res, next) => {
 
 // TODO: remove containerDeliveryJobOfferId, the truckerBidId is enough to identify the jobOffer
 router.post("/:containerDeliveryJobOfferId/acceptBid/:truckerBidId", (req, res, next) => {
-	const containerDeliveryJobOfferId = req.params.containerDeliveryJobOfferId;
 	const truckerBidId = req.params.truckerBidId;
 
 	new ContainerDeliveryJobOfferService()
-		.acceptBid(containerDeliveryJobOfferId, truckerBidId)
+		.acceptBid(truckerBidId)
 		.then((result) => { res.status(200).send("tx submitted successfully"); } )
 		.catch(next);
 });
