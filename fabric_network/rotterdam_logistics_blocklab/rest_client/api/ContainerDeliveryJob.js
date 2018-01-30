@@ -18,9 +18,9 @@ router.get('/:containerDeliveryJobId', (req, res, next) => {
 		.catch(next);
 });
 
-router.post('/:containerDeliveryJobId/raiseException/:details', (req, res, next) => {
+router.post('/:containerDeliveryJobId/raiseException', (req, res, next) => {
 	const containerDeliveryJobId = req.params.containerDeliveryJobId;
-	const details = req.params.details;
+	const details = req.body;
 	
 	new ContainerDeliveryJobService()
 		.raiseException(containerDeliveryJobId, details)
