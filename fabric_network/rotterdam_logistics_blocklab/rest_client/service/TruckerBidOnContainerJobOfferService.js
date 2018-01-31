@@ -4,18 +4,16 @@ const config = require('config');
 const LogisticsNetwork = require('../connector/LogisticsNetwork');
 
 const ContainerDeliveryJobOffer = require('../domain/ContainerDeliveryJobOffer');
-const CreateContainerDeliveryJobOfferCommand = require('../domain/tx/CreateContainerDeliveryJobOfferCommand');
-const AcceptBidOnContainerDeliveryJobOfferCommand = require('../domain/tx/AcceptBidOnContainerDeliveryJobOfferCommand');
 
 class TruckerBidOnContainerJobOfferService
 {
     retriveAllBids(truckerId)
     {
+    	throw new Error("not implemented");
+
+    	// fixme: use query to get all bids of a Trucker
 		return new LogisticsNetwork().getTruckerBidOnContainerJobOfferRegistry()
-			.then((x) => x.getAll())
-			.catch((error) => {
-				throw error;
-			});
+			.then((x) => x.getAll());
     }
 }
 
