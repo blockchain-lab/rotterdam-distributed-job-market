@@ -34,7 +34,7 @@ router.post('/preferences', (req, res, next) => {
 
 	new TruckerService()
 		.updateTruckerPreferences(truckerId, truckCapacity)
-		.then((result) => res.json(result))
+		.then(() => res.status(200).send("Preferences updated"))
 		.catch(next);
 });
 
@@ -53,7 +53,7 @@ router.post('/acceptDelivery/:containerDeliveryJobId/:password', (req, res, next
 
 	new ContainerDeliveryJobService()
 		.acceptDelivery(containerDeliveryJobId, arrivalPassword)
-		.then(() => res.status(200).send("delivery accepted"))
+		.then(() => res.status(200).send("Delivery marked accepted"))
 		.catch(next);
 });
 
@@ -65,7 +65,7 @@ router.post("/:containerDeliveryJobOfferId/submitBid/:bidderId/:bidAmount", (req
 
 	new ContainerDeliveryJobOfferService()
 		.submitBid(containerDeliveryJobOfferId, bidderId, bidAmount)
-		.then((result) => res.status(200).send("tx submitted successfully")) // TODO: proper status, maybe return the DeliveryJob
+		.then((result) => res.status(200).send("Bid submitted"))
 		.catch(next);
 });
 

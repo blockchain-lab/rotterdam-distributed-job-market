@@ -23,12 +23,11 @@ router.get('/byId/:id', (req, res) => {
 
 // BACKWARDS COMPAT (remove after GUI update to use /cancelBid/)
 router.post("/:containerDeliveryJobOfferId/cancelBid/:truckerBidId", (req, res, next) => {
-	const containerDeliveryJobOfferId = req.params.containerDeliveryJobOfferId;
 	const truckerBidId = req.params.truckerBidId;
 
 	new ContainerDeliveryJobOfferService()
 		.cancelBid(truckerBidId)
-		.then((result) => { res.status(200).send("tx submitted successfully"); } )
+		.then((result) => { res.status(200).send("Bid cancelled"); } )
 		.catch(next);
 });
 
@@ -37,7 +36,7 @@ router.post("/cancelBid/:truckerBidId", (req, res, next) => {
 
 	new ContainerDeliveryJobOfferService()
 		.cancelBid(truckerBidId)
-		.then((result) => { res.status(200).send("tx submitted successfully"); } )
+		.then((result) => { res.status(200).send("Bid cancelled"); } )
 		.catch(next);
 });
 
@@ -47,13 +46,13 @@ router.post("/:containerDeliveryJobOfferId/acceptBid/:truckerBidId", (req, res, 
 
 	new ContainerDeliveryJobOfferService()
 		.acceptBid(truckerBidId)
-		.then((result) => { res.status(200).send("tx submitted successfully"); } )
+		.then((result) => { res.status(200).send("Bid accepted"); } )
 		.catch(next);
 });
 
 /**
 	Query string:
-		* dest 	- allowed destination (at the moment: city name)
+		* dest 	- (optional) allowed destination (at the moment: city name, country)
 		* from 	- datetime available from (to pickup)
 		* to 	- datetime available to (to pickup)
 		* adr 	- ADR level required {"YES", "NONE"}
@@ -62,8 +61,8 @@ router.get('/search/?', (req, res, next) => {
 
 	/* some quick validation */
 	if (req.query.dest === undefined) {
-		res.status(400).send('dest parameter not supplied');
-		return;
+		// optional
+		req.query.dest = "";
 	}
 
 	if (req.query.from === undefined) {

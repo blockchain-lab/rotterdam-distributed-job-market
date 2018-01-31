@@ -28,7 +28,7 @@ router.post('/createContainerDeliveryJobOffer', (req, res, next) => {
 
 	new ContainerDeliveryJobOfferService()
 		.createContainerDeliveryJobOffer(req.body)
-		.then((result) => res.status(200).send("created"))
+		.then((result) => res.status(200).send("JobOffer created"))
 		.catch(next);
 });
 
@@ -37,7 +37,7 @@ router.post('/createContainerInfo', (req, res, next) => {
 
 	new ContainerInfoService()
 		.createContainerInfo(containerInfo)
-		.then((result) => res.status(200).send("created"))
+		.then((result) => res.status(200).send("ContainerInfo created"))
 		.catch(next);
 });
 
@@ -46,7 +46,7 @@ router.post('/acceptDelivery/:containerDeliveryJobId', (req, res, next) => {
 
 	new ContainerDeliveryJobService()
 		.acceptDelivery(containerDeliveryJobId)
-		.then(() => res.status(200).send("delivery accepted"))
+		.then(() => res.status(200).send("Delivery marked accepted"))
 		.catch(next);
 });
 

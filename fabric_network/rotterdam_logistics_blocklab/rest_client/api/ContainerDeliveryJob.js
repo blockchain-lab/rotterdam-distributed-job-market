@@ -24,7 +24,7 @@ router.post('/:containerDeliveryJobId/raiseException', (req, res, next) => {
 	
 	new ContainerDeliveryJobService()
 		.raiseException(containerDeliveryJobId, details)
-		.then((result) => res.json(result))
+		.then(() => res.status(200).send(`Exception raised with the following message: 'details'`))
 		.catch(next);
 });
 
