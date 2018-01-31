@@ -60,11 +60,6 @@ router.post("/:containerDeliveryJobOfferId/acceptBid/:truckerBidId", (req, res, 
 router.get('/search/?', (req, res, next) => {
 
 	/* some quick validation */
-	if (req.query.dest === undefined) {
-		// optional
-		req.query.dest = "";
-	}
-
 	if (req.query.from === undefined) {
 		res.status(400).send('from parameter not supplied');
 		return;
@@ -80,21 +75,18 @@ router.get('/search/?', (req, res, next) => {
 		return;
 	}
 
-	const allowedDestinations = req.query.dest.toString().split(",");;
+	const allowedDestinations = req.query.dest === undefined ? [] : req.query.dest.toString().split(",");;
+	const maxDistanceToDestination = req.query.maxdist === undefined ? 10000 : req.query.maxdist;
 	const availableFrom = req.query.from;
 	const availableTo = req.query.to;
 	const requiredAdrTraining = req.query.adr;
 	
-	console.log(
-		`ContainerDeliveryJobOffers query: ` +
-		`	allowedDestinations ${allowedDestinations} ` +
-		`	availableFrom ${availableFrom}, ` +
-		`	availableTo ${availableTo}, ` +
-		`	requiredAdrTraining ${requiredAdrTraining}`
+	console.log(`ContainerDeliveryJobOffers query: allowedDestinations ${allowedDestinations}
+		availableFrom ${availableFrom}, availableTo ${availableTo},	requiredAdrTraining ${requiredAdrTraining}, maxDistanceToDestination ${maxDistanceToDestination}`
 	);
 
 	new ContainerDeliveryJobOfferService()
-		.getEligableContainerDeliveryJobOffers(allowedDestinations, availableFrom, availableTo, requiredAdrTraining)
+		.getEligableContainerDeliveryJobOffers(allowedDestinations, availableFrom, availableTo, requiredAdrTraining, maxDistanceToDestination)
 		.then((result) => res.json(result))
 		.catch(next);
 });

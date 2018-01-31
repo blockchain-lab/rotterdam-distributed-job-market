@@ -32,13 +32,17 @@ query FindContainerDeliveryJobOfferById {
      - availableFrom (DateTime) = DateTime of moment from which the container is to be picked-up (Trucker.availability.from)
      - availableTo (DateTime) = DateTime of moment until the container can be picked-up (Trucker.availability.to)
      - requiredAdrTraining = AdrTraining required for the job (Trucker.adrTraining)
+     - maxDistanceToDestination - Maximum (approximate) distance to the destination from the Port of Rotterdam
  */
-query FindEligableContainerDelivery {
+query FindEligableContainerDeliveryJobOffers {
 	description: "Returns Job Offers that the Trucker is eligable to bid on"
   	statement:
   		SELECT nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer
-  		WHERE ((_$availableFrom <= availableForPickupDateTime AND availableForPickupDateTime <= _$availableTo)
-  			AND (_$requiredAdrTraining == requiredAdrTraining OR requiredAdrTraining == "NONE"))
+  		WHERE (status == "INMARKET"
+        AND (_$availableFrom <= availableForPickupDateTime AND availableForPickupDateTime <= _$availableTo)
+  			AND (_$requiredAdrTraining == requiredAdrTraining OR requiredAdrTraining == "NONE")
+        AND (approxDistanceToDestination <= _$maxDistanceToDestination))
+      LIMIT 100
 
 }
 

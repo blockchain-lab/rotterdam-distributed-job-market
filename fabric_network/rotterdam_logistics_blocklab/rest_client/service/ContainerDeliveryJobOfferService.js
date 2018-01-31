@@ -153,15 +153,16 @@ class ContainerDeliveryJobOfferService
 	@param {Boolean} requiredAdrTraining
 	@return {Promise} of ContainerDeliveryJobOffer[]
 	*/
-	getEligableContainerDeliveryJobOffers(allowedDestinations, availableFrom, availableTo, requiredAdrTraining)
+	getEligableContainerDeliveryJobOffers(allowedDestinations, availableFrom, availableTo, requiredAdrTraining, maxDistanceToDestination)
 	{	
 		const params = {
 			availableFrom : availableFrom,
 			availableTo : availableTo,
-			requiredAdrTraining : requiredAdrTraining
+			requiredAdrTraining : requiredAdrTraining,
+			maxDistanceToDestination: maxDistanceToDestination
 		};
 
-		const anyDestinationAllowed = allowedDestinations == "" || allowedDestinations === undefined || allowedDestinations === null || allowedDestinations.length == 0 || (allowedDestinations.lenth == 1 && allowedDestinations[0] == "");
+		const anyDestinationAllowed = allowedDestinations.length == 0;
 		
 		const filterDestinations = (item) => {
 			if (anyDestinationAllowed) {
@@ -172,7 +173,7 @@ class ContainerDeliveryJobOfferService
 			return itemHasAllowedDestination;
 		} 
 
-		return new LogisticsNetwork().executeNamedQuery('FindEligableContainerDelivery', params)
+		return new LogisticsNetwork().executeNamedQuery('FindEligableContainerDeliveryJobOffers', params)
 			.then((assets) => assets.map(x => new ContainerDeliveryJobOfferForTrucker(x)))
 			.then((collection) => collection.filter(filterDestinations));
 	}
