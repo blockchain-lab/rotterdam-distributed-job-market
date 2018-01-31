@@ -35,25 +35,27 @@ class TestService
 			}
 		}
 
-		const promises = [];
+		const createFirstLevelAssetsPromises = [];
 
 		for (var i = 0; i < 2; i++) {
 			let data = testDataProvider.constructNextTestTrucker();
 			let promise = this.createTrucker(data).catch(handleError);
-			promises.push(promise);
+			createFirstLevelAssetsPromises.push(promise);
 		}
 
 		for (var i = 0; i < 2; i++) {
 			let data = testDataProvider.constructNextTestContainerGuy();
 			let promise = this.createContainerGuy(data).catch(handleError);
-			promises.push(promise);
+			createFirstLevelAssetsPromises.push(promise);
 		}
 
 		for (var i = 0; i < 2; i++) {
 			let data = testDataProvider.constructNextTestContainerInfo();
 			let promise = this.createContainerInfo(data).catch(handleError);
-			promises.push(promise);
+			createFirstLevelAssetsPromises.push(promise);
 		}
+
+		let firstLevelAssetsCreated = Promise.all(createFirstLevelAssetsPromises);
 
 		var data = `{
 		  "$class": "nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer",
@@ -63,17 +65,21 @@ class TestService
 		  "availableForPickupDateTime": "2018-01-15T15:30:21.024Z",
 		  "toBeDeliveredByDateTime": "2018-01-20T15:30:21.024Z",
 		  "terminalContainerAvailableAt": "",
-		  "destination": "Berlin",
+		  "destination": {
+		  	"street": "van hasseltlaan",
+		  	"city": "delft",
+		  	"country": "netherlands"
+		  },
 		  "requiredAdrTraining": "YES",
 		  "containerBids": [],
 		  "status": "NEW",
 		  "canceled": false
 		}`;
-		let promiseCreateDeliveryJobOffer = this.createContainerDeliveryJobOffer(JSON.parse(data))
-			.catch(handleError);
 
-		return Promise.all(promises)
-			.then(() => promiseCreateDeliveryJobOffer);
+		return firstLevelAssetsCreated.then(() => 
+				this.createContainerDeliveryJobOffer(JSON.parse(data))
+					.catch(handleError)
+			);
 	}
 
 	createTrucker(trucker)

@@ -6,23 +6,28 @@ const SimpleObjectInitializer = require('../../util/SimpleObjectInitializer');
 
 class CreateContainerDeliveryJobOfferCommand
 {
+	/**
+	 * @param {Object} obj - containing the requiredParams below, and a nested object called "destination" (see requiredDestinationParams below)
+	 */
 	constructor(obj)
 	{
 		const requiredParams = [
 			"containerInfoId",
 			"terminalContainerAvailableAt",
-			"destinationStreet",
-			"destinationCity",
-			"destinationCountry",
 			"approxDistanceToDestination",
 			"requiredAdrTraining",
 			"availableForPickupDateTime",
-			"toBeDeliveredByDateTime"
+			"toBeDeliveredByDateTime",
+			"destination"
 		];
 		SimpleObjectInitializer.setRequiredValues(requiredParams, obj, this);
 
+		this.destination = {};
+		const requiredDestinationParams = ["street", "city", "country" ];
+		SimpleObjectInitializer.setRequiredValues(requiredDestinationParams, obj.destination, this.destination);
+
 		// optional
-		this.destinationHousenumber = obj.destinationHousenumber;
+		this.destination.housenumber = obj.destination.housenumber;
 
 		// convert these values into Date objects
 		this.availableForPickupDateTime = new Date(this.availableForPickupDateTime);
@@ -65,10 +70,10 @@ class CreateContainerDeliveryJobOfferCommand
 		
 		tx.terminalContainerAvailableAt = this.terminalContainerAvailableAt;
 
-		tx.destinationHousenumber = this.destinationHousenumber;
-		tx.destinationStreet = this.destinationStreet;
-		tx.destinationCity = this.destinationCity;
-		tx.destinationCountry = this.destinationCountry;
+		tx.destinationHousenumber = this.destination.housenumber;
+		tx.destinationStreet = this.destination.street;
+		tx.destinationCity = this.destination.city;
+		tx.destinationCountry = this.destination.country;
 
 		tx.approxDistanceToDestination = this.approxDistanceToDestination;
 

@@ -32,10 +32,10 @@ class ContainerDeliveryJobOfferService
 		console.log("[createContainerDeliveryJobOffer] for containerInfoId: " + createContainerDeliveryJobOffer.containerInfoId);
 
 		const destinationAddress = new Address({
-			housenumber: createContainerDeliveryJobOffer.destinationHousenumber,
-			street: createContainerDeliveryJobOffer.destinationStreet,
-			city: createContainerDeliveryJobOffer.destinationCity,
-			country: createContainerDeliveryJobOffer.destinationCountry
+			housenumber: createContainerDeliveryJobOffer.destination.housenumber,
+			street: createContainerDeliveryJobOffer.destination.street,
+			city: createContainerDeliveryJobOffer.destination.city,
+			country: createContainerDeliveryJobOffer.destination.country
 		});
 
 		let approxDistanceToDestination = await this.distanceService.determineApproximateDistanceTo(destinationAddress);
