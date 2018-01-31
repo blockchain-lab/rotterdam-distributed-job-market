@@ -106,7 +106,7 @@ async function cancelTruckersBidsOnConflictingJobOffers(containerDeliveryJobOffe
         // note: need to keep track of the jobOffers as the RuntimeApi registry does not have a 'resolve' method
         .map(jobOfferIntoItemsWithBidRefAndJobOffer)
         // unpack a stream of arrays of items into just a stream of items so that we can use map and simply return promises
-        .reduce((accumulator, value) => accumulator.concat(value))
+        .reduce((accumulator, value) => accumulator.concat(value), [])
         // hacky: all bids of a tricker share same resource URI prefix, so use that instead of querying and filtering on ID's
         // trucker might have more than one bid on an JobOffer. Also note that we're not dealing with Bid objects, but the refs
         .filter((item) => item.bidRef.getIdentifier().startsWith(truckerId))
