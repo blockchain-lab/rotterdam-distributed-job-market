@@ -3,6 +3,7 @@
 const config = require('config');
 const LogisticsNetwork = require('../connector/LogisticsNetwork');
 const SimpleObjectInitializer = require('../util/SimpleObjectInitializer');
+const EscapeStringRegexp = require('escape-string-regexp');
 
 const DistanceService = require('../distance/DistanceService');
 const Address = require('../distance/model/Address');
@@ -21,6 +22,7 @@ class ContainerDeliveryJobOfferService
 {
 	constructor(distanceService)
 	{
+		// support dependency injection of DistanceService (distance determination costs credits)
 		this.distanceService = distanceService === undefined ? new DistanceService() : distanceService;
 	}
 
@@ -153,15 +155,26 @@ class ContainerDeliveryJobOfferService
 	*/
 	getEligableContainerDeliveryJobOffers(allowedDestinations, availableFrom, availableTo, requiredAdrTraining)
 	{	
-		let params = {
+		const params = {
 			availableFrom : availableFrom,
 			availableTo : availableTo,
 			requiredAdrTraining : requiredAdrTraining
 		};
 
+		const anyDestinationAllowed = allowedDestinations == "" || allowedDestinations === undefined || allowedDestinations === null || allowedDestinations.length == 0 || (allowedDestinations.lenth == 1 && allowedDestinations[0] == "");
+		
+		const filterDestinations = (item) => {
+			if (anyDestinationAllowed) {
+				return true;
+			}
+
+			let itemHasAllowedDestination = allowedDestinations.some((allowedDestination) => -1 != item.destination.search(EscapeStringRegexp(allowedDestination)));
+			return itemHasAllowedDestination;
+		} 
+
 		return new LogisticsNetwork().executeNamedQuery('FindEligableContainerDelivery', params)
 			.then((assets) => assets.map(x => new ContainerDeliveryJobOfferForTrucker(x)))
-			.then((collection) => collection.filter(x => allowedDestinations.includes(x.destination)));
+			.then((collection) => collection.filter(filterDestinations));
 	}
 }
 

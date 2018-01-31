@@ -15,6 +15,7 @@
     "composer-common": "^0.17",
     "config": "^1.29.0",
     "cors": "^2.8.4",
+    "escape-string-regexp": "^1.0.5",
     "express": "^4.16.2",
     "express-fileupload": "^0.3.0",
     "grpc": "^1.8.0",
