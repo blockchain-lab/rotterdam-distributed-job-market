@@ -6,7 +6,7 @@ class SimpleObjectInitializer
 	{
 		let requiredParams = arrayRequiredKeys;
 		let destinationTypeName = destination.constructor.name;
-console.log(source);
+		
 		for (var i = 0; i < requiredParams.length; i++) {
 			let param = requiredParams[i];
 

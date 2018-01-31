@@ -16,7 +16,6 @@ class ErrorTranslator
 	translate(error)
 	{
 		let originalMessage = error.message;
-		console.log("	original error: \n\n" + error.message);
 
 		if (originalMessage.includes('[adr_not_eligable]'))
 		{
@@ -80,10 +79,16 @@ class ErrorTranslator
 	parseGenericChaincodeError(message)
 	{
 		const regex = /\[Error:(.+)\]/;
-		const extractedTxMessage = regex.exec(message)[1];
+		const results = regex.exec(message);
 
-		console.log(extractedTxMessage);
+		if (results == null || results.length < 2) {
+			// Message does not contain a match on the Error:(.+) group...
+			console.log(message);
+			console.log(results);
+			return new Error(message);
+		}
 
+		const extractedTxMessage = results[1];
 		return new Error(extractedTxMessage);
 	}
 

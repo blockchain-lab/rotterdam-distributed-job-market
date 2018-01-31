@@ -393,17 +393,27 @@ function createContainerInfo(tx)
 */
 function createContainerDeliveryJobOffer(tx)
 {
+    let factory = getFactory();
+
     // containerId is _the_ container Id, we're leaking info here.
-    // TODO: obfuscate, maybe hash (with salt?)
-    var id = tx.containerInfo.containerId + 'ts' + tx.toBeDeliveredByDateTime.getTime();
+    // TODO: obfuscate, maybe hash (with salt?) or just generate containerInfoId's instead of natural id's
+    let id = tx.containerInfo.containerId + 'ts' + tx.toBeDeliveredByDateTime.getTime();
+
+    let destinationAddress = factory.newConcept('nl.tudelft.blockchain.logistics', 'DestinationAddress');
+    destinationAddress.housenumber = tx.destinationHousenumber;
+    destinationAddress.street = tx.destinationStreet;
+    destinationAddress.city = tx.destinationCity;
+    destinationAddress.country = tx.destinationCountry;
   
-    var newContainerDeliveryJobOffer = getFactory().newResource('nl.tudelft.blockchain.logistics', 'ContainerDeliveryJobOffer', id);
+    let newContainerDeliveryJobOffer = factory.newResource('nl.tudelft.blockchain.logistics', 'ContainerDeliveryJobOffer', id);
     newContainerDeliveryJobOffer.toBeDeliveredByDateTime = tx.toBeDeliveredByDateTime;
     newContainerDeliveryJobOffer.availableForPickupDateTime = tx.availableForPickupDateTime;
     newContainerDeliveryJobOffer.terminalContainerAvailableAt = tx.terminalContainerAvailableAt;
     newContainerDeliveryJobOffer.requiredAdrTraining = tx.requiredAdrTraining;
     newContainerDeliveryJobOffer.containerInfo = tx.containerInfo;
-    newContainerDeliveryJobOffer.destination = tx.destination;
+
+    newContainerDeliveryJobOffer.destination = destinationAddress;
+    newContainerDeliveryJobOffer.approxDistanceToDestination = tx.approxDistanceToDestination;
 
     newContainerDeliveryJobOffer.containerGuyId = tx.containerInfo.owner.containerGuyId;
     

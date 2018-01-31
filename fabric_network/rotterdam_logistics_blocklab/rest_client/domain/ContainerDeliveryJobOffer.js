@@ -10,7 +10,8 @@ class ContainerDeliveryJobOffer
 		
 		this.availableForPickupDateTime = obj.availableForPickupDateTime;
 		this.toBeDeliveredByDateTime = obj.toBeDeliveredByDateTime;
-		this.destination = obj.destination;
+		this.destination = `${obj.destination.city}, ${obj.destination.country}`;
+		this.approxDistanceToDestination = obj.approxDistanceToDestination;
 		this.requiredAdrTraining = obj.requiredAdrTraining;
 		
 		this.containerBids = obj.containerBids.map(

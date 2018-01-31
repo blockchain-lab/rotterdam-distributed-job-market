@@ -2,25 +2,44 @@
 
 const config = require('config');
 const LogisticsNetwork = require('../connector/LogisticsNetwork');
+const SimpleObjectInitializer = require('../util/SimpleObjectInitializer');
+
+const DistanceService = require('../distance/DistanceService');
+const Address = require('../distance/model/Address');
+
+const AcceptBidOnContainerDeliveryJobOfferCommand = require('../domain/tx/AcceptBidOnContainerDeliveryJobOfferCommand');
+const BidOnContainerDeliveryJobOfferCommand = require('../domain/tx/BidOnContainerDeliveryJobOfferCommand');
+const CancelBidCommand = require('../domain/tx/CancelBidCommand');
+const CreateContainerDeliveryJobOfferCommand = require('../domain/tx/CreateContainerDeliveryJobOfferCommand');
 
 const ContainerDeliveryJobOffer = require('../domain/ContainerDeliveryJobOffer');
-const ContainerDeliveryJobOfferForTrucker = require('../domain/ContainerDeliveryJobOfferForTrucker');
 const ContainerDeliveryJobOfferForList = require('../domain/ContainerDeliveryJobOfferForList');
-const CreateContainerDeliveryJobOfferCommand = require('../domain/tx/CreateContainerDeliveryJobOfferCommand');
-const AcceptBidOnContainerDeliveryJobOfferCommand = require('../domain/tx/AcceptBidOnContainerDeliveryJobOfferCommand');
-const CancelBidCommand = require('../domain/tx/CancelBidCommand');
-const BidOnContainerDeliveryJobOfferCommand = require('../domain/tx/BidOnContainerDeliveryJobOfferCommand');
-const TruckerService = require('./TruckerService')
+const ContainerDeliveryJobOfferForTrucker = require('../domain/ContainerDeliveryJobOfferForTrucker');
 
 
 class ContainerDeliveryJobOfferService
 {
+	constructor(distanceService)
+	{
+		this.distanceService = distanceService === undefined ? new DistanceService() : distanceService;
+	}
+
 	/** TODO: expand argument into arguments
 	 * @param {CTO object of CreateContainerDeliveryJobOffer} createContainerDeliveryJobOffer
 	 */
-	createContainerDeliveryJobOffer(createContainerDeliveryJobOffer)
+	async createContainerDeliveryJobOffer(createContainerDeliveryJobOffer)
 	{
 		console.log("[createContainerDeliveryJobOffer] for containerInfoId: " + createContainerDeliveryJobOffer.containerInfoId);
+
+		const destinationAddress = new Address({
+			housenumber: createContainerDeliveryJobOffer.destinationHousenumber,
+			street: createContainerDeliveryJobOffer.destinationStreet,
+			city: createContainerDeliveryJobOffer.destinationCity,
+			country: createContainerDeliveryJobOffer.destinationCountry
+		});
+
+		let approxDistanceToDestination = await this.distanceService.determineApproximateDistanceTo(destinationAddress);
+		createContainerDeliveryJobOffer.approxDistanceToDestination = approxDistanceToDestination;
 
 		const namespace = "nl.tudelft.blockchain.logistics";
 		const txName = "CreateContainerDeliveryJobOffer";

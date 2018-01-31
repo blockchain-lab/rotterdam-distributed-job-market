@@ -23,6 +23,7 @@ class DistanceService
 		const distancePrecise = await this.determineDistanceToCoordinates(addressCoords.getLat(), addressCoords.getLon());
 
 		const processedDistance = this.postProcessDistance(distancePrecise);
+		console.log("approx distance: " + processedDistance);
 		return processedDistance;
 	}
 
@@ -31,8 +32,8 @@ class DistanceService
 		const latFrom = 51.9435996;
 		const lonFrom = 4.1520646;
 
-		let pointFrom = `${latFrom},${lonFrom}`;
-		let pointTo = `${latTo},${lonTo}`;
+		const pointFrom = `${latFrom},${lonFrom}`;
+		const pointTo = `${latTo},${lonTo}`;
 
 		const params = {
 			point: [pointFrom, pointTo],
@@ -43,7 +44,7 @@ class DistanceService
 			calc_points: false // just the distance
 		}
 
-		let promise = request.defaults({
+		const result = await request.defaults({
 			uri: `https://graphhopper.com/api/1/route`,
 			qs: params,
 			headers : {
@@ -53,8 +54,10 @@ class DistanceService
 			useQuerystring: true // array serialization -> paint=...&point=...
 		}).get();
 
-		const result = await promise;
-		console.log(result);
+		if (result == null || result.paths == null || result.paths === undefined || result.paths.length == 0) {
+			throw new Error("Could not determine distance to destination, is the address correct?");
+		}
+
 		return result.paths[0].distance;
 	}
 
@@ -67,7 +70,7 @@ class DistanceService
 		const queryObject = address.toQueryObject();
 		queryObject.format = "json";
 
-		let promise = request.defaults({
+		let result = await request.defaults({
 			uri: 'https://nominatim.openstreetmap.org/search',
 			qs: queryObject,
 			headers : {
@@ -76,7 +79,6 @@ class DistanceService
 			json: true
 		}).get();
 
-		const result = await promise;
 		const addressCoordinate = new AddressCoordinate(result[0]);
 
 		return addressCoordinate;
@@ -84,14 +86,44 @@ class DistanceService
 
 	postProcessDistance(distance)
 	{
-		const precision = -1;
-		let distanceInKm = distance / 100;
-		distanceInKm += + distanceInKm * 0.05; // overshoot by 5% to round up a bit
+		let distanceInKm = this.convertDistanceToKm(distance);
 
-		let factor = Math.pow(10, precision);
-  		let roundedOff = Math.round(distanceInKm * factor) / factor;
+		distanceInKm = this.obfuscateLocationByOvershootingTheDistance(distanceInKm); 
+
+		distanceInKm = this.roundAndDecreasePrecision(distanceInKm);
+
+  		return distanceInKm;
+	}
+
+	convertDistanceToKm(distance)
+	{
+		return distance / 1000;
+	}
+
+	roundAndDecreasePrecision(value)
+	{
+		const precision = -1;
+		const factor = Math.pow(10, precision);
+  		const roundedOff = Math.round(value * factor) / factor;
 
   		return roundedOff;
+	}
+
+	obfuscateLocationByOvershootingTheDistance(distanceInKm)
+	{
+		// 5% or not more than 15 km
+		const maxOvershoot = Math.min(15, distanceInKm * 1.05);
+		const overshootBy = this.getRandomIntInclusive(0, maxOvershoot);
+
+		return distanceInKm + overshootBy
+	}
+
+	// from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+	getRandomIntInclusive(min, max)
+	{
+		min = Math.ceil(min);
+		max = Math.floor(max);
+		return Math.floor(Math.random() * (max - min + 1)) + min;
 	}
 }
 

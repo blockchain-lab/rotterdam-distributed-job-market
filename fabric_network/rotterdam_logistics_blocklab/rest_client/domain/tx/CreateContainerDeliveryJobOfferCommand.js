@@ -2,19 +2,31 @@
 
 const config = require('config');
 
+const SimpleObjectInitializer = require('../../util/SimpleObjectInitializer');
+
 class CreateContainerDeliveryJobOfferCommand
 {
 	constructor(obj)
 	{
-		this.containerInfoId = obj.containerInfoId;
+		const requiredParams = [
+			"containerInfoId",
+			"terminalContainerAvailableAt",
+			"destinationStreet",
+			"destinationCity",
+			"destinationCountry",
+			"approxDistanceToDestination",
+			"requiredAdrTraining",
+			"availableForPickupDateTime",
+			"toBeDeliveredByDateTime"
+		];
+		SimpleObjectInitializer.setRequiredValues(requiredParams, obj, this);
 
-		this.terminalContainerAvailableAt = obj.terminalContainerAvailableAt;
-		this.destination = obj.destination;
+		// optional
+		this.destinationHousenumber = obj.destinationHousenumber;
 
-		this.availableForPickupDateTime = new Date(obj.availableForPickupDateTime);
-		this.toBeDeliveredByDateTime = new Date(obj.toBeDeliveredByDateTime);
-
-		this.requiredAdrTraining = obj.requiredAdrTraining;
+		// convert these values into Date objects
+		this.availableForPickupDateTime = new Date(this.availableForPickupDateTime);
+		this.toBeDeliveredByDateTime = new Date(this.toBeDeliveredByDateTime);
 	}
 
 	getContainerInfoId()
@@ -52,7 +64,13 @@ class CreateContainerDeliveryJobOfferCommand
 		tx.containerInfo = factory.newRelationship("nl.tudelft.blockchain.logistics", "ContainerInfo", this.containerInfoId);
 		
 		tx.terminalContainerAvailableAt = this.terminalContainerAvailableAt;
-		tx.destination = this.destination;
+
+		tx.destinationHousenumber = this.destinationHousenumber;
+		tx.destinationStreet = this.destinationStreet;
+		tx.destinationCity = this.destinationCity;
+		tx.destinationCountry = this.destinationCountry;
+
+		tx.approxDistanceToDestination = this.approxDistanceToDestination;
 
 		tx.availableForPickupDateTime = this.availableForPickupDateTime;
 		tx.toBeDeliveredByDateTime = this.toBeDeliveredByDateTime;

@@ -1,26 +1,16 @@
 'use strict';
 
+const SimpleObjectInitializer = require('../../util/SimpleObjectInitializer');
+
 class Address
 {
 	constructor(obj)
 	{
+		const required = ["street", "city", "country"];
+		SimpleObjectInitializer.setRequiredValues(required, obj, this);
+
+		// is optional, can be undefined
 		this.housenumber = obj.housenumber;
-
-		if (this.street !== undefined) {
-			throw new Error("Address validation error, street name is required");
-		}
-
-		if (this.city !== undefined) {
-			throw new Error("Address validation error, city name is required");
-		}
-
-		if (this.country !== undefined) {
-			throw new Error("Address validation error, country name is required");
-		}
-
-		this.street = obj.street;
-		this.city = obj.city;
-		this.country = obj.country;
 	}
 
 	toQueryObject()
