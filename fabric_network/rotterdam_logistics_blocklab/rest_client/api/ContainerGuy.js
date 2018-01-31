@@ -6,8 +6,6 @@ const ContainerInfoService = require('../service/ContainerInfoService');
 const ContainerDeliveryJobService = require('../service/ContainerDeliveryJobService');
 const ContainerDeliveryJobOfferService = require('../service/ContainerDeliveryJobOfferService');
 
-const CreateContainerDeliveryJobOfferCommand = require('../domain/tx/CreateContainerDeliveryJobOfferCommand');
-
 const ContainerInfo = require('../domain/ContainerInfo');
 
 router.get('/allContainerDeliveryJobOffersOf/:containerGuyId', (req, res, next) => {

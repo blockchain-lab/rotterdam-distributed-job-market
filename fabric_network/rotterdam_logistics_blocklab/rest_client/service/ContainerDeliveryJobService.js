@@ -8,7 +8,6 @@ const ContainerDeliveryJobWithPassword = require('../domain/ContainerDeliveryJob
 const ContainerDeliveryJobForTrucker = require('../domain/ContainerDeliveryJobForTrucker');
 
 const AcceptContainerDeliveryCommand = require('../domain/tx/AcceptContainerDeliveryCommand');
-const CreateContainerDeliveryJobOfferCommand = require('../domain/tx/CreateContainerDeliveryJobOfferCommand');
 const AcceptBidOnContainerDeliveryJobOfferCommand = require('../domain/tx/AcceptBidOnContainerDeliveryJobOfferCommand');
 const RaiseExceptionOnDeliveryJobCommand = require('../domain/tx/RaiseExceptionOnDeliveryJobCommand');
 
