@@ -5,6 +5,8 @@ The repository is split into three parts:
  - Hyperledger part that includes chaincode and the node.js restful API, 
  - User interface components 
  - Reports and presentations.
+ 
+ There are extended readmes available under some of the folders.
 
 ## Hyperledger
 The hyperledger part is located in the fabric_network folder. This contains both the restful API and chaincode. Key parts of this folder:
