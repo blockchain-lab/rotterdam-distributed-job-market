@@ -53,6 +53,7 @@ router.post("/:containerDeliveryJobOfferId/acceptBid/:truckerBidId", (req, res, 
 /**
 	Query string:
 		* dest 	- (optional) allowed destination (at the moment: city name, country)
+		* maxdist - maximum distance
 		* from 	- datetime available from (to pickup)
 		* to 	- datetime available to (to pickup)
 		* adr 	- ADR level required {"YES", "NONE"}

@@ -7,7 +7,7 @@ library(DT)
 library(httr)
 
 default_shipper_id = 1
-default_rest_addr = "http://fcc93acc.ngrok.io/"
+default_rest_addr = "http://761f99c2.eu.ngrok.io/"
 
 #---------------------------- API Names for shipper------------------------
 
@@ -26,7 +26,7 @@ api_get_rating = "trucker/rating"
 api_accept_bid = "acceptBid"
 
 path_contracts = "ContainerDeliveryJob"
-api_contract_list = "ContainerDeliveryJobList" #??????????
+api_contract_list = "contractedJobs"
 api_accept_delivery = "acceptDelivery"
 api_raise_exception = "raiseException"
 
@@ -63,14 +63,24 @@ ui <- dashboardPage(skin = "green",
                                                                          "ECT",
                                                                          "APMII"
                                                                        )),
-                                                                       textInput("rt_postcode", "Destination", 
-                                                                                 value = ""),
-                                                                       radioButtons("rt_cntnrType", "Container Type",
-                                                                                    choices = list("TWENTY", "TWENTY_TWENTY", "FOURTY"),
-                                                                                    selected = "TWENTY"),
-                                                                       checkboxInput("rt_adr", "ADR", value = FALSE)
+                                                                       br(),
+                                                                       h4("Destination"),
+                                                                       #br(),
+                                                                       textInput("rt_country", "Country", 
+                                                                                 value = "Netherlands"),
+                                                                       textInput("rt_city", "City", 
+                                                                                 value = "Hague"),
+                                                                       textInput("rt_street", "Street", 
+                                                                                 value = "Hoefkade"),
+                                                                       textInput("rt_house", "House", 
+                                                                                 value = "9")
+                                                                       
                                                                 ),
                                                                 column(width = 6,
+                                                                       radioButtons("rt_cntnrType", "Container Type",
+                                                                                    choices = list("TWENTY", "FOURTY"),
+                                                                                    selected = "TWENTY"),
+                                                                       checkboxInput("rt_adr", "ADR", value = FALSE),
                                                                        dateInput("rt_date_avl", 
                                                                                  "Pickup Date", 
                                                                                  value = "2018-02-20"),
@@ -121,7 +131,10 @@ ui <- dashboardPage(skin = "green",
                                                        #          
                                                        # ),
                                                        fluidRow(width =12,
-                                                                column(width =12,
+                                                                column(width = 1,
+                                                                       br()
+                                                                ),
+                                                                column(width =11,
                                                                        br(),
                                                                        actionButton("rt_refresh", "Refresh"),
                                                                        br(),
@@ -143,6 +156,7 @@ ui <- dashboardPage(skin = "green",
                         ),
                         
                         tabItem(tabName = "viewBids",
+                                
                                 fluidRow(width = 12, status = "primary",
                                          column(width = 12,
                                                 uiOutput("vb_filters")
@@ -181,13 +195,17 @@ ui <- dashboardPage(skin = "green",
                                 #            selected = "Under Process")
                                 # ),
                                 fluidRow( width = 12,
-                                          column(width = 12,
-                                                 br(),
-                                                 actionButton("vc_refresh", "Refresh"),
-                                                 br(),
-                                                 dataTableOutput("vc_contractsTable") 
+                                          column(width = 1,
+                                                 br()
+                                          ),
+                                          column(width = 11,
+                                                 actionButton("vc_refresh", "Refresh")
                                           )
-                                          
+                                ),
+                                fluidRow(width = 12,
+                                         br(),
+                                         br(),
+                                         dataTableOutput("vc_contractsTable")
                                 ),
                                 fluidRow(width = 12, status = "primary",
                                          column(width = 6,
@@ -270,8 +288,10 @@ server <- function(input, output, session) {
                                                                                               availableForPickupDateTime = as.character(input$rt_date_avl),
                                                                                               toBeDeliveredByDateTime = as.character(input$rt_date_del),
                                                                                               terminalContainerAvailableAt = input$rt_terminal,
-                                                                                              destination = input$rt_postcode,
-                                                                                              #destinationHousenumber = 9,
+                                                                                              destination = list(country = input$rt_country,
+                                                                                                                 city = input$rt_city,
+                                                                                                                 street = input$rt_street,
+                                                                                                                 housenumber = input$rt_house),
                                                                                               requiredAdrTraining = adr_stat
                                                                                   ),
                                                                                   encode = "json")))
@@ -310,24 +330,23 @@ server <- function(input, output, session) {
   output$rt_requestsTable <- DT::renderDataTable(server = TRUE,
                                                  selection = 'single',
                                                  extensions = "Buttons", 
-                                                 options = list(#paging = FALSE,
-                                                   stringsAsFactors = FALSE,
-                                                   dom = "Bfrtip", 
-                                                   buttons = list('copy', 'pdf', 'csv', 'excel', 'print')),
+                                                 options = list(stringsAsFactors = FALSE, autoWidth = TRUE), rownames= FALSE,
                                                  {
                                                    input$rt_refresh
-                                                   container_history = select(as.data.frame(fromJSON(paste0(profileInfo$rest_addr, 
-                                                                                                            api_shipper_profile, "/", 
-                                                                                                            api_job_offers_history,"/", 
-                                                                                                            profileInfo$shipper_id))),
-                                                                              containerDeliveryJobOfferId,
-                                                                              availableForPickupDateTime,
-                                                                              toBeDeliveredByDateTime,
-                                                                              destination,
-                                                                              requiredAdrTraining,
-                                                                              status
-                                                   )
-                                                   container_history
+                                                   isolate({
+                                                     container_history = select(as.data.frame(fromJSON(paste0(profileInfo$rest_addr, 
+                                                                                                              api_shipper_profile, "/", 
+                                                                                                              api_job_offers_history,"/", 
+                                                                                                              profileInfo$shipper_id))),
+                                                                                containerDeliveryJobOfferId,
+                                                                                availableForPickupDateTime,
+                                                                                toBeDeliveredByDateTime,
+                                                                                destination,
+                                                                                requiredAdrTraining,
+                                                                                status
+                                                     )
+                                                     container_history
+                                                   })
                                                  }
   )
   
@@ -375,17 +394,25 @@ server <- function(input, output, session) {
   output$vb_bidsTable <- DT::renderDataTable(server = TRUE,
                                              selection = 'single',
                                              extensions = "Buttons", 
-                                             options = list(#paging = FALSE,
-                                               stringsAsFactors = FALSE,
-                                               dom = "Bfrtip", 
-                                               buttons = list('copy', 'pdf', 'csv', 'excel', 'print')),
+                                             options = list(stringsAsFactors = FALSE, autoWidth = TRUE), rownames= FALSE,
+                                             #dom = "Bfrtip", 
+                                             #buttons = list('copy', 'pdf', 'csv', 'excel', 'print')),
                                              {
                                                input$vb_cntnrID
                                                input$vb_refresh
-                                               as.data.frame(fromJSON(paste0(profileInfo$rest_addr,
-                                                                             path_job_offers, "/",
-                                                                             input$vb_cntnrID,"/",
-                                                                             api_get_bids)))
+                                               isolate({
+                                                 bid_list <- select(as.data.frame(fromJSON(paste0(profileInfo$rest_addr,
+                                                                                                  path_job_offers, "/",
+                                                                                                  input$vb_cntnrID,"/",
+                                                                                                  api_get_bids))),
+                                                                    truckerBidId,
+                                                                    bidAmount)
+                                                 bid_list <- mutate(bid_list, 
+                                                                    JobsDelivered = as.data.frame(fromJSON(paste0(profileInfo$rest_addr, "Trucker/", substr(truckerBidId, 1, 1))))$rating.jobsDelivered[1],
+                                                                    JobsAccepted = as.data.frame(fromJSON(paste0(profileInfo$rest_addr, "Trucker/", substr(truckerBidId, 1, 1))))$rating.totalPastJobsAccepted[1]
+                                                 )
+                                                 bid_list
+                                               })
                                              }
   )
   
@@ -428,27 +455,26 @@ server <- function(input, output, session) {
   output$vc_contractsTable <- DT::renderDataTable(server = TRUE,
                                                   selection = 'single',
                                                   extensions = "Buttons", 
-                                                  options = list( #paging = FALSE,
-                                                    stringsAsFactors = FALSE,
-                                                    dom = "Bfrtip", 
-                                                    buttons = list('copy', 'pdf', 'csv', 'excel', 'print')),
+                                                  options = list( stringsAsFactors = FALSE, autoWidth = TRUE), rownames= FALSE,
                                                   {
-                                                    #input$vc_refresh
-                                                    # as.data.frame(fromJSON(paste0(profileInfo$rest_addr,
-                                                    #                               path_contracts, "/",
-                                                    #                               api_contract_list, "/",
-                                                    #                               profileInfo$shipper_id)))
+                                                    input$vc_refresh
+                                                    isolate({
+                                                      as.data.frame(fromJSON(paste0(profileInfo$rest_addr,
+                                                                                    api_shipper_profile, "/",
+                                                                                    api_contract_list, "/",
+                                                                                    profileInfo$shipper_id)))
+                                                    })
                                                   }
   )
   
   observeEvent(
     input$vc_accept_delivery, 
     isolate({
-      # contracts_table = as.data.frame(fromJSON(paste0(profileInfo$rest_addr,
-      #                                                 path_contracts, "/",
-      #                                                 api_contract_list, "/",
-      #                                                 profileInfo$shipper_id)))
-      #contract_Id <- contracts_table$containerDeliveryJobId[input$vc_contractsTable_rows_selected]
+      contracts_table = as.data.frame(fromJSON(paste0(profileInfo$rest_addr,
+                                                      api_shipper_profile, "/",
+                                                      api_contract_list, "/",
+                                                      profileInfo$shipper_id)))
+      contract_Id <- contracts_table$containerDeliveryJobId[input$vc_contractsTable_rows_selected]
       contract_Id = 3062
       profileInfo$update_contract_status <- as.character(POST(paste0(profileInfo$rest_addr,
                                                                      api_shipper_profile, "/",
@@ -462,11 +488,11 @@ server <- function(input, output, session) {
   observeEvent(
     input$vc_exception, 
     isolate({
-      # contracts_table = as.data.frame(fromJSON(paste0(profileInfo$rest_addr,
-      #                                                 path_contracts, "/",
-      #                                                 api_contract_list, "/",
-      #                                                 profileInfo$shipper_id)))
-      #contract_Id <- contracts_table$containerDeliveryJobId[input$vc_contractsTable_rows_selected]
+      contracts_table = as.data.frame(fromJSON(paste0(profileInfo$rest_addr,
+                                                      api_shipper_profile, "/",
+                                                      api_contract_list, "/",
+                                                      profileInfo$shipper_id)))
+      ontract_Id <- contracts_table$containerDeliveryJobId[input$vc_contractsTable_rows_selected]
       contract_Id = 2007
       profileInfo$update_contract_status <- as.character(POST(paste0(profileInfo$rest_addr,
                                                                      path_contracts, "/",

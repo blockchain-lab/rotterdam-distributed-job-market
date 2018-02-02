@@ -7,7 +7,7 @@ library(httr)
 library(DT)
 
 default_trucker_id = 1
-default_rest_addr = "http://fcc93acc.ngrok.io/"
+default_rest_addr = "http://761f99c2.eu.ngrok.io/"
 
 #---------------------------- API Names for trucker------------------------
 
@@ -51,7 +51,7 @@ ui <- dashboardPage(skin = "blue",
                         tabItem(tabName = "viewRequests",
                                 
                                 fluidRow(width = 12, #status = "info", title = "Available shipping requests",
-                                         column(width = 6,
+                                         column(width = 2,
                                                 # radioButtons("vr_exim", "Destination type", choices = list(
                                                 #   "Import" = "IMP",	
                                                 #   "Export" = "EXP"),
@@ -64,16 +64,27 @@ ui <- dashboardPage(skin = "blue",
                                                 #   "12:00 - 18:00",
                                                 #   "18:00 - 00:00"
                                                 # ))
-                                                textInput("vr_dest", "Destinations", value = "Berlin"),
+                                                textInput("vr_dest", "Destinations", value = "Berlin")
+                                         ),
+                                         column(width = 2,   
+                                                numericInput("vr_max_dist", "Max Distance", value = 1000)
+                                         ),
+                                         column(width = 2,   
+                                                dateInput("vr_from", 
+                                                          "From", 
+                                                          value = "2018-01-01")
+                                         ),
+                                         column(width = 2,  
+                                                dateInput("vr_to", 
+                                                          "To", 
+                                                          value = "2018-03-30")
+                                         ),
+                                         column(width = 1,  
+                                                br(),
                                                 checkboxInput("vr_adr", "ADR", value = TRUE)
                                          ),
-                                         column(width = 6,   
-                                                dateInput("vr_from", 
-                                                          "Date", 
-                                                          value = "2018-01-01"),
-                                                dateInput("vr_to", 
-                                                          "Date", 
-                                                          value = "2018-03-30"),
+                                         column(width = 3,   
+                                                br(),
                                                 actionButton("vr_search", "Search Job Offers")
                                          )
                                          
@@ -116,8 +127,15 @@ ui <- dashboardPage(skin = "blue",
                                 #   "Rejected" = 2,
                                 #   "Open" = 3),
                                 #   selected = "All"),
-                                fluidRow(width = 12, #status = "info", title = "Status of bids made",
-                                         actionButton("tb_refresh", "Refresh"),
+                                fluidRow(width = 12,
+                                         column(width = 1,
+                                                br()
+                                         ),
+                                         column(width = 11,
+                                                actionButton("tb_refresh", "Refresh")
+                                         )
+                                ),
+                                fluidRow(width = 12,
                                          br(),
                                          br(),
                                          dataTableOutput("tb_bidsTable")
@@ -146,8 +164,15 @@ ui <- dashboardPage(skin = "blue",
                                 #   "Settled" = 1,
                                 #   "Exception Raised" = 2),
                                 #   selected = "Under Process"),
-                                fluidRow(width = 12, #status = "info", title = "Contracts signed",
-                                         actionButton("vc_refresh", "Refresh"),
+                                fluidRow(width = 12,
+                                         column(width = 1,
+                                                br()
+                                         ),
+                                         column(width = 11,
+                                                actionButton("vc_refresh", "Refresh")
+                                         )
+                                ),
+                                fluidRow(width = 12,
                                          br(),
                                          br(),
                                          dataTableOutput("vc_contractsTable")
@@ -214,9 +239,9 @@ server <- function(input, output) {
                                                  selection = 'single',
                                                  extensions = "Buttons", 
                                                  options = list(#paging = FALSE,
-                                                   stringsAsFactors = FALSE,
-                                                   dom = "Bfrtip", 
-                                                   buttons = list('copy', 'pdf', 'csv', 'excel', 'print')),
+                                                   stringsAsFactors = FALSE, autoWidth = TRUE), rownames= FALSE,
+                                                 #dom = "Bfrtip", 
+                                                 #buttons = list('copy', 'pdf', 'csv', 'excel', 'print')),
                                                  {
                                                    input$vr_search
                                                    isolate({
@@ -225,13 +250,11 @@ server <- function(input, output) {
                                                        ADR="YES"
                                                      }
                                                      query=paste0("dest=", input$vr_dest,
+                                                                  "&maxdist=",input$vr_max_dist,
                                                                   "&from=", input$vr_from,
                                                                   "&to=", input$vr_to,
                                                                   "&adr=", ADR
                                                      )
-                                                     # print(paste0(profileInfo$rest_addr,
-                                                     #              api_job_offers,
-                                                     #              query))
                                                      job_list <- as.data.frame(fromJSON(paste0(profileInfo$rest_addr,
                                                                                                api_job_offers,
                                                                                                query)))
@@ -244,22 +267,25 @@ server <- function(input, output) {
   )
   
   output$vr_request_details = renderPrint({
-    ADR="NONE"
-    if(input$vr_adr){
-      ADR="YES"
-    }
-    query=paste0("dest=", input$vr_dest,
-                 "&from=", input$vr_from,
-                 "&to=", input$vr_to,
-                 "&adr=", ADR
-    )
-    job_list <- as.data.frame(fromJSON(paste0(profileInfo$rest_addr,
-                                              api_job_offers,
-                                              query)))
-    s <- job_list$containerDeliveryJobOfferId[input$vr_requestsTable_rows_selected]
-    if (length(s)) {
-      cat('Request', s, 'has been selected.\n\n')
-    }
+    if(!is.null(input$vr_requestsTable_rows_selected))
+      isolate({
+        ADR="NONE"
+        if(input$vr_adr){
+          ADR="YES"
+        }
+        query=paste0("dest=", input$vr_dest,
+                     "&from=", input$vr_from,
+                     "&to=", input$vr_to,
+                     "&adr=", ADR
+        )
+        job_list <- as.data.frame(fromJSON(paste0(profileInfo$rest_addr,
+                                                  api_job_offers,
+                                                  query)))
+        s <- job_list$containerDeliveryJobOfferId[input$vr_requestsTable_rows_selected]
+        if (length(s)) {
+          cat('Request', s, 'has been selected.\n\n')
+        }
+      })
   })
   
   observeEvent(
@@ -285,7 +311,8 @@ server <- function(input, output) {
   )
   
   observeEvent(
-    input$vr_requestsTable_rows_selected, 
+    input$vr_requestsTable_rows_selected,
+    #if(is.null(input$vr_requestsTable_rows_selected))
     isolate({
       profileInfo$place_bid_status = ""
     })
@@ -301,9 +328,9 @@ server <- function(input, output) {
                                              selection = 'single',
                                              extensions = "Buttons", 
                                              options = list(
-                                               stringsAsFactors = FALSE,
-                                               dom = "Bfrtip", 
-                                               buttons = list('copy', 'pdf', 'csv', 'excel', 'print')),
+                                               stringsAsFactors = FALSE, autoWidth = TRUE), rownames= FALSE,
+                                             #dom = "Bfrtip", 
+                                             #buttons = list('copy', 'pdf', 'csv', 'excel', 'print')),
                                              {
                                                input$tb_refresh
                                                as.data.frame(fromJSON(paste0(profileInfo$rest_addr, api_trucker_profile, "/", api_bidding_history, "/", profileInfo$trucker_id)))
@@ -347,9 +374,9 @@ server <- function(input, output) {
                                                   selection = 'single',
                                                   extensions = "Buttons", 
                                                   options = list( #paging = FALSE,
-                                                    stringsAsFactors = FALSE,
-                                                    dom = "Bfrtip", 
-                                                    buttons = list('copy', 'pdf', 'csv', 'excel', 'print')),
+                                                    stringsAsFactors = FALSE, autoWidth = TRUE), rownames= FALSE,
+                                                  # dom = "Bfrtip", 
+                                                  # buttons = list('copy', 'pdf', 'csv', 'excel', 'print')),
                                                   {
                                                     input$vc_refresh
                                                     as.data.frame(fromJSON(paste0(profileInfo$rest_addr, 
