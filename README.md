@@ -34,6 +34,14 @@ Then your api will be accessible at:
 After making changes, save the files, stop node.js and run the same command again.
 
 ## User Interface
+The user interface is hosted on web and is ready to use without any installation. The UI for shipper and trucker can be found on following links.
+
+Shipper UI: https://yugdeep.shinyapps.io/ShipperUI/
+Trucker UI: https://yugdeep.shinyapps.io/TruckerUI/
+
+Each of the above UI is developed using a single R script named `app.R` available in `TruckerUI` and `ShipperUI` folders of the repository.
+
+The UI can be reproduced using the above mentioned scripts on a sytem with R (version 3.4 or greater) installed.
 
 ## Reports and presentations
 This contains:
