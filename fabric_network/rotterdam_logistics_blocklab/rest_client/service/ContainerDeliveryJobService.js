@@ -3,7 +3,9 @@
 const config = require('config');
 const LogisticsNetwork = require('../connector/LogisticsNetwork');
 const ContainerDeliveryJobOfferService = require('./ContainerDeliveryJobOfferService');
+const TruckerService = require('./TruckerService');
 
+const ContainerDeliveryJobForList = require('../domain/ContainerDeliveryJobForList');
 const ContainerDeliveryJobWithPassword = require('../domain/ContainerDeliveryJobWithPassword');
 const ContainerDeliveryJobForTrucker = require('../domain/ContainerDeliveryJobForTrucker');
 
@@ -35,11 +37,39 @@ class ContainerDeliveryJobService
 	{
 		console.log(`[retrieve(ContainerDeliveryJobForTrucker)] truckerId ${truckerId}`);
 
-		let assets = await this.logisticsNetwork.executeNamedQuery('FindContractedJobsOfTrucker', {truckerRef: `resource:nl.tudelft.blockchain.logistics.Trucker#${truckerId}`});
-		let promiseToResolveResult = assets.map((asset) => this.retrieveById(asset.getIdentifier()));
+		const params = {truckerRef: `resource:nl.tudelft.blockchain.logistics.Trucker#${truckerId}`};
+		const queryPromise = this.logisticsNetwork.executeNamedQuery('FindContractedJobsOfTrucker', params);
+		// const promiseToResolveResult = assets.map((asset) => this.retrieveById(asset.getIdentifier()));
 
-		return Promise.all(promiseToResolveResult)
-			.then((assets) => assets.map((asset) => new ContainerDeliveryJobForTrucker(asset)));
+		return queryPromise.then((assets) => assets.map((asset) => new ContainerDeliveryJobForTrucker(asset)));
+	}
+
+	async retrieveContractedByContainerGuyId(containerGuyId)
+	{
+		console.log(`[retrieve(ContainerDeliveryJobWithPassword)] containerGuyId ${containerGuyId}`);
+
+		const truckerService = new TruckerService();
+
+		const resolveJobFn = (job, jobOffer) => {
+			// query doesn't resolve the jobOffer, but we already have it
+			job.jobOffer = jobOffer;
+			// also need to resolve Trucker info in a bit of a hacky way
+			// FIXME: not Trucker returned for now, just resolve the returned obj's from the final query I guess or add to Asset
+			// Promise.resolve(truckerService.getTrucker(job.contractedTrucker.getIdentifier())
+			// 	.then((trucker) => job.contractedTrucker = trucker));
+			return new ContainerDeliveryJobForList(job);
+		}
+
+		const params = {containerGuyId: containerGuyId};
+		const queryResult = await this.logisticsNetwork.executeNamedQuery('FindContractedJobOffersForContainerGuy', params);
+
+		// cannot get Jobs directly, going through JobOffers, otherwise need to add the ContainerGuyId to the Job object too
+		const promisesToResolveResult = queryResult.map(
+			(jobOffer) => this.logisticsNetwork.executeNamedQuery('FindContractedJobsByJobOfferId', {containerDeliveryJobOfferRef: jobOffer.toURI()})
+					.then((jobs) => jobs.map((job) => resolveJobFn(job, jobOffer)))
+		);
+
+		return Promise.all(promisesToResolveResult);
 	}
 
 	async acceptDelivery(containerDeliveryJobId, arrivalPassword)

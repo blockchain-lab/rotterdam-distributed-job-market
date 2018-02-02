@@ -50,4 +50,13 @@ router.post('/acceptDelivery/:containerDeliveryJobId', (req, res, next) => {
 		.catch(next);
 });
 
+router.get('/contractedJobs/:containerGuyId', (req, res, next) => {
+	const containerGuyId = req.params.containerGuyId;
+
+	new ContainerDeliveryJobService()
+		.retrieveContractedByContainerGuyId(containerGuyId)
+		.then((results) => res.json(results))
+		.catch(next);
+});
+
 module.exports = router;

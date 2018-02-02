@@ -15,7 +15,7 @@
 
 /**
 	Params:
-     - id (String) = ContainerDeliveryJobOffer.containerDeliverJobOfferId
+     - id (String) = ContainerDeliveryJobOffer.containerDeliveryJobOfferId
 */
 query FindContainerDeliveryJobOfferById {
 	description: "Find a ContainerDeliveryJobOffer by its Id"
@@ -110,4 +110,30 @@ query FindContractedJobsOfTrucker {
     SELECT nl.tudelft.blockchain.logistics.ContainerDeliveryJob
     WHERE (contractedTrucker == _$truckerRef AND status == "CONTRACTED")
     LIMIT 9999 // Large limit, needs a better long-term solution for Production
+}
+
+/**
+ * Params:
+ *   - containerGuyId (reference string ('resource:namespace.type#id') to Trucker participant)
+ *
+ * Note: "contracted" job offer sounds strange but it is still tracking the overal state of the job, the tx code
+ *       keeps their state in-sync, we need this for easier querying in the noSQL world we're in here
+ */
+query FindContractedJobOffersForContainerGuy {
+  description: "Returns all (9999 max) jobs that are contracted (are active)"
+  statement:
+    SELECT nl.tudelft.blockchain.logistics.ContainerDeliveryJobOffer
+    WHERE (containerGuyId == _$containerGuyId AND status == "CONTRACTED")
+    LIMIT 9999 // Large limit, needs a better long-term solution for Production
+}
+
+/**
+ * Params:
+ *   - containerDeliveryJobOfferRef (reference string ('resource:namespace.typeid#id') to containerDeliverJobOffer)
+ */
+query FindContractedJobsByJobOfferId {
+  description: "Searches for contracted job for given JobOffer, can only be one contracted (but more if including cancelled)"
+  statement:
+    SELECT nl.tudelft.blockchain.logistics.ContainerDeliveryJob
+    WHERE (jobOffer == _$containerDeliveryJobOfferRef AND status == "CONTRACTED")
 }
