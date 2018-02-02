@@ -3,6 +3,16 @@ This folder contains the restuful api in node.js that contains all of the endpoi
 
 Like with every node.js application `app.js` is the entry point. It uses `routes.js` to point different URLs to different api classes. These can be found in the api folder. There is a different file and class per model.
 
+To start the client, navigate to this folder and run `node app.js`.
+This will start the api at `localhost:8081`.
+
+Current list of apis:
+- `localhost:8081\trucker\`
+- `localhost:8081\containerGuy\`
+- `localhost:8081\containerDeliveryJobOffer\`
+- `localhost:8081\containerDeliveryJob\`
+- `localhost:8081\test\`
+
 ### api
 Api files only define the endpoints of the application and do not hold any logic.
 
