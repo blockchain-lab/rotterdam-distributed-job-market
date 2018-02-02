@@ -38,10 +38,10 @@ class ContainerDeliveryJobService
 		console.log(`[retrieve(ContainerDeliveryJobForTrucker)] truckerId ${truckerId}`);
 
 		const params = {truckerRef: `resource:nl.tudelft.blockchain.logistics.Trucker#${truckerId}`};
-		const queryPromise = this.logisticsNetwork.executeNamedQuery('FindContractedJobsOfTrucker', params);
-		// const promiseToResolveResult = assets.map((asset) => this.retrieveById(asset.getIdentifier()));
+		const queryPromise = await this.logisticsNetwork.executeNamedQuery('FindContractedJobsOfTrucker', params);
+		const promiseToResolveResult = Promise.all(queryPromise.map((asset) => this.retrieveById(asset.getIdentifier())));
 
-		return queryPromise.then((assets) => assets.map((asset) => new ContainerDeliveryJobForTrucker(asset)));
+		return promiseToResolveResult.then((assets) => assets.map((asset) => new ContainerDeliveryJobForTrucker(asset)));
 	}
 
 	async retrieveContractedByContainerGuyId(containerGuyId)
