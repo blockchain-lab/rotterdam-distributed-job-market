@@ -12,6 +12,27 @@ The hyperledger part is located in the fabric_network folder. This contains both
 + **/lib/logic.js** - contains the chaincode itself. This is the code that will be run on the blockchain.
 + **/rest_client** - contains the entire restful application. This includes javascript models, services, app.js entrypoint, test initialization classes, routing.
 
+After installing everything (see below), this would be the normal flow you should follow when developing chaincode and REST api.
+### Chaincode modifications
+Key files that you would need to modify in order to change chaincode are:
+ - `logic.js` mentioned above.
+ - Model file mentioned above
+ - `queries.qry` file contains query definition for querying blockchain information.
+ - `permissions.acl` permission list for different users
+ 
+ If you turned on the computer you need to run our `start_network.sh` script that initializes everything for testing.
+ After making any modifications to these files, you would need to run `update_network.sh`. Your network will then run on the new code.
+
+### RESTful api
+Found in the `/rest_client` folder this is a basic node.js implementation.
+In order to run it, navigate to that folder and run:
+`node app.js`
+
+Then your api will be accessible at:
+`localhost:8081/`
+
+After making changes, save the files, stop node.js and run the same command again.
+
 ## User Interface
 
 ## Reports and presentations
@@ -99,5 +120,5 @@ Your first installation should already have the latest version. However if there
 	 1. `rm ~/fabric-tools -rf`
 7. Perform steps 3 and 5 in the initial setup 
 8. Perform step 6 of initial setup
-9. run start_test_network.sh
+9. run `start_test_network.sh`
 10. enjoy!
