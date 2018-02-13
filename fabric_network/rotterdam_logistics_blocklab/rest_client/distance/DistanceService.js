@@ -10,7 +10,8 @@ class DistanceService
 {
 	constructor()
 	{
-		this.apiKey = config["graph-hopper"]["api-key"];
+		this.graphhopperApiKey = config["graph-hopper"]["api-key"];
+		this.mapquestApiKey = config["mapquest"]["api-key"];
 	}
 
 	/**
@@ -38,7 +39,7 @@ class DistanceService
 		const params = {
 			point: [pointFrom, pointTo],
 			type: 'json',
-			key: this.apiKey,
+			key: this.graphhopperApiKey,
 			vehicle: "car", // truck not allowed in free tier
 			instructions: false, // just the distance
 			calc_points: false // just the distance
@@ -69,9 +70,10 @@ class DistanceService
 	{
 		const queryObject = address.toQueryObject();
 		queryObject.format = "json";
+		queryObject.key = this.mapquestApiKey;
 
 		let result = await request.defaults({
-			uri: 'https://nominatim.openstreetmap.org/search',
+			uri: 'http://open.mapquestapi.com/nominatim/v1/search.php',
 			qs: queryObject,
 			headers : {
 				accept: 'application/json'

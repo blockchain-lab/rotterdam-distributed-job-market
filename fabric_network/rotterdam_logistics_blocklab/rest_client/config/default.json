@@ -10,6 +10,9 @@
   "graph-hopper": {
     "api-key": "6b7aac66-6fc7-470f-949e-e66adb7c9584"
   },
+  "mapquest": {
+    "api-key": "3dThpjGAT6XCRytVTjqljbnGnNbcGG9M"
+  },
   "ComposerConfig": {
      "debug": {
        "logger": "default",
