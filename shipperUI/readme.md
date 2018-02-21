@@ -1,5 +1,6 @@
-A sample skin for a web client for shipper: https://yugdeep.shinyapps.io/ShipperUI/
+#Shipper UI
 
-The excel files provides sample data that will be queried from the blockchain and needs to displayed on web UI for each shipper.
+Build using [Shiny](https://shiny.rstudio.com/)
+Source code is found in the `App.R` file
 
-This data can be stored by a shipper on a local database or a cloud service such as AWS.
+Current version is hosted at https://yugdeep.shinyapps.io/ShipperUI/
